@@ -90,6 +90,8 @@ function Dealers() {
     distributor: '',
     username: '',
     password: '',
+    eligibleForIncentive: true,
+    eligibleForPoints: true,
   });
 
   useEffect(() => {
@@ -190,6 +192,8 @@ function Dealers() {
       distributor: dealer.distributor?._id || '', // Note: district can be object here too, similar to distributor
       username: dealer.username || '',
       password: '',
+      eligibleForIncentive: dealer.eligibleForIncentive !== false,
+      eligibleForPoints: dealer.eligibleForPoints !== false,
     });
     setIsEditing(true);
     setShowDealerModal(true);
@@ -215,6 +219,8 @@ function Dealers() {
       distributor: '',
       username: '',
       password: '',
+      eligibleForIncentive: true,
+      eligibleForPoints: true,
     });
   };
 

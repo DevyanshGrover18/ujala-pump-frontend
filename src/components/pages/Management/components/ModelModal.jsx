@@ -33,6 +33,8 @@ export default function ModelModal({
     },
     warranty: [],
     status: 'Active',
+    incentive: 0,
+    points: 0,
   });
   const [codeError, setCodeError] = useState('');
   const [isCheckingCode, setIsCheckingCode] = useState(false);
@@ -133,6 +135,8 @@ export default function ModelModal({
           },
           warranty: model.warranty || [],
           status: model.status || 'Active',
+          incentive: model.incentive ?? 0,
+          points: model.points ?? 0,
         });
         // Pre-fetch districts for warranty entries so city select shows current value
         if (Array.isArray(model.warranty)) {
@@ -155,6 +159,8 @@ export default function ModelModal({
           },
           warranty: [],
           status: 'Active',
+          incentive: 0,
+          points: 0,
         });
         setCodeError(''); // Clear error when adding new
       }
@@ -355,6 +361,37 @@ export default function ModelModal({
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
+              </div>
+              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <h3 className="text-sm font-semibold text-amber-800 mb-3 uppercase tracking-wide">Incentive &amp; Points</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Incentive Amount (₹ per unit)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.incentive}
+                      onChange={(e) => setFormData({ ...formData, incentive: Number(e.target.value) })}
+                      className="w-full px-3 py-2 border border-amber-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      placeholder="e.g. 500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Points (per unit sold)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.points}
+                      onChange={(e) => setFormData({ ...formData, points: Number(e.target.value) })}
+                      className="w-full px-3 py-2 border border-amber-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      placeholder="e.g. 10"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
             <div>

@@ -33,6 +33,8 @@ import Login from './components/auth/Login';
 import Notifications from './components/pages/Notifications/Notifications';
 import AddMembers from './components/pages/AddMembers/index';
 import Executives from './components/pages/Executives/Executives';
+import Incentives from './components/pages/Incentives/Incentives';
+import WalletPage from './components/pages/Wallet/WalletPage';
 import Unauthorized from './components/pages/AddMembers/Unauthorized';
 import ProtectedSection from './components/auth/ProtectedSection';
 import { SideBar } from './components/sideBar/sideBar';
@@ -104,6 +106,7 @@ const App = () => {
           <Route path="dealers" element={<DistributorDealers />} />
           <Route path="dealer-sales" element={<DistributorDealerSales />} />
           <Route path="customer-sales" element={<DistributorCustomerSales />} />
+          <Route path="wallet" element={<WalletPage />} />
         </Route>
 
         <Route
@@ -120,6 +123,7 @@ const App = () => {
           <Route path="sub-dealer-sales" element={<DealerSubDealerSales />} />
           {/* <Route path="sub-dealer-sales1" element={<DealerSubDealerSales1 />} /> */}
           <Route path="customer-sales" element={<DealerCustomerSales />} />
+          <Route path="wallet" element={<WalletPage />} />
         </Route>
 
         <Route
@@ -133,6 +137,7 @@ const App = () => {
           <Route path="dashboard" element={<SubDealerDashboard />} />
           <Route path="products" element={<SubDealerProducts />} />
           <Route path="sales" element={<SubDealerSales />} />
+          <Route path="wallet" element={<WalletPage />} />
         </Route>
 
         <Route
@@ -178,6 +183,14 @@ const App = () => {
             element={
               <AdminProtectedRoute>
                 <Executives />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="incentives"
+            element={
+              <AdminProtectedRoute>
+                <Incentives />
               </AdminProtectedRoute>
             }
           />

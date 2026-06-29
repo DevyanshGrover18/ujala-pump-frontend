@@ -45,6 +45,8 @@ function SubDealers() {
     dealer: '',
     username: '',
     password: '',
+    eligibleForIncentive: true,
+    eligibleForPoints: true,
   });
 
   const [cities, setCities] = useState([]);
@@ -199,6 +201,8 @@ function SubDealers() {
       dealer: item.dealer?._id || '',
       username: item.username || '',
       password: '',
+      eligibleForIncentive: item.eligibleForIncentive !== false,
+      eligibleForPoints: item.eligibleForPoints !== false,
     });
     setIsEditing(true);
     setShowModal(true);
@@ -224,6 +228,8 @@ function SubDealers() {
       dealer: '',
       username: '',
       password: '',
+      eligibleForIncentive: true,
+      eligibleForPoints: true,
     });
   };
 

@@ -305,6 +305,47 @@ const DistributorModal = ({
             </div>
           </div>
 
+          {/* Incentive & Points Eligibility */}
+          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <h3 className="text-sm font-semibold text-amber-800 mb-4 uppercase tracking-wide">Incentive &amp; Points Eligibility</h3>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-200">
+                <div>
+                  <p className="text-sm font-medium text-gray-800">Eligible for Incentive</p>
+                  <p className="text-xs text-gray-500">Can earn incentive on sales</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onChange({ ...distributor, eligibleForIncentive: !distributor.eligibleForIncentive })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    distributor.eligibleForIncentive !== false ? 'bg-amber-500' : 'bg-gray-300'
+                  }`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                    distributor.eligibleForIncentive !== false ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-200">
+                <div>
+                  <p className="text-sm font-medium text-gray-800">Eligible for Points</p>
+                  <p className="text-xs text-gray-500">Can earn points on sales</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onChange({ ...distributor, eligibleForPoints: !distributor.eligibleForPoints })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    distributor.eligibleForPoints !== false ? 'bg-amber-500' : 'bg-gray-300'
+                  }`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                    distributor.eligibleForPoints !== false ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="mt-8">
             <button
               type="submit"

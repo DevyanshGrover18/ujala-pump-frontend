@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   ChevronDown,
   Box,
+  Wallet,
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 
@@ -43,6 +44,12 @@ const distributorSidebarItems = [
         path: '/distributor/customer-sales',
       },
     ],
+  },
+  {
+    title: 'My Wallet',
+    path: '/distributor/wallet',
+    icon: Wallet,
+    color: 'orange',
   },
 ];
 

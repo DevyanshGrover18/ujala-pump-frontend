@@ -10,6 +10,7 @@ import {
   Settings,
   ShoppingCart,
   ChevronDown,
+  Gift,
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import NotificationIcon from '../global/NotificationIcon';
@@ -32,6 +33,12 @@ const sidebarItems = [
     path: '/executives',
     icon: Users,
     color: 'pink',
+  },
+  {
+    title: 'Incentives',
+    path: '/incentives',
+    icon: Gift,
+    color: 'amber',
   },
   {
     title: 'Management',
@@ -190,6 +197,8 @@ export function SideBar({ sidebarOpen, toggleSidebar, totalNotifications }) {
                 .filter((item) => {
                   if (item.path === '/') return true;
                   if (item.title === 'Staff' && !isAdmin) return false; // Hide Staff if not admin
+                  if (item.path === '/executives' && !isAdmin) return false;
+                  if (item.path === '/incentives' && !isAdmin) return false;
                   if (item.children) {
                     return item.children.some((child) => {
                       const section = pathToSection[child.path] || null;

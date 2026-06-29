@@ -8,6 +8,7 @@ import {
   Users,
   ChevronDown,
   ChevronRight,
+  Wallet,
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 
@@ -45,6 +46,12 @@ const dealerSidebarItems = [
         path: '/dealer/customer-sales',
       },
     ],
+  },
+  {
+    title: 'My Wallet',
+    path: '/dealer/wallet',
+    icon: Wallet,
+    color: 'orange',
   },
 ];
 
