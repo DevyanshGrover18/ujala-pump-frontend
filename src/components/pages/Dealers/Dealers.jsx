@@ -12,6 +12,7 @@ import DealerTable from './components/DealerTable';
 import DealerCard from './components/DealerCard';
 import DealerModal from './components/DealerModal';
 import ProductsModal from './components/ProductsModal';
+import SalesModal from './components/SalesModal';
 import ModelModal from './components/ModelModal';
 import SubDealersModal from './components/SubDealersModal';
 
@@ -37,6 +38,8 @@ function Dealers() {
   const [isEditing, setIsEditing] = useState(false);
   const [showProductsModal, setShowProductsModal] = useState(false);
   const [dealerProducts, setDealerProducts] = useState([]);
+  const [showSalesModal, setShowSalesModal] = useState(false);
+  const [dealerSales, setDealerSales] = useState([]);
   const [isModelModalOpen, setIsModelModalOpen] = useState(false);
   const [activeModelId, setActiveModelId] = useState(null);
   const [modalCurrentPage, setModalCurrentPage] = useState(1);
@@ -215,7 +218,7 @@ function Dealers() {
     });
   };
 
-  const handleViewProducts = async (dealer) => {
+  const handleViewInventory = async (dealer) => {
     try {
       const { data } = await distributorDealerProductService.getDealerProducts(
         dealer._id
@@ -225,6 +228,18 @@ function Dealers() {
       setShowProductsModal(true);
     } catch (error) {
       toast.error('Error fetching dealer products');
+      console.error('Error:', error);
+    }
+  };
+
+  const handleViewSales = async (dealer) => {
+    try {
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/dealers/${dealer._id}/sales`);
+      setDealerSales(data);
+      setSelectedDealer(dealer);
+      setShowSalesModal(true);
+    } catch (error) {
+      toast.error('Error fetching dealer sales');
       console.error('Error:', error);
     }
   };
@@ -358,7 +373,8 @@ function Dealers() {
                   onSelectAll={handleSelectAll}
                   onEdit={handleEditClick}
                   onDelete={deleteDealer}
-                  onViewProducts={handleViewProducts}
+                  onViewSales={handleViewSales}
+                  onViewInventory={handleViewInventory}
                   onViewSubDealers={handleViewSubDealers}
                 />
 
@@ -366,6 +382,8 @@ function Dealers() {
                   dealers={filteredItems}
                   onEdit={handleEditClick}
                   onDelete={deleteDealer}
+                  onViewSales={handleViewSales}
+                  onViewInventory={handleViewInventory}
                 />
               </>
             )}
@@ -415,6 +433,21 @@ function Dealers() {
         modalItemsPerPage={modalItemsPerPage}
         onPageChange={setModalCurrentPage}
         onItemsPerPageChange={setModalItemsPerPage}
+      />
+
+      <SalesModal
+        isOpen={showSalesModal}
+        dealer={selectedDealer}
+        sales={dealerSales}
+        onClose={() => {
+          setShowSalesModal(false);
+          setSelectedDealer(null);
+          setDealerSales([]);
+        }}
+        modalCurrentPage={modalCurrentPage}
+        modalItemsPerPage={modalItemsPerPage}
+        onModalPageChange={setModalCurrentPage}
+        onModalItemsPerPageChange={setModalItemsPerPage}
       />
 
       <ModelModal

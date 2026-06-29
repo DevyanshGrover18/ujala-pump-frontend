@@ -28,6 +28,12 @@ const sidebarItems = [
     color: 'orange',
   },
   {
+    title: 'Executives',
+    path: '/executives',
+    icon: Users,
+    color: 'pink',
+  },
+  {
     title: 'Management',
     path: '/management',
     icon: Settings,

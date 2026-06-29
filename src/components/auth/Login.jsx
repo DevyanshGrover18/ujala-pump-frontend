@@ -29,6 +29,13 @@ const userTypes = [
     bg: '#F59E0B',
   },
   {
+    id: 'executive',
+    title: 'Executive',
+    description: 'Executive portal access',
+    icon: Shield,
+    bg: '#EC4899',
+  },
+  {
     id: 'distributor',
     title: 'Distributor',
     description: 'Distributor operations',
@@ -49,6 +56,7 @@ const userTypes = [
     icon: Building,
     bg: '#8B5CF6',
   },
+  
 ];
 
 export default function Login({ isAdminLoginPath }) {
@@ -115,6 +123,8 @@ export default function Login({ isAdminLoginPath }) {
         navigate('/dealer/dashboard');
       } else if (selectedUserType === 'subdealer') {
         navigate('/sub-dealer/dashboard');
+      } else if (selectedUserType === 'executive') {
+        navigate('/executive/dashboard');
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Login failed');
@@ -228,7 +238,7 @@ export default function Login({ isAdminLoginPath }) {
                           ? 'Distributor'
                           : selectedUserType === 'dealer'
                             ? 'Dealer'
-                            : 'Sub-Dealer'}
+                            : selectedUserType === 'executive'? "Executive" : 'Sub-Dealer'}
                   !
                 </h2>
               </div>

@@ -32,6 +32,7 @@ import Sales from './components/pages/Sales/Sales';
 import Login from './components/auth/Login';
 import Notifications from './components/pages/Notifications/Notifications';
 import AddMembers from './components/pages/AddMembers/index';
+import Executives from './components/pages/Executives/Executives';
 import Unauthorized from './components/pages/AddMembers/Unauthorized';
 import ProtectedSection from './components/auth/ProtectedSection';
 import { SideBar } from './components/sideBar/sideBar';
@@ -39,6 +40,12 @@ import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
 import FactoryLayout from './components/global/FactoryLayout';
 import DistributorLayout from './components/global/DistributorLayout';
+import ExecutiveLayout from './components/global/ExecutiveLayout';
+import ExecutiveDashboard from './components/pages/ExecutivePanel/ExecutiveDashboard';
+import ExecutiveDistributors from './components/pages/ExecutivePanel/ExecutiveDistributors';
+import ExecutiveDealers from './components/pages/ExecutivePanel/ExecutiveDealers';
+import ExecutiveSubDealers from './components/pages/ExecutivePanel/ExecutiveSubDealers';
+import ExecutiveCustomers from './components/pages/ExecutivePanel/ExecutiveCustomers';
 
 const AdminProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading, isAdmin } = useContext(AuthContext);
@@ -129,6 +136,21 @@ const App = () => {
         </Route>
 
         <Route
+          path="/executive"
+          element={
+            <ExecutiveProtectedRoute>
+              <ExecutiveLayout />
+            </ExecutiveProtectedRoute>
+          }
+        >
+          <Route path="dashboard" element={<ExecutiveDashboard />} />
+          <Route path="distributors" element={<ExecutiveDistributors />} />
+          <Route path="dealers" element={<ExecutiveDealers />} />
+          <Route path="sub-dealers" element={<ExecutiveSubDealers />} />
+          <Route path="customers" element={<ExecutiveCustomers />} />
+        </Route>
+
+        <Route
           path="/"
           element={
             <ProtectedRoute>
@@ -148,6 +170,14 @@ const App = () => {
             element={
               <AdminProtectedRoute>
                 <AddMembers />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="executives"
+            element={
+              <AdminProtectedRoute>
+                <Executives />
               </AdminProtectedRoute>
             }
           />
@@ -314,6 +344,24 @@ const SubDealerProtectedRoute = ({ children }) => {
   }
 
   if (!isSubDealerAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+const ExecutiveProtectedRoute = ({ children }) => {
+  const { isExecutiveAuthenticated, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (!isExecutiveAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 

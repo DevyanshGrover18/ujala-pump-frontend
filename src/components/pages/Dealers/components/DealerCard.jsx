@@ -2,7 +2,7 @@ import React from 'react';
 import { FilePenLine, Trash2 } from 'lucide-react';
 import ListComponent from '../../../global/ListComponent';
 
-const DealerCard = ({ dealers, onEdit, onDelete }) => {
+const DealerCard = ({ dealers, onEdit, onDelete, onViewSales, onViewInventory }) => {
   return (
     <div className="md:hidden space-y-4">
       {dealers.length > 0 ? (
@@ -65,6 +65,20 @@ const DealerCard = ({ dealers, onEdit, onDelete }) => {
                   >
                     {dealer.status}
                   </span>
+                </div>
+                <div className="col-span-2 mt-2 flex gap-2">
+                  <button
+                    onClick={() => onViewSales(dealer)}
+                    className="inline-flex items-center px-2.5 py-1.5 border border-green-500 text-xs font-medium rounded text-green-700 bg-green-50 hover:bg-green-500 hover:text-white transition-colors"
+                  >
+                    {dealer.salesCount || 0} Sales
+                  </button>
+                  <button
+                    onClick={() => onViewInventory(dealer)}
+                    className="inline-flex items-center px-2.5 py-1.5 border border-[#4d55f5] text-xs font-medium rounded text-[#4d55f5] hover:bg-[#4d55f5] hover:text-white transition-colors"
+                  >
+                    {dealer.inventoryCount || 0} Inventory
+                  </button>
                 </div>
               </div>
             </div>

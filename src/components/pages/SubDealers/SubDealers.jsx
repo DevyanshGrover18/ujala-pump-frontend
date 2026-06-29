@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import SubDealerForm from './components/SubDealerForm';
 import SubDealerTable from './components/SubDealerTable';
 import SubDealerProductsModal from '../DealersPanel/SubDealerProductsModal';
+import SalesModal from './components/SalesModal';
 import TableExportButtons from '../../global/TableExportButtons';
 
 function SubDealers() {
@@ -24,6 +25,8 @@ function SubDealers() {
   const [dealers, setDealers] = useState([]);
   const [showProductsModal, setShowProductsModal] = useState(false);
   const [selectedSubDealer, setSelectedSubDealer] = useState(null);
+  const [showSalesModal, setShowSalesModal] = useState(false);
+  const [subDealerSales, setSubDealerSales] = useState([]);
   const [locations, setLocations] = useState([]);
 
   const [newItem, setNewItem] = useState({
@@ -291,9 +294,22 @@ function SubDealers() {
     }
   };
 
-  const handleViewProducts = (subDealer) => {
+  const handleViewInventory = (subDealer) => {
     setSelectedSubDealer(subDealer);
     setShowProductsModal(true);
+  };
+
+  const handleViewSales = async (subDealer) => {
+    try {
+      setSelectedSubDealer(subDealer);
+      const { data } = await axios.get(`${API_URL}/sub-dealers/${subDealer._id}/sales`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      setSubDealerSales(data);
+      setShowSalesModal(true);
+    } catch (error) {
+      toast.error('Error fetching sub-dealer sales');
+    }
   };
 
   return (
@@ -366,7 +382,8 @@ function SubDealers() {
                   onSelectAll={handleSelectAll}
                   onEdit={handleEditClick}
                   onDelete={handleDelete}
-                  onViewProducts={handleViewProducts}
+                  onViewSales={handleViewSales}
+                  onViewInventory={handleViewInventory}
                 />
 
                 <div className="md:hidden space-y-4">
@@ -530,6 +547,21 @@ function SubDealers() {
           isAdmin={true}
         />
       )}
+
+      <SalesModal
+        isOpen={showSalesModal}
+        subDealer={selectedSubDealer}
+        sales={subDealerSales}
+        onClose={() => {
+          setShowSalesModal(false);
+          setSelectedSubDealer(null);
+          setSubDealerSales([]);
+        }}
+        modalCurrentPage={currentPage}
+        modalItemsPerPage={itemsPerPage}
+        onModalPageChange={setCurrentPage}
+        onModalItemsPerPageChange={setItemsPerPage}
+      />
     </div>
   );
 }

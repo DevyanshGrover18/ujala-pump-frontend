@@ -13,6 +13,7 @@ import DistributorTable from './components/DistributorTable';
 import DistributorCard from './components/DistributorCard';
 import DistributorModal from './components/DistributorModal';
 import ProductsModal from './components/ProductsModal';
+import SalesModal from './components/SalesModal';
 import ModelModal from './components/ModelModal';
 import DealersModal from './components/DealersModal';
 
@@ -32,6 +33,8 @@ function Distributors() {
   const [isEditing, setIsEditing] = useState(false);
   const [showProductsModal, setShowProductsModal] = useState(false);
   const [distributorProducts, setDistributorProducts] = useState([]);
+  const [showSalesModal, setShowSalesModal] = useState(false);
+  const [distributorSales, setDistributorSales] = useState([]);
   const [isModelModalOpen, setIsModelModalOpen] = useState(false);
   const [activeModelId, setActiveModelId] = useState(null);
   const [modalCurrentPage, setModalCurrentPage] = useState(1);
@@ -247,18 +250,26 @@ function Distributors() {
     });
   };
 
-  const handleViewProducts = async (distributor) => {
+  const handleViewInventory = async (distributor) => {
     try {
-      const [productsResponse, dealersResponse] = await Promise.all([
-        axios.get(`${API_URL}/${distributor._id}/products`),
-        axios.get(`${API_URL}/${distributor._id}/dealers`),
-      ]);
+      const productsResponse = await axios.get(`${API_URL}/${distributor._id}/products`);
       setDistributorProducts(productsResponse.data);
-      setDistributorDealers(dealersResponse.data);
       setSelectedDistributor(distributor);
       setShowProductsModal(true);
     } catch (error) {
-      toast.error('Error fetching distributor data');
+      toast.error('Error fetching distributor inventory');
+      console.error('Error:', error);
+    }
+  };
+
+  const handleViewSales = async (distributor) => {
+    try {
+      const salesResponse = await axios.get(`${API_URL}/${distributor._id}/sales`);
+      setDistributorSales(salesResponse.data);
+      setSelectedDistributor(distributor);
+      setShowSalesModal(true);
+    } catch (error) {
+      toast.error('Error fetching distributor sales');
       console.error('Error:', error);
     }
   };
@@ -400,7 +411,8 @@ function Distributors() {
                       onSelectAll={handleSelectAll}
                       onEdit={handleEditClick}
                       onDelete={handleDeleteDistributor}
-                      onViewProducts={handleViewProducts}
+                      onViewSales={handleViewSales}
+                      onViewInventory={handleViewInventory}
                       onViewDealers={handleViewDealers}
                     />
 
@@ -410,7 +422,8 @@ function Distributors() {
                       onSelect={handleSelect}
                       onEdit={handleEditClick}
                       onDelete={handleDeleteDistributor}
-                      onViewProducts={handleViewProducts}
+                      onViewSales={handleViewSales}
+                      onViewInventory={handleViewInventory}
                       onViewDealers={handleViewDealers}
                       onStatusChange={handleStatusChange}
                     />
@@ -500,6 +513,21 @@ function Distributors() {
           setDistributorProducts([]);
         }}
         onOpenModel={openModelModal}
+        modalCurrentPage={modalCurrentPage}
+        modalItemsPerPage={modalItemsPerPage}
+        onModalPageChange={setModalCurrentPage}
+        onModalItemsPerPageChange={setModalItemsPerPage}
+      />
+
+      <SalesModal
+        isOpen={showSalesModal}
+        distributor={selectedDistributor}
+        sales={distributorSales}
+        onClose={() => {
+          setShowSalesModal(false);
+          setSelectedDistributor(null);
+          setDistributorSales([]);
+        }}
         modalCurrentPage={modalCurrentPage}
         modalItemsPerPage={modalItemsPerPage}
         onModalPageChange={setModalCurrentPage}

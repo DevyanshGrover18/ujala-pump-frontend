@@ -373,7 +373,7 @@ export default function Products() {
                   Total Products: {flattenedProducts.length}
                 </p>
               </div>
-              <div className="flex-shrink-0 mt-2 sm:mt-0">
+              {/* <div className="flex-shrink-0 mt-2 sm:mt-0">
                 <button
                   onClick={() => setIsOfflineUploadOpen(true)}
                   className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
@@ -381,7 +381,7 @@ export default function Products() {
                   <Upload className="h-4 w-4" />
                   Upload Offline Products
                 </button>
-              </div>
+              </div> */}
             </div>
 
             {/* Desktop Filters */}

@@ -10,7 +10,8 @@ export default function SubDealerTable({
   onSelectAll,
   onEdit,
   onDelete,
-  onViewProducts,
+  onViewSales,
+  onViewInventory,
 }) {
   return (
     <div className="hidden md:block overflow-x-auto">
@@ -40,7 +41,10 @@ export default function SubDealerTable({
               Dealer
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Products
+              Sales
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Inventory
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Actions
@@ -72,11 +76,20 @@ export default function SubDealerTable({
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <button
-                  onClick={() => onViewProducts && onViewProducts(sd)}
+                  onClick={() => onViewSales && onViewSales(sd)}
+                  className="inline-flex items-center px-2.5 py-1.5 border border-green-500 text-xs font-medium rounded text-green-700 bg-green-50 hover:bg-green-500 hover:text-white transition-colors"
+                >
+                  <Box className="h-4 w-4 mr-1" />
+                  {sd.salesCount || 0} Sales
+                </button>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <button
+                  onClick={() => onViewInventory && onViewInventory(sd)}
                   className="inline-flex items-center px-2.5 py-1.5 border border-[#4d55f5] text-xs font-medium rounded text-[#4d55f5] hover:bg-[#4d55f5] hover:text-white transition-colors"
                 >
                   <Box className="h-4 w-4 mr-1" />
-                  {sd.productCount || 0} Products
+                  {sd.inventoryCount || 0} Inventory
                 </button>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

@@ -8,7 +8,8 @@ const DistributorCard = ({
   onSelect,
   onEdit,
   onDelete,
-  onViewProducts,
+  onViewSales,
+  onViewInventory,
   onViewDealers,
   onStatusChange,
 }) => {
@@ -94,13 +95,20 @@ const DistributorCard = ({
                     </select>
                   </div>
                 </div>
-                <div className="col-span-2 mt-2">
+                <div className="col-span-2 mt-2 flex gap-2">
                   <button
-                    onClick={() => onViewProducts(distributor)}
+                    onClick={() => onViewSales(distributor)}
+                    className="inline-flex items-center px-2.5 py-1.5 border border-green-500 text-xs font-medium rounded text-green-700 bg-green-50 hover:bg-green-500 hover:text-white transition-colors"
+                  >
+                    <Box className="h-4 w-4 mr-1" />
+                    {distributor.salesCount || 0} Sales
+                  </button>
+                  <button
+                    onClick={() => onViewInventory(distributor)}
                     className="inline-flex items-center px-2.5 py-1.5 border border-[#4d55f5] text-xs font-medium rounded text-[#4d55f5] hover:bg-[#4d55f5] hover:text-white transition-colors"
                   >
                     <Box className="h-4 w-4 mr-1" />
-                    {distributor.productCount || 0} Products
+                    {distributor.inventoryCount || 0} Inventory
                   </button>
                 </div>
                 <div className="col-span-2 mt-2">
