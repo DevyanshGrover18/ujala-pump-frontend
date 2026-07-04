@@ -29,6 +29,11 @@ export function OrderTable({
         bgColor: 'bg-purple-100',
         textColor: 'text-purple-800',
       },
+      '4_units': {
+        label: '4 Units/Box',
+        bgColor: 'bg-orange-100',
+        textColor: 'text-orange-800',
+      },
     };
     return types[orderType] || types['1_unit'];
   };
@@ -41,7 +46,9 @@ export function OrderTable({
         ? 2
         : order.orderType === '3_units'
           ? 3
-          : 1)
+          : order.orderType === '4_units'
+            ? 4
+            : 1)
     );
   };
 

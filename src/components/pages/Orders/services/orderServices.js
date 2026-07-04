@@ -10,7 +10,7 @@ export const orderService = {
     axios.get(`${import.meta.env.VITE_API_URL}/api/categories`),
   fetchModels: () => axios.get(`${import.meta.env.VITE_API_URL}/api/models`),
   createOrder: (orderData) => axios.post(API_URL, orderData),
-  checkDuplicates: (serialNumbers) => axios.post(`${API_URL}/check-duplicates`, { serialNumbers }),
+  checkDuplicates: (serialNumbers, orderId = null) => axios.post(`${API_URL}/check-duplicates`, { serialNumbers, ...(orderId ? { orderId } : {}) }),
   updateOrder: (id, orderData) => axios.patch(`${API_URL}/${id}`, orderData),
   deleteOrder: (id) => axios.delete(`${API_URL}/${id}`),
   deleteMultipleOrders: (ids) => axios.delete(API_URL, { data: { ids } }),

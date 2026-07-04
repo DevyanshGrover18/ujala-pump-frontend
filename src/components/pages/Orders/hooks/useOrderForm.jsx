@@ -15,6 +15,13 @@ const initialOrderState = {
   manualSerials: '',
 };
 
+const getUnitsPerBox = (orderType) => {
+  if (orderType === '2_units') return 2;
+  if (orderType === '3_units') return 3;
+  if (orderType === '4_units') return 4;
+  return 1;
+};
+
 export const useOrderForm = (isEdit = false, editOrder = null, models = []) => {
   const [formData, setFormData] = useState(initialOrderState);
   const [filteredModels, setFilteredModels] = useState([]);
@@ -38,10 +45,13 @@ export const useOrderForm = (isEdit = false, editOrder = null, models = []) => {
       return;
     }
 
+    // When editing, pass the orderId so the backend excludes this order's own serials
+    const currentOrderId = isEdit && editOrder ? editOrder.orderId : null;
+
     const delayDebounceFn = setTimeout(async () => {
       setIsCheckingDuplicates(true);
       try {
-        const { data } = await orderService.checkDuplicates(serials);
+        const { data } = await orderService.checkDuplicates(serials, currentOrderId);
         setDbDuplicates(data.duplicates || []);
       } catch (err) {
         console.error('Error checking duplicates:', err);
@@ -51,17 +61,11 @@ export const useOrderForm = (isEdit = false, editOrder = null, models = []) => {
     }, 600); // 600ms debounce delay
 
     return () => clearTimeout(delayDebounceFn);
-  }, [formData.manualSerials, formData.isManual]);
+  }, [formData.manualSerials, formData.isManual, isEdit, editOrder]);
 
   useEffect(() => {
     if (isEdit && editOrder) {
-      const totalPumps =
-        editOrder.quantity *
-        (editOrder.orderType === '2_units'
-          ? 2
-          : editOrder.orderType === '3_units'
-            ? 3
-            : 1);
+      const totalPumps = editOrder.quantity * getUnitsPerBox(editOrder.orderType);
 
       setFormData({
         category: editOrder.category?._id || '',
@@ -125,8 +129,7 @@ export const useOrderForm = (isEdit = false, editOrder = null, models = []) => {
 
   const updateOrderType = (orderType) => {
     const totalPumps = formData.totalPumps || formData.quantity;
-    const unitsPerBox =
-      orderType === '2_units' ? 2 : orderType === '3_units' ? 3 : 1;
+    const unitsPerBox = getUnitsPerBox(orderType);
 
     setFormData((prev) => ({
       ...prev,
@@ -137,12 +140,7 @@ export const useOrderForm = (isEdit = false, editOrder = null, models = []) => {
   };
 
   const updateTotalPumps = (totalPumps) => {
-    const unitsPerBox =
-      formData.orderType === '2_units'
-        ? 2
-        : formData.orderType === '3_units'
-          ? 3
-          : 1;
+    const unitsPerBox = getUnitsPerBox(formData.orderType);
 
     setFormData((prev) => ({
       ...prev,
@@ -186,12 +184,7 @@ export const useOrderForm = (isEdit = false, editOrder = null, models = []) => {
       return { valid: false, error: 'Number of pumps must be greater than 0' };
     }
 
-    const unitsPerBox =
-      formData.orderType === '2_units'
-        ? 2
-        : formData.orderType === '3_units'
-          ? 3
-          : 1;
+    const unitsPerBox = getUnitsPerBox(formData.orderType);
 
     if (unitsPerBox > 1 && formData.totalPumps % unitsPerBox !== 0) {
       return {
@@ -234,12 +227,7 @@ export const useOrderForm = (isEdit = false, editOrder = null, models = []) => {
   };
 
   const getSubmitData = () => {
-    const unitsPerBox =
-      formData.orderType === '2_units'
-        ? 2
-        : formData.orderType === '3_units'
-          ? 3
-          : 1;
+    const unitsPerBox = getUnitsPerBox(formData.orderType);
 
     const data = {
       ...formData,

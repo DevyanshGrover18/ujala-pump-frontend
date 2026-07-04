@@ -73,6 +73,7 @@ export function OrderFilters({
               <option value="1_unit">1N</option>
               <option value="2_units">2N</option>
               <option value="3_units">3N</option>
+              <option value="4_units">4N (4 Pumps per Box)</option>
             </select>
           </FilterItem>
         </FilterGroup>
@@ -232,6 +233,7 @@ export function OrderFilters({
                   <option value="1_unit">1N</option>
                   <option value="2_units">2N</option>
                   <option value="3_units">3N</option>
+                  <option value="4_units">4N (4 Pumps per Box)</option>
                 </select>
               </div>
 

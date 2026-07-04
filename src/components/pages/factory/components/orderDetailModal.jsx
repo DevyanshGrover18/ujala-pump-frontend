@@ -537,13 +537,15 @@ export default function OrderDetailsModal({
                           </td>
                           <td className="p-3 lg:p-4 text-xs lg:text-sm">
                             <span
-                              className={`px-2 whitespace-nowrap py-1 text-xs font-medium rounded-full ${boxData.orderType === '2_units' ? 'bg-blue-100 text-blue-800' : boxData.orderType === '3_units' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}
+                              className={`px-2 whitespace-nowrap py-1 text-xs font-medium rounded-full ${boxData.orderType === '2_units' ? 'bg-blue-100 text-blue-800' : boxData.orderType === '3_units' ? 'bg-purple-100 text-purple-800' : boxData.orderType === '4_units' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}
                             >
                               {boxData.orderType === '2_units'
                                 ? '2 Units'
                                 : boxData.orderType === '3_units'
                                   ? '3 Units'
-                                  : '1 Unit'}
+                                  : boxData.orderType === '4_units'
+                                    ? '4 Units'
+                                    : '1 Unit'}
                             </span>
                           </td>
                           <td className="p-3 lg:p-4">
@@ -681,13 +683,15 @@ export default function OrderDetailsModal({
                           </div>
                         </div>
                         <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${boxData.orderType === '2_units' ? 'bg-blue-100 text-blue-800' : boxData.orderType === '3_units' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${boxData.orderType === '2_units' ? 'bg-blue-100 text-blue-800' : boxData.orderType === '3_units' ? 'bg-purple-100 text-purple-800' : boxData.orderType === '4_units' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}
                         >
                           {boxData.orderType === '2_units'
                             ? '2 Units'
                             : boxData.orderType === '3_units'
                               ? '3 Units'
-                              : '1 Unit'}
+                              : boxData.orderType === '4_units'
+                                ? '4 Units'
+                                : '1 Unit'}
                         </span>
                       </div>
 

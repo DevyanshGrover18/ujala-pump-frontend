@@ -18,7 +18,9 @@ export function OrderCard({
           ? 2
           : order.orderType === '3_units'
             ? 3
-            : 1)
+            : order.orderType === '4_units'
+              ? 4
+              : 1)
     );
   };
 
@@ -88,7 +90,9 @@ export function OrderCard({
                     ? '2 Units/Box'
                     : order.orderType === '3_units'
                       ? '3 Units/Box'
-                      : '1 Unit/Box'}
+                      : order.orderType === '4_units'
+                        ? '4 Units/Box'
+                        : '1 Unit/Box'}
                 </div>
                 <div className="col-span-2">
                   <div className="flex items-center gap-2">

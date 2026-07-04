@@ -257,7 +257,9 @@ export default function FactoryOrdersModal({
           ? '2 Units'
           : boxData.orderType === '3_units'
             ? '3 Units'
-            : '1 Unit',
+            : boxData.orderType === '4_units'
+              ? '4 Units'
+              : '1 Unit',
       'Created Date': new Date(boxData.items[0].createdAt).toLocaleDateString(
         'en-US',
         { year: 'numeric', month: 'short', day: 'numeric' }
@@ -343,6 +345,7 @@ export default function FactoryOrdersModal({
                   <option value="1_unit">1 Unit/Box</option>
                   <option value="2_units">2 Units/Box</option>
                   <option value="3_units">3 Units/Box</option>
+                  <option value="4_units">4N (4 Pumps per Box)</option>
                 </select>
               </div>
               <div className="sm:w-48">
@@ -568,15 +571,17 @@ export default function FactoryOrdersModal({
                             {boxData.model?.name}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
-                            <span
-                              className={`px-2 py-1 text-xs font-medium rounded-full ${boxData.orderType === '2_units' ? 'bg-blue-100 text-blue-800' : boxData.orderType === '3_units' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}
-                            >
-                              {boxData.orderType === '2_units'
-                                ? '2 Units'
-                                : boxData.orderType === '3_units'
-                                  ? '3 Units'
-                                  : '1 Unit'}
-                            </span>
+                             <span
+                               className={`px-2 py-1 text-xs font-medium rounded-full ${boxData.orderType === '2_units' ? 'bg-blue-100 text-blue-800' : boxData.orderType === '3_units' ? 'bg-purple-100 text-purple-800' : boxData.orderType === '4_units' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}
+                             >
+                               {boxData.orderType === '2_units'
+                                 ? '2 Units'
+                                 : boxData.orderType === '3_units'
+                                   ? '3 Units'
+                                   : boxData.orderType === '4_units'
+                                     ? '4 Units'
+                                     : '1 Unit'}
+                             </span>
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                             {new Date(
@@ -726,13 +731,15 @@ export default function FactoryOrdersModal({
                           </div>
                         </div>
                         <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${boxData.orderType === '2_units' ? 'bg-blue-100 text-blue-800' : boxData.orderType === '3_units' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${boxData.orderType === '2_units' ? 'bg-blue-100 text-blue-800' : boxData.orderType === '3_units' ? 'bg-purple-100 text-purple-800' : boxData.orderType === '4_units' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}
                         >
                           {boxData.orderType === '2_units'
                             ? '2 Units'
                             : boxData.orderType === '3_units'
                               ? '3 Units'
-                              : '1 Unit'}
+                              : boxData.orderType === '4_units'
+                                ? '4 Units'
+                                : '1 Unit'}
                         </span>
                       </div>
 
@@ -953,6 +960,7 @@ export default function FactoryOrdersModal({
                   <option value="1_unit">1 Unit/Box</option>
                   <option value="2_units">2 Units/Box</option>
                   <option value="3_units">3 Units/Box</option>
+                  <option value="4_units">4N (4 Pumps per Box)</option>
                 </select>
               </div>
 

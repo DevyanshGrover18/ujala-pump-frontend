@@ -38,7 +38,9 @@ export function OrderModal({
         ? 2
         : formData.orderType === '3_units'
           ? 3
-          : 1;
+          : formData.orderType === '4_units'
+            ? 4
+            : 1;
     return unitsPerBox > 1 && formData.totalPumps % unitsPerBox !== 0;
   };
 
@@ -201,6 +203,7 @@ export function OrderModal({
                 <option value="1_unit">1N (1 Pump per Box)</option>
                 <option value="2_units">2N (2 Pumps per Box)</option>
                 <option value="3_units">3N (3 Pumps per Box)</option>
+                <option value="4_units">4N (4 Pumps per Box)</option>
               </select>
             </div>
 
@@ -228,9 +231,9 @@ export function OrderModal({
                     </p>
                     {showPumpsDivisibleWarning() && (
                       <p className="text-xs text-red-500 mt-1">
-                        ⚠️ For {formData.orderType === '2_units' ? '2N' : '3N'}{' '}
+                        ⚠️ For {formData.orderType === '2_units' ? '2N' : formData.orderType === '3_units' ? '3N' : '4N'}{' '}
                         orders, the number of pumps must be divisible by{' '}
-                        {formData.orderType === '2_units' ? '2' : '3'}
+                        {formData.orderType === '2_units' ? '2' : formData.orderType === '3_units' ? '3' : '4'}
                       </p>
                     )}
                   </>

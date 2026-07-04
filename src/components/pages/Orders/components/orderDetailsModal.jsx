@@ -38,7 +38,9 @@ export function OrderDetailsModal({
         ? 2
         : order.orderType === '3_units'
           ? 3
-          : 1)
+          : order.orderType === '4_units'
+            ? 4
+            : 1)
     );
   };
 
@@ -229,7 +231,9 @@ export function OrderDetailsModal({
                     ? '2 Units per Box'
                     : order.orderType === '3_units'
                       ? '3 Units per Box'
-                      : '1 Unit per Box'}
+                      : order.orderType === '4_units'
+                        ? '4 Units per Box'
+                        : '1 Unit per Box'}
                 </p>
               </div>
               <div>

@@ -15,6 +15,11 @@ export const getOrderTypeDisplay = (orderType) => {
       bgColor: 'bg-purple-100',
       textColor: 'text-purple-800',
     },
+    '4_units': {
+      label: '4 Units/Box',
+      bgColor: 'bg-orange-100',
+      textColor: 'text-orange-800',
+    },
   };
   return types[orderType] || types['1_unit'];
 };

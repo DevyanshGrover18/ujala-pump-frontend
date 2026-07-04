@@ -295,13 +295,15 @@ function FactoryOrders() {
                         </td>
                         <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${order.orderType === '2_units' ? 'bg-blue-100 text-blue-800' : order.orderType === '3_units' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${order.orderType === '2_units' ? 'bg-blue-100 text-blue-800' : order.orderType === '3_units' ? 'bg-purple-100 text-purple-800' : order.orderType === '4_units' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}
                           >
                             {order.orderType === '2_units'
                               ? '2/Box'
                               : order.orderType === '3_units'
                                 ? '3/Box'
-                                : '1/Box'}
+                                : order.orderType === '4_units'
+                                  ? '4/Box'
+                                  : '1/Box'}
                           </span>
                         </td>
                         <td className="px-3 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-600">
@@ -379,13 +381,15 @@ function FactoryOrders() {
                         </p>
                       </div>
                       <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${order.orderType === '2_units' ? 'bg-blue-100 text-blue-800' : order.orderType === '3_units' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${order.orderType === '2_units' ? 'bg-blue-100 text-blue-800' : order.orderType === '3_units' ? 'bg-purple-100 text-purple-800' : order.orderType === '4_units' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}
                       >
                         {order.orderType === '2_units'
                           ? '2/Box'
                           : order.orderType === '3_units'
                             ? '3/Box'
-                            : '1/Box'}
+                            : order.orderType === '4_units'
+                              ? '4/Box'
+                              : '1/Box'}
                       </span>
                     </div>
 
