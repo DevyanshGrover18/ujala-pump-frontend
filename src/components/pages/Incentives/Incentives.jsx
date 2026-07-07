@@ -325,6 +325,7 @@ export default function Incentives() {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [page, setPage] = useState(1);
   const [expanded, setExpanded] = useState({});
+  const [selectedClaims, setSelectedClaims] = useState([]);
 
   const fetchClaims = useCallback(async () => {
     setLoading(true);
@@ -373,6 +374,41 @@ export default function Incentives() {
     } catch (err) {
       console.error('Failed to delete claim group:', err);
       alert(err?.response?.data?.message || 'Failed to delete claim group.');
+    }
+  };
+
+  const handleSelect = (id) => {
+    setSelectedClaims((prev) =>
+      prev.includes(id) ? prev.filter((cid) => cid !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedClaims(paginated.map((g) => g._id));
+    } else {
+      setSelectedClaims([]);
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${selectedClaims.length} selected incentive claim groups?`
+      )
+    ) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete(`${API}/api/incentives`, {
+          headers: { Authorization: `Bearer ${token}` },
+          data: { claimIds: selectedClaims },
+        });
+        fetchClaims();
+        setSelectedClaims([]);
+      } catch (err) {
+        console.error('Failed to delete claims:', err);
+        alert(err?.response?.data?.message || 'Failed to delete claims.');
+      }
     }
   };
 
@@ -438,6 +474,7 @@ export default function Incentives() {
               onChange={(e) => {
                 setSearch(e.target.value);
                 setPage(1);
+                setSelectedClaims([]);
               }}
               className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
@@ -455,6 +492,7 @@ export default function Incentives() {
                 onClick={() => {
                   setStatusFilter(s);
                   setPage(1);
+                  setSelectedClaims([]);
                 }}
                 className={`px-3 py-1.5 text-xs font-medium rounded-lg ${statusFilter === s ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
               >
@@ -462,8 +500,20 @@ export default function Incentives() {
               </button>
             ))}
           </div>
+          {selectedClaims.length > 0 && (
+            <button
+              onClick={handleDeleteSelected}
+              className="flex items-center justify-center space-x-2 bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors text-xs font-semibold"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>Delete ({selectedClaims.length})</span>
+            </button>
+          )}
           <button
-            onClick={fetchClaims}
+            onClick={() => {
+              fetchClaims();
+              setSelectedClaims([]);
+            }}
             className="p-2 hover:bg-gray-100 rounded-lg text-gray-500"
           >
             <RefreshCw className="w-4 h-4" />
@@ -474,6 +524,16 @@ export default function Incentives() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-5 py-3 text-left">
+                  <input
+                    type="checkbox"
+                    onChange={handleSelectAll}
+                    checked={
+                      paginated.length > 0 &&
+                      selectedClaims.length === paginated.length
+                    }
+                  />
+                </th>
                 {[
                   'Seller',
                   'Type',
@@ -497,7 +557,7 @@ export default function Incentives() {
               {loading ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className="py-12 text-center text-sm text-gray-400"
                   >
                     Loading...
@@ -506,7 +566,7 @@ export default function Incentives() {
               ) : paginated.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className="py-12 text-center text-sm text-gray-400"
                   >
                     No claims found.
@@ -519,6 +579,13 @@ export default function Incentives() {
                   return (
                     <React.Fragment key={g._id}>
                       <tr className="hover:bg-gray-50/50">
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <input
+                            type="checkbox"
+                            checked={selectedClaims.includes(g._id)}
+                            onChange={() => handleSelect(g._id)}
+                          />
+                        </td>
                         <td className="px-5 py-3.5 text-sm font-medium text-gray-900">
                           {g.sellerName}
                         </td>
@@ -585,6 +652,7 @@ export default function Incentives() {
                       {isExpanded &&
                         g.items?.map((item, idx) => (
                           <tr key={idx} className="bg-gray-50/50">
+                            <td className="px-5 py-2" />
                             <td className="pl-10 pr-5 py-2 text-xs text-gray-500 font-mono">
                               {item.serialNumber}
                             </td>
@@ -624,7 +692,10 @@ export default function Incentives() {
             </span>
             <div className="flex gap-1">
               <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                onClick={() => {
+                  setPage((p) => Math.max(1, p - 1));
+                  setSelectedClaims([]);
+                }}
                 disabled={page === 1}
                 className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40"
               >
@@ -634,7 +705,10 @@ export default function Incentives() {
                 {page} / {totalPages}
               </span>
               <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() => {
+                  setPage((p) => Math.min(totalPages, p + 1));
+                  setSelectedClaims([]);
+                }}
                 disabled={page === totalPages}
                 className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40"
               >
