@@ -224,10 +224,10 @@ export default function Sales() {
       const matchDate =
         (!dateRange.startDate ||
           new Date(product.assignedToDistributorAt) >=
-          new Date(dateRange.startDate)) &&
+            new Date(dateRange.startDate)) &&
         (!dateRange.endDate ||
           new Date(product.assignedToDistributorAt) <=
-          new Date(new Date(dateRange.endDate).setHours(23, 59, 59, 999)));
+            new Date(new Date(dateRange.endDate).setHours(23, 59, 59, 999)));
 
       const matchModel =
         modelFilter === 'all' || product.model?._id === modelFilter;
@@ -535,9 +535,9 @@ export default function Sales() {
           <div className="flex flex-wrap items-center gap-2">
             <TableExportButtons
               exportName="Dealer_SubDealer_Sales"
-              exportData={modelGroups.map(mg => ({
+              exportData={modelGroups.map((mg) => ({
                 'Model Name': mg.model?.name || 'Unknown',
-                'Total Products': mg.count || 0
+                'Total Products': mg.count || 0,
               }))}
             />
             <button
@@ -701,11 +701,15 @@ export default function Sales() {
               <div className="flex items-center gap-2">
                 <TableExportButtons
                   exportName={`Dealer_SubDealer_Sales_${products.find((p) => p.model?._id === activeModelId)?.model?.name || 'Products'}`}
-                  exportData={modalProducts.map(p => ({
+                  exportData={modalProducts.map((p) => ({
                     'Serial Number': p.serialNumber,
-                    'Assigned Date': new Date(p.assignedToSubDealerAt || p.assignedToDistributorAt || p.createdAt).toLocaleDateString(),
-                    'Dealer': p.dealer?.name || 'N/A',
-                    'Sub Dealer': p.subDealer?.name || 'N/A'
+                    'Assigned Date': new Date(
+                      p.assignedToSubDealerAt ||
+                        p.assignedToDistributorAt ||
+                        p.createdAt
+                    ).toLocaleDateString(),
+                    Dealer: p.dealer?.name || 'N/A',
+                    'Sub Dealer': p.subDealer?.name || 'N/A',
                   }))}
                 />
                 <button
@@ -798,7 +802,7 @@ export default function Sales() {
                             checked={
                               paginatedModalProducts.length > 0 &&
                               selectedProducts.size ===
-                              paginatedModalProducts.length
+                                paginatedModalProducts.length
                             }
                           />
                         </th>
@@ -837,10 +841,11 @@ export default function Sales() {
                         return (
                           <tr
                             key={product._id}
-                            className={`hover:bg-gray-50 ${selectedProducts.has(product._id)
-                              ? 'bg-blue-50'
-                              : ''
-                              }`}
+                            className={`hover:bg-gray-50 ${
+                              selectedProducts.has(product._id)
+                                ? 'bg-blue-50'
+                                : ''
+                            }`}
                           >
                             <td className="px-4 py-4">
                               <input
@@ -848,7 +853,9 @@ export default function Sales() {
                                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                 aria-label={`Select product ${product.serialNumber}`}
                                 checked={selectedProducts.has(product._id)}
-                                onChange={() => handleProductSelect(product._id)}
+                                onChange={() =>
+                                  handleProductSelect(product._id)
+                                }
                               />
                             </td>
                             <td className="px-4 py-4 text-sm font-medium whitespace-nowrap">
@@ -861,8 +868,8 @@ export default function Sales() {
                             <td className="px-4 py-4 text-sm">
                               {product.assignedToDistributorAt
                                 ? new Date(
-                                  product.assignedToDistributorAt
-                                ).toLocaleDateString()
+                                    product.assignedToDistributorAt
+                                  ).toLocaleDateString()
                                 : 'N/A'}
                             </td>
                             <td className="px-4 py-4 text-sm">
@@ -995,9 +1002,9 @@ export default function Sales() {
           details={
             orderToDelete
               ? {
-                'Serial Number': orderToDelete.serialNumber,
-                Factory: orderToDelete.factory?.name,
-              }
+                  'Serial Number': orderToDelete.serialNumber,
+                  Factory: orderToDelete.factory?.name,
+                }
               : null
           }
           className="z-80"
@@ -1014,9 +1021,9 @@ export default function Sales() {
           details={
             orderToDelete
               ? {
-                'Serial Number': orderToDelete.serialNumber,
-                Factory: orderToDelete.factory?.name,
-              }
+                  'Serial Number': orderToDelete.serialNumber,
+                  Factory: orderToDelete.factory?.name,
+                }
               : null
           }
           className="z-80"

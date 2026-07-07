@@ -191,13 +191,13 @@ export default function DistributorCustomerSales() {
   // Filter sales based on search term
   const filteredSales = sales.filter((sale) => {
     const searchLower = searchTerm.toLowerCase();
-    const searchMatch = (
+    const searchMatch =
       sale.product?.model?.name?.toLowerCase().includes(searchLower) ||
       sale.customerName?.toLowerCase().includes(searchLower) ||
       sale.plumberName?.toLowerCase().includes(searchLower) ||
-      sale.product?.serialNumber?.toLowerCase().includes(searchLower)
-    );
-    const modelMatch = modelFilter === 'all' || sale.product?.model?._id === modelFilter;
+      sale.product?.serialNumber?.toLowerCase().includes(searchLower);
+    const modelMatch =
+      modelFilter === 'all' || sale.product?.model?._id === modelFilter;
     return searchMatch && modelMatch;
   });
 
@@ -266,7 +266,7 @@ export default function DistributorCustomerSales() {
             <div className="flex items-center gap-4">
               <TableExportButtons
                 exportName="Customer_Sales"
-                exportData={filteredSales.map(sale => {
+                exportData={filteredSales.map((sale) => {
                   const warrantyInfo = getWarrantyInfo(sale);
                   return {
                     'Model Name': sale?.product?.productName || '-',
@@ -275,7 +275,7 @@ export default function DistributorCustomerSales() {
                     'Customer Phone': sale?.customerPhone || '-',
                     'Warranty Status': warrantyInfo?.status || '-',
                     'Warranty Remaining': warrantyInfo?.remaining || '-',
-                    'Sold At': new Date(sale?.soldAt).toLocaleDateString()
+                    'Sold At': new Date(sale?.soldAt).toLocaleDateString(),
                   };
                 })}
               />
@@ -461,17 +461,18 @@ export default function DistributorCustomerSales() {
                       </span>
                       {changeStatus && (
                         <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${changeStatus === 'pending'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : changeStatus === 'approved'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
-                            }`}
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            changeStatus === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : changeStatus === 'approved'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                          }`}
                         >
                           {changeStatus === 'pending'
                             ? 'Under Review'
                             : changeStatus.charAt(0).toUpperCase() +
-                            changeStatus.slice(1)}
+                              changeStatus.slice(1)}
                         </span>
                       )}
                     </div>

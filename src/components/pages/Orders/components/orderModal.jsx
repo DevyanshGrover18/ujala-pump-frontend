@@ -21,15 +21,24 @@ export function OrderModal({
   if (!isOpen) return null;
 
   const serials = formData.manualSerials
-    ? formData.manualSerials.split(',').map(s => s.trim().toUpperCase()).filter(Boolean)
+    ? formData.manualSerials
+        .split(',')
+        .map((s) => s.trim().toUpperCase())
+        .filter(Boolean)
     : [];
   const uniqueSerials = [...new Set(serials)];
-  const duplicates = serials.filter((item, index) => serials.indexOf(item) !== index);
+  const duplicates = serials.filter(
+    (item, index) => serials.indexOf(item) !== index
+  );
   const hasInputDuplicates = uniqueSerials.length !== serials.length;
 
   const serialsCount = serials.length;
   const pumpsCount = parseInt(formData.totalPumps) || 0;
-  const hasMismatch = formData.isManual && serialsCount > 0 && pumpsCount > 0 && serialsCount !== pumpsCount;
+  const hasMismatch =
+    formData.isManual &&
+    serialsCount > 0 &&
+    pumpsCount > 0 &&
+    serialsCount !== pumpsCount;
 
   const showPumpsDivisibleWarning = () => {
     if (!formData.totalPumps || !formData.orderType) return false;
@@ -49,7 +58,13 @@ export function OrderModal({
       <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-hide">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">
-            {isEdit ? (formData.isManual ? 'Edit Manual Order' : 'Edit Order') : (formData.isManual ? 'Add New Manual Order' : 'Add New Order')}
+            {isEdit
+              ? formData.isManual
+                ? 'Edit Manual Order'
+                : 'Edit Order'
+              : formData.isManual
+                ? 'Add New Manual Order'
+                : 'Add New Order'}
           </h3>
           <button
             onClick={onClose}
@@ -90,29 +105,29 @@ export function OrderModal({
                 </select>
               </div>
               <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Year *
-              </label>
-              <select
-                required
-                value={formData.year}
-                onChange={(e) =>
-                  onUpdateField("year", parseInt(e.target.value))
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4d55f5] focus:border-transparent appearance-none bg-white"
-              >
-                {Array.from({ length: 21 }, (_, i) => {
-                  const currentYear = new Date().getFullYear();
-                  const year = currentYear - 10 + i;
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Year *
+                </label>
+                <select
+                  required
+                  value={formData.year}
+                  onChange={(e) =>
+                    onUpdateField('year', parseInt(e.target.value))
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4d55f5] focus:border-transparent appearance-none bg-white"
+                >
+                  {Array.from({ length: 21 }, (_, i) => {
+                    const currentYear = new Date().getFullYear();
+                    const year = currentYear - 10 + i;
 
-                  return (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
+                    return (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
             </div>
 
             {/* Category */}
@@ -231,9 +246,18 @@ export function OrderModal({
                     </p>
                     {showPumpsDivisibleWarning() && (
                       <p className="text-xs text-red-500 mt-1">
-                        ⚠️ For {formData.orderType === '2_units' ? '2N' : formData.orderType === '3_units' ? '3N' : '4N'}{' '}
+                        ⚠️ For{' '}
+                        {formData.orderType === '2_units'
+                          ? '2N'
+                          : formData.orderType === '3_units'
+                            ? '3N'
+                            : '4N'}{' '}
                         orders, the number of pumps must be divisible by{' '}
-                        {formData.orderType === '2_units' ? '2' : formData.orderType === '3_units' ? '3' : '4'}
+                        {formData.orderType === '2_units'
+                          ? '2'
+                          : formData.orderType === '3_units'
+                            ? '3'
+                            : '4'}
                       </p>
                     )}
                   </>
@@ -250,14 +274,19 @@ export function OrderModal({
                   required
                   rows={4}
                   value={formData.manualSerials}
-                  onChange={(e) => onUpdateField('manualSerials', e.target.value)}
+                  onChange={(e) =>
+                    onUpdateField('manualSerials', e.target.value)
+                  }
                   placeholder="Enter serial numbers separated by commas (e.g. SN-01, SN-02, SN-03)"
                   className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4d55f5] focus:border-transparent font-mono text-sm"
                 />
                 <div className="flex flex-col gap-1 mt-1">
                   <div className="flex justify-between items-center">
-                    <p className={`text-xs ${hasMismatch ? 'text-red-500 font-medium' : 'text-gray-500'}`}>
-                      Entered: {serialsCount} serial number(s) (Required: {pumpsCount} pump(s))
+                    <p
+                      className={`text-xs ${hasMismatch ? 'text-red-500 font-medium' : 'text-gray-500'}`}
+                    >
+                      Entered: {serialsCount} serial number(s) (Required:{' '}
+                      {pumpsCount} pump(s))
                     </p>
                     {hasMismatch && (
                       <p className="text-xs text-red-500 font-medium">
@@ -270,7 +299,9 @@ export function OrderModal({
                   {hasInputDuplicates && (
                     <div className="p-2.5 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-700 font-medium mt-1">
                       ⚠️ Duplicate serial numbers entered in textarea:
-                      <div className="mt-1 font-mono">{[...new Set(duplicates)].join(', ')}</div>
+                      <div className="mt-1 font-mono">
+                        {[...new Set(duplicates)].join(', ')}
+                      </div>
                     </div>
                   )}
 
@@ -283,8 +314,11 @@ export function OrderModal({
 
                   {dbDuplicates.length > 0 && (
                     <div className="p-2.5 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600 font-medium mt-1">
-                      ⚠️ The following serial numbers already exist in the database:
-                      <div className="mt-1 font-mono">{dbDuplicates.join(', ')}</div>
+                      ⚠️ The following serial numbers already exist in the
+                      database:
+                      <div className="mt-1 font-mono">
+                        {dbDuplicates.join(', ')}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -315,7 +349,13 @@ export function OrderModal({
           <div className="mt-6">
             <button
               type="submit"
-              disabled={isAdding || isCheckingDuplicates || dbDuplicates.length > 0 || hasInputDuplicates || hasMismatch}
+              disabled={
+                isAdding ||
+                isCheckingDuplicates ||
+                dbDuplicates.length > 0 ||
+                hasInputDuplicates ||
+                hasMismatch
+              }
               className="w-full px-6 py-2.5 bg-[#8B8FFF] text-white rounded-xl hover:bg-[#7B7FFF] transition-colors font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isAdding ? (

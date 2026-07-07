@@ -118,7 +118,7 @@ export function SaleFilters({
               options={[
                 { _id: 'all', name: 'All Status' },
                 { _id: 'sold', name: 'Sold' },
-                { _id: 'unsold', name: 'Unsold' }
+                { _id: 'unsold', name: 'Unsold' },
               ]}
               placeholder="All Status"
               icon={Package}

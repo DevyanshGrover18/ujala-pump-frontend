@@ -34,13 +34,13 @@ export function OrderDetailsModal({
     return (
       order.totalUnits ||
       order.quantity *
-      (order.orderType === '2_units'
-        ? 2
-        : order.orderType === '3_units'
-          ? 3
-          : order.orderType === '4_units'
-            ? 4
-            : 1)
+        (order.orderType === '2_units'
+          ? 2
+          : order.orderType === '3_units'
+            ? 3
+            : order.orderType === '4_units'
+              ? 4
+              : 1)
     );
   };
 
@@ -51,8 +51,8 @@ export function OrderDetailsModal({
   const dispatchedPercentage =
     factoryStats.completedItems > 0
       ? Math.round(
-        (factoryStats.dispatchedItems / factoryStats.completedItems) * 100
-      )
+          (factoryStats.dispatchedItems / factoryStats.completedItems) * 100
+        )
       : 0;
 
   const getSerialCounter = (serialNumber) => {
@@ -97,31 +97,34 @@ export function OrderDetailsModal({
   const currentItems = groupedItems.slice(indexOfFirstItem, indexOfLastItem);
 
   const exportData = groupedItems.map((groupedItem) => ({
-    'Box': `Box ${groupedItem.boxNumber}`,
+    Box: `Box ${groupedItem.boxNumber}`,
     'Serial Number': groupedItem.serialNumbers.join(', '),
-    'Status': groupedItem.status,
-    'Created Date': groupedItem.createdAt && !isNaN(new Date(groupedItem.createdAt))
-      ? new Date(groupedItem.createdAt).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
-      : '-',
-    'Dispatched Date': groupedItem.dispatchedAt && !isNaN(new Date(groupedItem.dispatchedAt))
-      ? new Date(groupedItem.dispatchedAt).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
-      : '-',
-    'Completion Date': groupedItem.completedAt && !isNaN(new Date(groupedItem.completedAt))
-      ? new Date(groupedItem.completedAt).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
-      : '-',
-    'Transferred': groupedItem.isTransferredToProduct ? 'Yes' : 'No'
+    Status: groupedItem.status,
+    'Created Date':
+      groupedItem.createdAt && !isNaN(new Date(groupedItem.createdAt))
+        ? new Date(groupedItem.createdAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })
+        : '-',
+    'Dispatched Date':
+      groupedItem.dispatchedAt && !isNaN(new Date(groupedItem.dispatchedAt))
+        ? new Date(groupedItem.dispatchedAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })
+        : '-',
+    'Completion Date':
+      groupedItem.completedAt && !isNaN(new Date(groupedItem.completedAt))
+        ? new Date(groupedItem.completedAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })
+        : '-',
+    Transferred: groupedItem.isTransferredToProduct ? 'Yes' : 'No',
   }));
 
   return (
@@ -130,7 +133,10 @@ export function OrderDetailsModal({
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Order Details</h3>
           <div className="flex items-center space-x-4">
-            <TableExportButtons exportName={`${order.orderId}_Details`} exportData={exportData} />
+            <TableExportButtons
+              exportName={`${order.orderId}_Details`}
+              exportData={exportData}
+            />
             <div className="flex items-center space-x-2">
               {modalTab === 'details' && order.status === 'Completed' && (
                 <button
@@ -154,19 +160,21 @@ export function OrderDetailsModal({
           <nav className="-mb-px flex space-x-8" aria-label="Tabs">
             <button
               onClick={() => onTabChange('summary')}
-              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${modalTab === 'summary'
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                modalTab === 'summary'
                   ? 'border-indigo-500 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+              }`}
             >
               Summary
             </button>
             <button
               onClick={() => onTabChange('details')}
-              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${modalTab === 'details'
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                modalTab === 'details'
                   ? 'border-indigo-500 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+              }`}
             >
               Details
             </button>
@@ -402,50 +410,51 @@ export function OrderDetailsModal({
                             </td>
                             <td className="px-4 py-3">
                               <span
-                                className={`px-2 py-1 text-xs font-medium rounded-full ${groupedItem.status === 'Completed'
+                                className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                  groupedItem.status === 'Completed'
                                     ? 'bg-green-100 text-green-800'
                                     : groupedItem.status === 'Dispatched'
                                       ? 'bg-blue-100 text-blue-800'
                                       : 'bg-yellow-100 text-yellow-800'
-                                  }`}
+                                }`}
                               >
                                 {groupedItem.status}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-900">
                               {groupedItem.createdAt &&
-                                !isNaN(new Date(groupedItem.createdAt))
+                              !isNaN(new Date(groupedItem.createdAt))
                                 ? new Date(
-                                  groupedItem.createdAt
-                                ).toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'short',
-                                  day: 'numeric',
-                                })
+                                    groupedItem.createdAt
+                                  ).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                  })
                                 : '-'}
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-900">
                               {groupedItem.dispatchedAt &&
-                                !isNaN(new Date(groupedItem.dispatchedAt))
+                              !isNaN(new Date(groupedItem.dispatchedAt))
                                 ? new Date(
-                                  groupedItem.dispatchedAt
-                                ).toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'short',
-                                  day: 'numeric',
-                                })
+                                    groupedItem.dispatchedAt
+                                  ).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                  })
                                 : '-'}
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-900">
                               {groupedItem.completedAt &&
-                                !isNaN(new Date(groupedItem.completedAt))
+                              !isNaN(new Date(groupedItem.completedAt))
                                 ? new Date(
-                                  groupedItem.completedAt
-                                ).toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'short',
-                                  day: 'numeric',
-                                })
+                                    groupedItem.completedAt
+                                  ).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                  })
                                 : '-'}
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-900">
@@ -477,12 +486,13 @@ export function OrderDetailsModal({
                             Box {groupedItem.boxNumber}
                           </h3>
                           <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${groupedItem.status === 'Completed'
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              groupedItem.status === 'Completed'
                                 ? 'bg-green-100 text-green-800'
                                 : groupedItem.status === 'Dispatched'
                                   ? 'bg-blue-100 text-blue-800'
                                   : 'bg-yellow-100 text-yellow-800'
-                              }`}
+                            }`}
                           >
                             {groupedItem.status}
                           </span>
@@ -501,28 +511,28 @@ export function OrderDetailsModal({
                           <p>
                             <span className="font-medium">Created:</span>{' '}
                             {groupedItem.createdAt &&
-                              !isNaN(new Date(groupedItem.createdAt))
+                            !isNaN(new Date(groupedItem.createdAt))
                               ? new Date(
-                                groupedItem.createdAt
-                              ).toLocaleDateString()
+                                  groupedItem.createdAt
+                                ).toLocaleDateString()
                               : '-'}
                           </p>
                           <p>
                             <span className="font-medium">Dispatched:</span>{' '}
                             {groupedItem.dispatchedAt &&
-                              !isNaN(new Date(groupedItem.dispatchedAt))
+                            !isNaN(new Date(groupedItem.dispatchedAt))
                               ? new Date(
-                                groupedItem.dispatchedAt
-                              ).toLocaleDateString()
+                                  groupedItem.dispatchedAt
+                                ).toLocaleDateString()
                               : '-'}
                           </p>
                           <p>
                             <span className="font-medium">Completed:</span>{' '}
                             {groupedItem.completedAt &&
-                              !isNaN(new Date(groupedItem.completedAt))
+                            !isNaN(new Date(groupedItem.completedAt))
                               ? new Date(
-                                groupedItem.completedAt
-                              ).toLocaleDateString()
+                                  groupedItem.completedAt
+                                ).toLocaleDateString()
                               : '-'}
                           </p>
                         </div>

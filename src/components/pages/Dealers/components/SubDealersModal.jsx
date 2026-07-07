@@ -16,15 +16,15 @@ const SubDealersModal = ({ isOpen, dealer, subDealers, onClose }) => {
             {subDealers && subDealers.length > 0 && (
               <TableExportButtons
                 exportName={`${dealer?.name || 'Dealer'}_SubDealers`}
-                exportData={subDealers.map(sd => ({
-                  'ID': sd.subDealerId,
-                  'Name': sd.name,
-                  'Address': sd.address,
-                  'City': sd.city,
-                  'State': sd.state,
+                exportData={subDealers.map((sd) => ({
+                  ID: sd.subDealerId,
+                  Name: sd.name,
+                  Address: sd.address,
+                  City: sd.city,
+                  State: sd.state,
                   'Contact Person': sd.contactPerson,
                   'Contact Phone': sd.contactPhone,
-                  'Status': sd.status
+                  Status: sd.status,
                 }))}
               />
             )}

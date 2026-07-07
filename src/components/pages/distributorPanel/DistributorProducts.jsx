@@ -302,9 +302,9 @@ export default function DistributorProducts() {
             <div className="flex items-center gap-4">
               <TableExportButtons
                 exportName="Distributor_Inventory_Models"
-                exportData={modelGroups.map(mg => ({
+                exportData={modelGroups.map((mg) => ({
                   'Model Name': mg.model?.name || 'Unknown',
-                  'Total Products': mg.products?.length || 0
+                  'Total Products': mg.products?.length || 0,
                 }))}
               />
             </div>
@@ -594,10 +594,12 @@ export default function DistributorProducts() {
                   {modalProducts.length > 0 && (
                     <TableExportButtons
                       exportName={`Model_${models.find((m) => m._id === activeModelId)?.name || 'Products'}_Inventory`}
-                      exportData={modalProducts.map(product => ({
+                      exportData={modalProducts.map((product) => ({
                         'Serial Number': product.serialNumber,
-                        'Status': product.sold ? 'Sold' : 'Available',
-                        'Added Date': new Date(product.createdAt).toLocaleDateString()
+                        Status: product.sold ? 'Sold' : 'Available',
+                        'Added Date': new Date(
+                          product.createdAt
+                        ).toLocaleDateString(),
                       }))}
                     />
                   )}
@@ -745,10 +747,11 @@ export default function DistributorProducts() {
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
                         <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${product.sold
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            product.sold
                               ? 'bg-red-100 text-red-800'
                               : 'bg-green-100 text-green-800'
-                            }`}
+                          }`}
                         >
                           {product.sold ? 'Sold' : 'Available'}
                         </span>

@@ -353,9 +353,9 @@ export default function DealerProducts() {
             <div className="flex items-center gap-2">
               <TableExportButtons
                 exportName="Dealer_Inventory_Models"
-                exportData={modelGroups.map(mg => ({
+                exportData={modelGroups.map((mg) => ({
                   'Model Name': mg.model?.name || 'Unknown',
-                  'Total Products': mg.products?.length || 0
+                  'Total Products': mg.products?.length || 0,
                 }))}
               />
             </div>
@@ -572,10 +572,14 @@ export default function DealerProducts() {
                 <div className="flex items-center gap-2">
                   <TableExportButtons
                     exportName={`Dealer_Inventory_Products_${activeModel.name}`}
-                    exportData={modalProducts.map(p => ({
+                    exportData={modalProducts.map((p) => ({
                       'Serial Number': p.serialNumber,
-                      'Status': p.sold ? 'Sold' : (p.assignedToSubDealer ? 'Assigned' : 'Available'),
-                      'Added Date': new Date(p.createdAt).toLocaleDateString()
+                      Status: p.sold
+                        ? 'Sold'
+                        : p.assignedToSubDealer
+                          ? 'Assigned'
+                          : 'Available',
+                      'Added Date': new Date(p.createdAt).toLocaleDateString(),
                     }))}
                   />
                   <button

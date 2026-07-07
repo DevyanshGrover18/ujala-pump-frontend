@@ -6,12 +6,24 @@ import {
 } from '../Dealers/services/dealerSalesService';
 import { toast } from 'react-hot-toast';
 import EditSaleRequestModal from '../Dealers/components/EditSaleRequestModal';
-import { Edit, Search, Filter, X, Clock, CheckCircle, Package } from 'lucide-react'; // Added icons
+import {
+  Edit,
+  Search,
+  Filter,
+  X,
+  Clock,
+  CheckCircle,
+  Package,
+} from 'lucide-react'; // Added icons
 import SellQRScannerModal from '../../global/SellQRScannerModal';
 import SaleModal from '../Dealers/components/SaleModal';
 import axios from 'axios';
 import TableExportButtons from '../../global/TableExportButtons';
-import { FilterGroup, FilterItem, FilterSelector } from '../../global/FilterGroup';
+import {
+  FilterGroup,
+  FilterItem,
+  FilterSelector,
+} from '../../global/FilterGroup';
 
 const DealerCustomerSales = () => {
   const { user } = useContext(AuthContext);
@@ -53,7 +65,9 @@ const DealerCustomerSales = () => {
           }
         ),
       ]);
-      const salesDataResp = salesData.sort((a, b) => new Date(b.soldAt) - new Date(a.soldAt));
+      const salesDataResp = salesData.sort(
+        (a, b) => new Date(b.soldAt) - new Date(a.soldAt)
+      );
       setSales(salesDataResp);
       setChangeRequests(requestsResponse.data);
 
@@ -234,7 +248,8 @@ const DealerCustomerSales = () => {
       changeStatus === requestStatusFilter;
 
     // Model Filter
-    const modelMatch = modelFilter === 'all' || sale.product?.model?._id === modelFilter;
+    const modelMatch =
+      modelFilter === 'all' || sale.product?.model?._id === modelFilter;
 
     return (
       searchMatch &&
@@ -290,7 +305,7 @@ const DealerCustomerSales = () => {
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <TableExportButtons
             exportName="Dealer_Customer_Sales"
-            exportData={filteredSales.map(sale => {
+            exportData={filteredSales.map((sale) => {
               const warrantyInfo = getWarrantyInfo(sale);
               const changeStatus = getChangeRequestStatus(sale._id);
               return {
@@ -301,7 +316,7 @@ const DealerCustomerSales = () => {
                 'Warranty Status': warrantyInfo?.status || '-',
                 'Warranty Remaining': warrantyInfo?.remaining || '-',
                 'Sold At': new Date(sale?.soldAt).toLocaleDateString(),
-                'Change Status': changeStatus || 'None'
+                'Change Status': changeStatus || 'None',
               };
             })}
           />
@@ -343,8 +358,10 @@ const DealerCustomerSales = () => {
                       className="w-full pl-10 pr-4 py-2.5 border border-gray-200 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm appearance-none h-full"
                     >
                       <option value="all">All Models</option>
-                      {models.map(m => (
-                        <option key={m._id} value={m._id}>{m.name}</option>
+                      {models.map((m) => (
+                        <option key={m._id} value={m._id}>
+                          {m.name}
+                        </option>
                       ))}
                     </select>
                     <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
@@ -381,7 +398,13 @@ const DealerCustomerSales = () => {
                   value={warrantyFilter}
                   onChange={(e) => setWarrantyFilter(e.target.value)}
                   className="w-full sm:w-48 px-4 py-2.5 border border-gray-200 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm appearance-none"
-                  style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.5rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                    backgroundPosition: `right 0.5rem center`,
+                    backgroundRepeat: `no-repeat`,
+                    backgroundSize: `1.5em 1.5em`,
+                    paddingRight: `2.5rem`,
+                  }}
                 >
                   <option value="all">All Warranty</option>
                   <option value="active">Active</option>
@@ -393,7 +416,13 @@ const DealerCustomerSales = () => {
                   value={requestStatusFilter}
                   onChange={(e) => setRequestStatusFilter(e.target.value)}
                   className="w-full sm:w-48 px-4 py-2.5 border border-gray-200 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm appearance-none"
-                  style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: `right 0.5rem center`, backgroundRepeat: `no-repeat`, backgroundSize: `1.5em 1.5em`, paddingRight: `2.5rem` }}
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                    backgroundPosition: `right 0.5rem center`,
+                    backgroundRepeat: `no-repeat`,
+                    backgroundSize: `1.5em 1.5em`,
+                    paddingRight: `2.5rem`,
+                  }}
                 >
                   <option value="all">All Request Status</option>
                   <option value="none">None</option>

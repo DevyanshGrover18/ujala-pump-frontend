@@ -91,27 +91,32 @@ export default function SubDealerProductsModal({
             {viewMode === 'models' && modelGroups.length > 0 && (
               <TableExportButtons
                 exportName={`${subDealer.name || 'SubDealer'}_Products`}
-                exportData={modelGroups.map(mg => ({
+                exportData={modelGroups.map((mg) => ({
                   'Model Name': mg.model?.name || 'Unknown',
-                  'Product Count': mg.count || 0
+                  'Product Count': mg.count || 0,
                 }))}
               />
             )}
             {viewMode === 'products' && selectedModel && (
               <TableExportButtons
                 exportName={`Model_${selectedModel.name || 'Unknown'}_Products`}
-                exportData={
-                  (modelGroups.find((g) => g.model?._id === selectedModel?._id)?.products || []).map(product => {
-                    const assignment = products.find((a) => a.product?._id === product._id);
-                    const status = getProductStatus(product);
-                    return {
-                      'Serial Number': product.serialNumber,
-                      'Distributor': assignment?.distributor?.name || 'N/A',
-                      'Status': status.label,
-                      'Assigned Date': assignment?.createdAt ? new Date(assignment.createdAt).toLocaleDateString() : 'N/A'
-                    };
-                  })
-                }
+                exportData={(
+                  modelGroups.find((g) => g.model?._id === selectedModel?._id)
+                    ?.products || []
+                ).map((product) => {
+                  const assignment = products.find(
+                    (a) => a.product?._id === product._id
+                  );
+                  const status = getProductStatus(product);
+                  return {
+                    'Serial Number': product.serialNumber,
+                    Distributor: assignment?.distributor?.name || 'N/A',
+                    Status: status.label,
+                    'Assigned Date': assignment?.createdAt
+                      ? new Date(assignment.createdAt).toLocaleDateString()
+                      : 'N/A',
+                  };
+                })}
               />
             )}
             <button

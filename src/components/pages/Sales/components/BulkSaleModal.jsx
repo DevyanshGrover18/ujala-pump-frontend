@@ -12,7 +12,7 @@ const BulkSaleModal = ({ isOpen, onClose, fetchSalesData, distributors }) => {
   const [manualInput, setManualInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  
+
   const isProcessing = useRef(false);
 
   const videoRef = useRef(null);

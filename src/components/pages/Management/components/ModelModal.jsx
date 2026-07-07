@@ -363,7 +363,9 @@ export default function ModelModal({
                 />
               </div>
               <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <h3 className="text-sm font-semibold text-amber-800 mb-3 uppercase tracking-wide">Incentive &amp; Points</h3>
+                <h3 className="text-sm font-semibold text-amber-800 mb-3 uppercase tracking-wide">
+                  Incentive &amp; Points
+                </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -373,7 +375,12 @@ export default function ModelModal({
                       type="number"
                       min="0"
                       value={formData.incentive}
-                      onChange={(e) => setFormData({ ...formData, incentive: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          incentive: Number(e.target.value),
+                        })
+                      }
                       className="w-full px-3 py-2 border border-amber-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
                       placeholder="e.g. 500"
                     />
@@ -386,7 +393,12 @@ export default function ModelModal({
                       type="number"
                       min="0"
                       value={formData.points}
-                      onChange={(e) => setFormData({ ...formData, points: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          points: Number(e.target.value),
+                        })
+                      }
                       className="w-full px-3 py-2 border border-amber-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
                       placeholder="e.g. 10"
                     />

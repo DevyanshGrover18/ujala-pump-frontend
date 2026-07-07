@@ -37,9 +37,9 @@ const ProductsModal = ({
                       };
                     map[mid].count += 1;
                   });
-                  return Object.values(map).map(mg => ({
+                  return Object.values(map).map((mg) => ({
                     'Model Name': mg.model?.name || 'Unknown',
-                    'Product Count': mg.count || 0
+                    'Product Count': mg.count || 0,
                   }));
                 })()}
               />

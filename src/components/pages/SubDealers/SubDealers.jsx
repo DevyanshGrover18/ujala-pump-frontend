@@ -59,8 +59,7 @@ function SubDealers() {
       const { data } = await axios.get(`${API_URL}/sub-dealers`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
-      const sortedData = data.sort((a
-        , b) => {
+      const sortedData = data.sort((a, b) => {
         if (!a.name) return 1;
         if (!b.name) return -1;
         return a.name.localeCompare(b.name);
@@ -308,9 +307,12 @@ function SubDealers() {
   const handleViewSales = async (subDealer) => {
     try {
       setSelectedSubDealer(subDealer);
-      const { data } = await axios.get(`${API_URL}/sub-dealers/${subDealer._id}/sales`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
+      const { data } = await axios.get(
+        `${API_URL}/sub-dealers/${subDealer._id}/sales`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        }
+      );
       setSubDealerSales(data);
       setShowSalesModal(true);
     } catch (error) {
@@ -352,12 +354,12 @@ function SubDealers() {
                 )}
                 <TableExportButtons
                   exportName="SubDealers_List"
-                  exportData={filtered.map(sd => ({
-                    'ID': sd.subDealerId,
-                    'Name': sd.name,
-                    'District': sd.district,
-                    'Dealer': sd.dealer?.name || 'N/A',
-                    'Products Count': sd.productCount || 0
+                  exportData={filtered.map((sd) => ({
+                    ID: sd.subDealerId,
+                    Name: sd.name,
+                    District: sd.district,
+                    Dealer: sd.dealer?.name || 'N/A',
+                    'Products Count': sd.productCount || 0,
                   }))}
                 />
                 <button

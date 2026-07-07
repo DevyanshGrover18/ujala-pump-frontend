@@ -62,14 +62,20 @@ const ModelModal = ({
               {filteredAssignments.length > 0 && (
                 <TableExportButtons
                   exportName={`Model_${modelName}_Products`}
-                  exportData={filteredAssignments.map(assignment => {
+                  exportData={filteredAssignments.map((assignment) => {
                     const product = assignment.product;
                     return {
-                      'Model': product.model?.name || 'N/A',
+                      Model: product.model?.name || 'N/A',
                       'Serial Number': product.serialNumber,
                       'Assigned By': assignment.distributor?.name || 'N/A',
-                      'Assigned To': product.assignedToSubDealer ? product.assignedToSubDealer.name : 'Not Assigned',
-                      'Status': product.sold ? 'Sold' : (product.assignedToSubDealer ? 'Assigned' : 'Available')
+                      'Assigned To': product.assignedToSubDealer
+                        ? product.assignedToSubDealer.name
+                        : 'Not Assigned',
+                      Status: product.sold
+                        ? 'Sold'
+                        : product.assignedToSubDealer
+                          ? 'Assigned'
+                          : 'Available',
                     };
                   })}
                 />

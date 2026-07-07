@@ -1,5 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Truck, Users, UserCheck, ShoppingBag, Package, FileText, AlertTriangle, Clock } from 'lucide-react';
+import {
+  Truck,
+  Users,
+  UserCheck,
+  ShoppingBag,
+  Package,
+  FileText,
+  AlertTriangle,
+  Clock,
+} from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
@@ -14,7 +23,7 @@ export default function ExecutiveDashboard() {
       try {
         const token = localStorage.getItem('token');
         const res = await axios.get(`${API_URL}/dashboard/executive`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         setData(res.data);
       } catch (error) {
@@ -77,7 +86,10 @@ export default function ExecutiveDashboard() {
         <h1 className="text-2xl font-bold text-gray-900 mb-1">
           Executive Dashboard
         </h1>
-        <p className="text-sm text-gray-500">Real-time performance and inventory tracking for your assigned hierarchy.</p>
+        <p className="text-sm text-gray-500">
+          Real-time performance and inventory tracking for your assigned
+          hierarchy.
+        </p>
       </div>
 
       {/* KPI Cards */}
@@ -96,9 +108,7 @@ export default function ExecutiveDashboard() {
                 <h3 className="text-sm font-semibold mb-1 text-white/90">
                   {card.title}
                 </h3>
-                <p className="text-2xl sm:text-2xl font-bold">
-                  {card.count}
-                </p>
+                <p className="text-2xl sm:text-2xl font-bold">{card.count}</p>
               </div>
             </div>
           </div>

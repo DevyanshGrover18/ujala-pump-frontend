@@ -44,14 +44,15 @@ const SalesModal = ({
   return (
     <div className="fixed inset-0 bg-black/70 bg-opacity-20 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-4xl max-h-[90vh] flex flex-col shadow-xl">
-        
         {/* Header */}
         <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <div>
             <h3 className="text-lg font-bold text-gray-900">
               Sales History for {subDealer?.name}
             </h3>
-            <p className="text-xs text-gray-500 mt-1">List of registered customer purchases.</p>
+            <p className="text-xs text-gray-500 mt-1">
+              List of registered customer purchases.
+            </p>
           </div>
           <div className="flex items-center space-x-4">
             {filteredSales && filteredSales.length > 0 && (
@@ -59,10 +60,10 @@ const SalesModal = ({
                 exportName={`${subDealer?.name || 'SubDealer'}_Sales`}
                 exportData={filteredSales.map((item) => ({
                   'Serial Number': item.product?.serialNumber,
-                  'Model': item.product?.model?.name || 'N/A',
+                  Model: item.product?.model?.name || 'N/A',
                   'Customer Name': item.customerName || 'N/A',
                   'Customer Phone': item.customerPhone || 'N/A',
-                  'Date': new Date(item.createdAt).toLocaleDateString()
+                  Date: new Date(item.createdAt).toLocaleDateString(),
                 }))}
               />
             )}
@@ -77,7 +78,9 @@ const SalesModal = ({
 
         {/* Date Filters */}
         <div className="flex flex-wrap items-center gap-3 mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100 flex-shrink-0">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Filter by Date Range:</span>
+          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+            Filter by Date Range:
+          </span>
           <div className="flex items-center gap-2">
             <input
               type="date"
@@ -133,11 +136,19 @@ const SalesModal = ({
               <tbody className="divide-y divide-gray-100 bg-white">
                 {paginatedSales.map((item, idx) => (
                   <tr key={idx} className="hover:bg-gray-50/50">
-                    <td className="px-4 py-3 font-semibold text-gray-900">{item.product?.serialNumber}</td>
-                    <td className="px-4 py-3">{item.product?.model?.name || 'N/A'}</td>
-                    <td className="px-4 py-3 font-semibold text-gray-800">{item.customerName || 'N/A'}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900">
+                      {item.product?.serialNumber}
+                    </td>
+                    <td className="px-4 py-3">
+                      {item.product?.model?.name || 'N/A'}
+                    </td>
+                    <td className="px-4 py-3 font-semibold text-gray-800">
+                      {item.customerName || 'N/A'}
+                    </td>
                     <td className="px-4 py-3">{item.customerPhone || 'N/A'}</td>
-                    <td className="px-4 py-3">{new Date(item.createdAt).toLocaleDateString()}</td>
+                    <td className="px-4 py-3">
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </td>
                   </tr>
                 ))}
               </tbody>

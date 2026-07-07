@@ -1,11 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  Package,
-  X,
-  Box,
-  QrCode,
-  Trash,
-} from 'lucide-react';
+import { Package, X, Box, QrCode, Trash } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { SaleFilters } from './components/SaleFilters';
@@ -126,10 +120,10 @@ export default function Sales() {
       const matchDate =
         (!dateRange.startDate ||
           new Date(product.assignedToDistributorAt) >=
-          new Date(dateRange.startDate)) &&
+            new Date(dateRange.startDate)) &&
         (!dateRange.endDate ||
           new Date(product.assignedToDistributorAt) <=
-          new Date(new Date(dateRange.endDate).setHours(23, 59, 59, 999)));
+            new Date(new Date(dateRange.endDate).setHours(23, 59, 59, 999)));
 
       const matchDistributor =
         distributorFilter === 'all' ||
@@ -405,9 +399,11 @@ export default function Sales() {
     try {
       const response = await axios.post(`${API_URL}/api/sales/admin-sale`, {
         productId,
-        ...formData
+        ...formData,
       });
-      toast.success(response.data.message || 'Product marked as sold successfully');
+      toast.success(
+        response.data.message || 'Product marked as sold successfully'
+      );
 
       setIsAddCustomerModalOpen(false);
       setSelectedUnsoldProduct(null);
@@ -470,9 +466,9 @@ export default function Sales() {
           <div className="flex items-center gap-4">
             <TableExportButtons
               exportName="Sales_Dashboard_Models"
-              exportData={modelGroups.map(mg => ({
-                'Model': mg.model?.name || 'Unknown',
-                'Total Products': mg.count || 0
+              exportData={modelGroups.map((mg) => ({
+                Model: mg.model?.name || 'Unknown',
+                'Total Products': mg.count || 0,
               }))}
             />
             <button
@@ -648,13 +644,15 @@ export default function Sales() {
                   pdfOrientation="l"
                   pdfSize="a3"
                   exportData={modalProducts.map((p) => ({
-                    'Model': p.model?.name || 'N/A',
+                    Model: p.model?.name || 'N/A',
                     'Serial Number': p.serialNumber,
-                    'Distributor': p.distributor?.name || 'N/A',
-                    'Assigned Date': p.assignedToDistributorAt ? new Date(p.assignedToDistributorAt).toLocaleDateString() : 'N/A',
-                    'Dealer': p.dealer?.name || 'NA',
+                    Distributor: p.distributor?.name || 'N/A',
+                    'Assigned Date': p.assignedToDistributorAt
+                      ? new Date(p.assignedToDistributorAt).toLocaleDateString()
+                      : 'N/A',
+                    Dealer: p.dealer?.name || 'NA',
                     'Sub Dealer': p.subDealer?.name || 'NA',
-                    'Factory': p.factory?.name || 'N/A',
+                    Factory: p.factory?.name || 'N/A',
                     'Warranty Status': getWarrantyInfo(p).status,
                     'Warranty Balance': getWarrantyInfo(p).remaining,
                     'Customer Name': p.sale?.customerName || 'N/A',
@@ -663,7 +661,9 @@ export default function Sales() {
                     'Alt Phone': p.sale?.alternateMobileNumber || 'N/A',
                     'Plumber Name': p.sale?.plumberName || 'N/A',
                     'Plumber Phone': p.sale?.plumberMobileNumber || 'N/A',
-                    'Sale Date': p.sale?.saleDate ? new Date(p.sale.saleDate).toLocaleDateString() : 'N/A',
+                    'Sale Date': p.sale?.saleDate
+                      ? new Date(p.sale.saleDate).toLocaleDateString()
+                      : 'N/A',
                   }))}
                 />
                 <button
@@ -736,32 +736,37 @@ export default function Sales() {
               </button>
 
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">Status </span>
+                <span className="text-sm font-medium text-gray-700">
+                  Status{' '}
+                </span>
                 <div className="flex items-center bg-gray-100 p-1 rounded-lg">
                   <button
                     onClick={() => setModalStatusFilter('all')}
-                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${modalStatusFilter === 'all'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
-                      }`}
+                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                      modalStatusFilter === 'all'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
                   >
                     All
                   </button>
                   <button
                     onClick={() => setModalStatusFilter('sold')}
-                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${modalStatusFilter === 'sold'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
-                      }`}
+                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                      modalStatusFilter === 'sold'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
                   >
                     Sold
                   </button>
                   <button
                     onClick={() => setModalStatusFilter('unsold')}
-                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${modalStatusFilter === 'unsold'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
-                      }`}
+                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                      modalStatusFilter === 'unsold'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
                   >
                     Unsold
                   </button>
@@ -789,7 +794,7 @@ export default function Sales() {
                             checked={
                               paginatedModalProducts.length > 0 &&
                               selectedProducts.size ===
-                              paginatedModalProducts.length
+                                paginatedModalProducts.length
                             }
                           />
                         </th>
@@ -834,10 +839,11 @@ export default function Sales() {
                         return (
                           <tr
                             key={product._id}
-                            className={`hover:bg-gray-50 ${selectedProducts.has(product._id)
-                              ? 'bg-blue-50'
-                              : ''
-                              }`}
+                            className={`hover:bg-gray-50 ${
+                              selectedProducts.has(product._id)
+                                ? 'bg-blue-50'
+                                : ''
+                            }`}
                           >
                             <td className="px-4 py-4">
                               <input
@@ -845,7 +851,9 @@ export default function Sales() {
                                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                 aria-label={`Select product ${product.serialNumber}`}
                                 checked={selectedProducts.has(product._id)}
-                                onChange={() => handleProductSelect(product._id)}
+                                onChange={() =>
+                                  handleProductSelect(product._id)
+                                }
                               />
                             </td>
                             <td className="px-4 py-4 text-sm font-medium whitespace-nowrap">
@@ -860,8 +868,8 @@ export default function Sales() {
                             <td className="px-4 py-4 text-sm">
                               {product.assignedToDistributorAt
                                 ? new Date(
-                                  product.assignedToDistributorAt
-                                ).toLocaleDateString()
+                                    product.assignedToDistributorAt
+                                  ).toLocaleDateString()
                                 : 'N/A'}
                             </td>
                             <td className="px-4 py-4 text-sm">
@@ -1016,9 +1024,9 @@ export default function Sales() {
         details={
           orderToDelete
             ? {
-              'Serial Number': orderToDelete.serialNumber,
-              Factory: orderToDelete.factory?.name,
-            }
+                'Serial Number': orderToDelete.serialNumber,
+                Factory: orderToDelete.factory?.name,
+              }
             : null
         }
         className="z-80"
@@ -1035,9 +1043,9 @@ export default function Sales() {
         details={
           orderToDelete
             ? {
-              'Serial Number': orderToDelete.serialNumber,
-              Factory: orderToDelete.factory?.name,
-            }
+                'Serial Number': orderToDelete.serialNumber,
+                Factory: orderToDelete.factory?.name,
+              }
             : null
         }
         className="z-80"

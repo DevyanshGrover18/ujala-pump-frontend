@@ -319,29 +319,33 @@ function DistributorDealers() {
   };
 
   const filteredDealers = useMemo(() => {
-    return dealers.filter(
-      (dealer) =>
-        (dealer.name &&
-          dealer.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (dealer.dealerId &&
-          dealer.dealerId.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (dealer.addressLine1 &&
-          dealer.addressLine1
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())) ||
-        (dealer.addressLine2 &&
-          dealer.addressLine2
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())) ||
-        (dealer.state &&
-          dealer.state.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (dealer.district &&
-          dealer.district.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (dealer.pincode &&
-          dealer.pincode.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (dealer.contactPerson &&
-          dealer.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()))
-    ).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    return dealers
+      .filter(
+        (dealer) =>
+          (dealer.name &&
+            dealer.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (dealer.dealerId &&
+            dealer.dealerId.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (dealer.addressLine1 &&
+            dealer.addressLine1
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())) ||
+          (dealer.addressLine2 &&
+            dealer.addressLine2
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())) ||
+          (dealer.state &&
+            dealer.state.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (dealer.district &&
+            dealer.district.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (dealer.pincode &&
+            dealer.pincode.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (dealer.contactPerson &&
+            dealer.contactPerson
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()))
+      )
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   }, [dealers, searchTerm]);
 
   const totalPages = useMemo(
@@ -370,7 +374,9 @@ function DistributorDealers() {
       groups[mid].count += 1;
       groups[mid].items.push(assignment);
     });
-    return Object.values(groups).sort((a, b) => (a.model?.name || '').localeCompare(b.model?.name || ''));
+    return Object.values(groups).sort((a, b) =>
+      (a.model?.name || '').localeCompare(b.model?.name || '')
+    );
   }, [selectedDealerProducts]);
 
   return (
@@ -389,14 +395,24 @@ function DistributorDealers() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
               <TableExportButtons
                 exportName="Distributor_Dealers"
-                exportData={filteredDealers.map(dealer => ({
-                  'ID': dealer.dealerId,
-                  'Name': dealer.name,
+                exportData={filteredDealers.map((dealer) => ({
+                  ID: dealer.dealerId,
+                  Name: dealer.name,
                   'Contact Person': dealer.contactPerson,
                   'Contact Phone': dealer.contactPhone,
-                  'Products': typeof dealer.productCount !== 'undefined' ? dealer.productCount : (dealer.products ? dealer.products.length : 0),
-                  'Sub-Dealers': typeof dealer.subDealerCount !== 'undefined' ? dealer.subDealerCount : (dealer.subDealers ? dealer.subDealers.length : 0),
-                  'Status': dealer.status
+                  Products:
+                    typeof dealer.productCount !== 'undefined'
+                      ? dealer.productCount
+                      : dealer.products
+                        ? dealer.products.length
+                        : 0,
+                  'Sub-Dealers':
+                    typeof dealer.subDealerCount !== 'undefined'
+                      ? dealer.subDealerCount
+                      : dealer.subDealers
+                        ? dealer.subDealers.length
+                        : 0,
+                  Status: dealer.status,
                 }))}
               />
               <div className="relative">
@@ -481,10 +497,11 @@ function DistributorDealers() {
                         </td>
                         <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${dealer.status === 'Active'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
-                              }`}
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              dealer.status === 'Active'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}
                           >
                             {dealer.status}
                           </span>
@@ -584,10 +601,11 @@ function DistributorDealers() {
                         </p>
                       </div>
                       <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${dealer.status === 'Active'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                          }`}
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          dealer.status === 'Active'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
                       >
                         {dealer.status}
                       </span>
@@ -990,10 +1008,11 @@ function DistributorDealers() {
                     value={newDealer.contactPhone}
                     onChange={(e) => handlePhoneChange(e.target.value)}
                     placeholder="Enter Phone No."
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:border-transparent transition-colors ${phoneError
-                      ? 'border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:ring-[#4d55f5]'
-                      }`}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:border-transparent transition-colors ${
+                      phoneError
+                        ? 'border-red-500 focus:ring-red-500'
+                        : 'border-gray-300 focus:ring-[#4d55f5]'
+                    }`}
                     maxLength={10}
                     inputMode="numeric"
                   />
@@ -1109,13 +1128,13 @@ function DistributorDealers() {
                 {selectedDealerSubDealers.length > 0 && (
                   <TableExportButtons
                     exportName={`Dealer_${selectedDealerForSubDealers?.name || 'SubDealers'}_List`}
-                    exportData={selectedDealerSubDealers.map(sd => ({
-                      'ID': sd.subDealerId,
-                      'Name': sd.name,
+                    exportData={selectedDealerSubDealers.map((sd) => ({
+                      ID: sd.subDealerId,
+                      Name: sd.name,
                       'Contact Person': sd.contactPerson,
                       'Contact Phone': sd.contactPhone,
-                      'Location': `${sd.location}, ${sd.district}, ${sd.state} - ${sd.pincode}`,
-                      'Status': sd.status
+                      Location: `${sd.location}, ${sd.district}, ${sd.state} - ${sd.pincode}`,
+                      Status: sd.status,
                     }))}
                   />
                 )}
@@ -1180,10 +1199,11 @@ function DistributorDealers() {
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
                             <span
-                              className={`px-2 py-1 text-xs font-medium rounded-full ${subDealer.status === 'Active'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
-                                }`}
+                              className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                subDealer.status === 'Active'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-red-100 text-red-800'
+                              }`}
                             >
                               {subDealer.status}
                             </span>
@@ -1214,9 +1234,9 @@ function DistributorDealers() {
                 {dealerModelGroups.length > 0 && (
                   <TableExportButtons
                     exportName={`Dealer_${selectedDealerForProducts?.name || 'Products'}_Models`}
-                    exportData={dealerModelGroups.map(group => ({
-                      'Model': group.model?.name || '-',
-                      'No. of Products': group.count
+                    exportData={dealerModelGroups.map((group) => ({
+                      Model: group.model?.name || '-',
+                      'No. of Products': group.count,
                     }))}
                   />
                 )}
@@ -1261,7 +1281,10 @@ function DistributorDealers() {
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
                             {paginatedModelGroups.map((group) => (
-                              <tr key={group.model._id} className="hover:bg-gray-50">
+                              <tr
+                                key={group.model._id}
+                                className="hover:bg-gray-50"
+                              >
                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                   {group.model.name}
                                 </td>
@@ -1290,7 +1313,9 @@ function DistributorDealers() {
                               className="border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-[#4d55f5] focus:border-transparent text-xs sm:text-sm"
                               value={productModalItemsPerPage}
                               onChange={(e) => {
-                                setProductModalItemsPerPage(Number(e.target.value));
+                                setProductModalItemsPerPage(
+                                  Number(e.target.value)
+                                );
                                 setProductModalCurrentPage(1);
                               }}
                             >
@@ -1303,18 +1328,29 @@ function DistributorDealers() {
                           </div>
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={() => setProductModalCurrentPage((p) => Math.max(1, p - 1))}
+                              onClick={() =>
+                                setProductModalCurrentPage((p) =>
+                                  Math.max(1, p - 1)
+                                )
+                              }
                               disabled={productModalCurrentPage === 1}
                               className="px-3 py-1 text-xs border rounded-lg disabled:opacity-50"
                             >
                               Previous
                             </button>
                             <span className="text-sm text-gray-700">
-                              Page {productModalCurrentPage} of {totalProductPages}
+                              Page {productModalCurrentPage} of{' '}
+                              {totalProductPages}
                             </span>
                             <button
-                              onClick={() => setProductModalCurrentPage((p) => Math.min(totalProductPages, p + 1))}
-                              disabled={productModalCurrentPage === totalProductPages}
+                              onClick={() =>
+                                setProductModalCurrentPage((p) =>
+                                  Math.min(totalProductPages, p + 1)
+                                )
+                              }
+                              disabled={
+                                productModalCurrentPage === totalProductPages
+                              }
                               className="px-3 py-1 text-xs border rounded-lg disabled:opacity-50"
                             >
                               Next
@@ -1337,85 +1373,91 @@ function DistributorDealers() {
         </div>
       )}
 
-      {isProductModelModalOpen && (() => {
-        const group = dealerModelGroups.find(g => g.model._id === activeProductModelId);
-        if (!group) return null;
+      {isProductModelModalOpen &&
+        (() => {
+          const group = dealerModelGroups.find(
+            (g) => g.model._id === activeProductModelId
+          );
+          if (!group) return null;
 
-        const sortedProducts = [...group.items].sort((a, b) => {
-          const serialA = a.product?.serialNumber || '';
-          const serialB = b.product?.serialNumber || '';
-          return getSerialCounter(serialB) - getSerialCounter(serialA);
-        });
+          const sortedProducts = [...group.items].sort((a, b) => {
+            const serialA = a.product?.serialNumber || '';
+            const serialB = b.product?.serialNumber || '';
+            return getSerialCounter(serialB) - getSerialCounter(serialA);
+          });
 
-        return (
-          <div className="fixed inset-0 bg-black/70 bg-opacity-20 flex items-center justify-center z-[60]">
-            <div className="bg-white shadow-lg z-[70] w-full h-full flex flex-col overflow-y-auto">
-              <div className="p-4 flex justify-between items-center bg-gray-50 border-b border-gray-200">
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">
-                    {group.model.name} - Individual Products ({group.count})
-                  </h3>
-                </div>
-                <div className="flex items-center gap-4">
-                  <TableExportButtons
-                    exportName={`Dealer_Products_${group.model.name}`}
-                    exportData={sortedProducts.map(assignment => {
-                      const prod = assignment.product || {};
-                      return {
-                        'Serial Number': prod.serialNumber || '-',
-                        'Status': prod.sold ? 'Sold' : 'Available'
-                      };
-                    })}
-                  />
-                  <button
-                    onClick={() => setIsProductModelModalOpen(false)}
-                    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-                  >
-                    <X className="h-5 w-5 text-gray-500" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-4 flex-1 overflow-auto">
-                <div className="overflow-hidden border border-gray-200 rounded-lg">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Serial
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Status
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {sortedProducts.map((assignment) => {
+          return (
+            <div className="fixed inset-0 bg-black/70 bg-opacity-20 flex items-center justify-center z-[60]">
+              <div className="bg-white shadow-lg z-[70] w-full h-full flex flex-col overflow-y-auto">
+                <div className="p-4 flex justify-between items-center bg-gray-50 border-b border-gray-200">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">
+                      {group.model.name} - Individual Products ({group.count})
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <TableExportButtons
+                      exportName={`Dealer_Products_${group.model.name}`}
+                      exportData={sortedProducts.map((assignment) => {
                         const prod = assignment.product || {};
-                        const isSold = prod.sold;
-                        return (
-                          <tr key={prod._id || assignment._id} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                              {prod.serialNumber || '-'}
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              <span
-                                className={`px-2 py-1 text-xs font-medium rounded-full ${isSold ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}
-                              >
-                                {isSold ? 'Sold' : 'Available'}
-                              </span>
-                            </td>
-                          </tr>
-                        );
+                        return {
+                          'Serial Number': prod.serialNumber || '-',
+                          Status: prod.sold ? 'Sold' : 'Available',
+                        };
                       })}
-                    </tbody>
-                  </table>
+                    />
+                    <button
+                      onClick={() => setIsProductModelModalOpen(false)}
+                      className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                    >
+                      <X className="h-5 w-5 text-gray-500" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-4 flex-1 overflow-auto">
+                  <div className="overflow-hidden border border-gray-200 rounded-lg">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            Serial
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {sortedProducts.map((assignment) => {
+                          const prod = assignment.product || {};
+                          const isSold = prod.sold;
+                          return (
+                            <tr
+                              key={prod._id || assignment._id}
+                              className="hover:bg-gray-50"
+                            >
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                {prod.serialNumber || '-'}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <span
+                                  className={`px-2 py-1 text-xs font-medium rounded-full ${isSold ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}
+                                >
+                                  {isSold ? 'Sold' : 'Available'}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
     </div>
   );
 }

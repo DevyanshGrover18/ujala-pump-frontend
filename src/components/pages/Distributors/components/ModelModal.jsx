@@ -26,10 +26,13 @@ const ModelModal = ({
         const match = serialNumber.match(/(\d+)$/);
         return match ? parseInt(match[1]) : 0;
       };
-      return getSerialCounter(b.serialNumber) - getSerialCounter(a.serialNumber);
+      return (
+        getSerialCounter(b.serialNumber) - getSerialCounter(a.serialNumber)
+      );
     });
 
-  const modalTotal = Math.ceil(filteredProducts.length / modalItemsPerPage) || 1;
+  const modalTotal =
+    Math.ceil(filteredProducts.length / modalItemsPerPage) || 1;
   const safePage = Math.min(Math.max(1, modalCurrentPage), modalTotal);
 
   // Only trigger effect-like state changes if we actually need to correct the page
@@ -38,14 +41,17 @@ const ModelModal = ({
   }
 
   const startIdx = (safePage - 1) * modalItemsPerPage;
-  const paginated = filteredProducts.slice(startIdx, startIdx + modalItemsPerPage);
+  const paginated = filteredProducts.slice(
+    startIdx,
+    startIdx + modalItemsPerPage
+  );
 
-  const exportData = filteredProducts.map(product => ({
+  const exportData = filteredProducts.map((product) => ({
     'Serial Number': product.serialNumber,
-    'Category': product.category?.name || 'N/A',
-    'Model': product.model?.name || 'N/A',
-    'Factory': product.factory?.name || 'N/A',
-    'Status': product.sold ? 'Sold' : 'Available'
+    Category: product.category?.name || 'N/A',
+    Model: product.model?.name || 'N/A',
+    Factory: product.factory?.name || 'N/A',
+    Status: product.sold ? 'Sold' : 'Available',
   }));
 
   return (
@@ -54,9 +60,7 @@ const ModelModal = ({
       <div className="bg-white rounded-lg shadow-lg z-70 w-full max-w-6xl mx-4 flex flex-col max-h-[90vh]">
         <div className="p-4">
           <div className="flex items-start justify-between">
-            <h4 className="text-lg font-semibold">
-              Model: {foundModelName}
-            </h4>
+            <h4 className="text-lg font-semibold">Model: {foundModelName}</h4>
             <div className="flex items-center gap-4">
               {filteredProducts.length > 0 && (
                 <TableExportButtons
@@ -125,10 +129,11 @@ const ModelModal = ({
                         </td>
                         <td className="px-4 py-4 text-sm">
                           <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${product.sold
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              product.sold
                                 ? 'bg-green-100 text-green-800'
                                 : 'bg-yellow-100 text-yellow-800'
-                              }`}
+                            }`}
                           >
                             {product.sold ? 'Sold' : 'Available'}
                           </span>

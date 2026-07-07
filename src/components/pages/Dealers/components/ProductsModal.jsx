@@ -56,9 +56,9 @@ const ProductsModal = ({
             {modelGroups.length > 0 && (
               <TableExportButtons
                 exportName={`${dealer?.name || 'Dealer'}_Products`}
-                exportData={modelGroups.map(mg => ({
+                exportData={modelGroups.map((mg) => ({
                   'Model Name': mg.model?.name || 'Unknown',
-                  'Product Count': mg.count || 0
+                  'Product Count': mg.count || 0,
                 }))}
               />
             )}

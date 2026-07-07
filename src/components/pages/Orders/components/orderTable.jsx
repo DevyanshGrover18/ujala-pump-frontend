@@ -42,24 +42,24 @@ export function OrderTable({
     return (
       order.totalUnits ||
       order.quantity *
-      (order.orderType === '2_units'
-        ? 2
-        : order.orderType === '3_units'
-          ? 3
-          : order.orderType === '4_units'
-            ? 4
-            : 1)
+        (order.orderType === '2_units'
+          ? 2
+          : order.orderType === '3_units'
+            ? 3
+            : order.orderType === '4_units'
+              ? 4
+              : 1)
     );
   };
 
-  const exportData = allFilteredOrders.map(order => ({
+  const exportData = allFilteredOrders.map((order) => ({
     'Order ID': order.orderId,
     'Serial Number': order.serialNumber,
-    'Factory': order.factory?.name || '',
-    'Model': order.model?.name || '',
-    'Boxes': order.quantity,
+    Factory: order.factory?.name || '',
+    Model: order.model?.name || '',
+    Boxes: order.quantity,
     'Total Units': getTotalUnits(order),
-    'Dispatched': order.dispatchedUnits
+    Dispatched: order.dispatchedUnits,
   }));
 
   return (

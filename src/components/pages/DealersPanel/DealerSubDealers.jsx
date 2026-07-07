@@ -315,12 +315,12 @@ export default function DealerSubDealers() {
             <div className="flex flex-wrap items-center gap-2">
               <TableExportButtons
                 exportName="Dealer_SubDealers"
-                exportData={filtered.map(sd => ({
-                  'ID': sd.subDealerId,
-                  'Name': sd.name,
+                exportData={filtered.map((sd) => ({
+                  ID: sd.subDealerId,
+                  Name: sd.name,
                   'Contact Person': sd.contactPerson,
                   'Contact Phone': sd.contactPhone,
-                  'Status': sd.status
+                  Status: sd.status,
                 }))}
               />
               <button

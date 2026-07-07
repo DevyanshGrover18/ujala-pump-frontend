@@ -56,7 +56,6 @@ const userTypes = [
     icon: Building,
     bg: '#8B5CF6',
   },
-  
 ];
 
 export default function Login({ isAdminLoginPath }) {
@@ -238,7 +237,9 @@ export default function Login({ isAdminLoginPath }) {
                           ? 'Distributor'
                           : selectedUserType === 'dealer'
                             ? 'Dealer'
-                            : selectedUserType === 'executive'? "Executive" : 'Sub-Dealer'}
+                            : selectedUserType === 'executive'
+                              ? 'Executive'
+                              : 'Sub-Dealer'}
                   !
                 </h2>
               </div>

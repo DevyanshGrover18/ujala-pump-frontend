@@ -49,21 +49,22 @@ const ModelModal = ({
               <TableExportButtons
                 exportName={`Products_Model_${modelName}`}
                 exportData={modalIndividualProducts.map((p) => ({
-                  'Model': p.model?.name || p.productName || modelName,
+                  Model: p.model?.name || p.productName || modelName,
                   'Box Type': `${p.unitsPerBox}N`,
                   'Serial Number': p.serialNumber,
                   'MRP(Price)': `${p.price} /- Each`,
-                  'Factory': p.factory?.name || 'N/A',
-                  'Distributor': p.distributor ? p.distributor.name : 'N/A',
+                  Factory: p.factory?.name || 'N/A',
+                  Distributor: p.distributor ? p.distributor.name : 'N/A',
                 }))}
               />
               <button
                 onClick={onTransferClick}
                 disabled={selectedProductIds.length === 0}
-                className={`hidden sm:block px-4 py-2 rounded-md text-sm font-medium ${selectedProductIds.length > 0
+                className={`hidden sm:block px-4 py-2 rounded-md text-sm font-medium ${
+                  selectedProductIds.length > 0
                     ? 'bg-blue-600 text-white hover:bg-blue-700'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
+                }`}
               >
                 Transfer to Distributor ({selectedProductIds.length})
               </button>

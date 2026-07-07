@@ -47,19 +47,30 @@ export default function OfflineUploadModal({
 
     setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/api/products/offline`, {
-        factoryId: selectedFactory,
-        modelId: selectedModel,
-        serialNumbers: serialsArray,
-      }, {
-        withCredentials: true
-      });
-      
-      toast.success(response.data.message || `Successfully uploaded ${response.data.count} products.`);
+      const response = await axios.post(
+        `${API_URL}/api/products/offline`,
+        {
+          factoryId: selectedFactory,
+          modelId: selectedModel,
+          serialNumbers: serialsArray,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      toast.success(
+        response.data.message ||
+          `Successfully uploaded ${response.data.count} products.`
+      );
       onSuccess();
       handleClose();
     } catch (error) {
-      if (error.response && error.response.data && error.response.data.message) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
         toast.error(error.response.data.message);
       } else {
         toast.error('Error uploading products');
@@ -77,7 +88,10 @@ export default function OfflineUploadModal({
       <div className="bg-white rounded-lg max-w-xl w-full mx-auto max-h-[90vh] overflow-y-auto shadow-xl">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
           <h2 className="text-lg font-semibold">Upload Offline Products</h2>
-          <button onClick={handleClose} className="p-1 hover:bg-gray-100 rounded transition-colors text-gray-500 hover:text-gray-900">
+          <button
+            onClick={handleClose}
+            className="p-1 hover:bg-gray-100 rounded transition-colors text-gray-500 hover:text-gray-900"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -134,7 +148,8 @@ export default function OfflineUploadModal({
               disabled={loading}
             />
             <p className="mt-1 text-xs text-gray-500">
-             Separate multiple serial numbers with a comma or place them on a new line.
+              Separate multiple serial numbers with a comma or place them on a
+              new line.
             </p>
           </div>
         </div>
@@ -149,13 +164,34 @@ export default function OfflineUploadModal({
           </button>
           <button
             onClick={handleUploadClick}
-            disabled={loading || !selectedFactory || !selectedModel || !serialNumbersText.trim()}
+            disabled={
+              loading ||
+              !selectedFactory ||
+              !selectedModel ||
+              !serialNumbersText.trim()
+            }
             className="px-4 py-2 text-sm font-medium text-white rounded-md bg-blue-600 hover:bg-blue-700 transition-colors flex items-center justify-center min-w-[100px] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
             ) : null}
             Upload

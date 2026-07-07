@@ -2,7 +2,13 @@ import React from 'react';
 import { FilePenLine, Trash2 } from 'lucide-react';
 import ListComponent from '../../../global/ListComponent';
 
-const DealerCard = ({ dealers, onEdit, onDelete, onViewSales, onViewInventory }) => {
+const DealerCard = ({
+  dealers,
+  onEdit,
+  onDelete,
+  onViewSales,
+  onViewInventory,
+}) => {
   return (
     <div className="md:hidden space-y-4">
       {dealers.length > 0 ? (

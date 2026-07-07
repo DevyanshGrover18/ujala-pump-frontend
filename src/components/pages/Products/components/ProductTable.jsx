@@ -8,9 +8,9 @@ const ProductTable = ({ modelGroups, onViewModel }) => {
       <div className="flex justify-end mb-4 px-4">
         <TableExportButtons
           exportName="Products_Models_List"
-          exportData={modelGroups.map(mg => ({
-            'Model': mg.model?.name || 'Unknown',
-            'No. of Products': mg.count || 0
+          exportData={modelGroups.map((mg) => ({
+            Model: mg.model?.name || 'Unknown',
+            'No. of Products': mg.count || 0,
           }))}
         />
       </div>

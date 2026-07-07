@@ -37,7 +37,7 @@ export const useOrderForm = (isEdit = false, editOrder = null, models = []) => {
 
     const serials = formData.manualSerials
       .split(',')
-      .map(s => s.trim().toUpperCase())
+      .map((s) => s.trim().toUpperCase())
       .filter(Boolean);
 
     if (serials.length === 0) {
@@ -51,7 +51,10 @@ export const useOrderForm = (isEdit = false, editOrder = null, models = []) => {
     const delayDebounceFn = setTimeout(async () => {
       setIsCheckingDuplicates(true);
       try {
-        const { data } = await orderService.checkDuplicates(serials, currentOrderId);
+        const { data } = await orderService.checkDuplicates(
+          serials,
+          currentOrderId
+        );
         setDbDuplicates(data.duplicates || []);
       } catch (err) {
         console.error('Error checking duplicates:', err);
@@ -65,7 +68,8 @@ export const useOrderForm = (isEdit = false, editOrder = null, models = []) => {
 
   useEffect(() => {
     if (isEdit && editOrder) {
-      const totalPumps = editOrder.quantity * getUnitsPerBox(editOrder.orderType);
+      const totalPumps =
+        editOrder.quantity * getUnitsPerBox(editOrder.orderType);
 
       setFormData({
         category: editOrder.category?._id || '',
@@ -78,7 +82,9 @@ export const useOrderForm = (isEdit = false, editOrder = null, models = []) => {
         status: editOrder.status || 'Pending',
         orderType: editOrder.orderType || '1_unit',
         isManual: editOrder.isManual || false,
-        manualSerials: editOrder.serialNumbers ? editOrder.serialNumbers.join(', ') : '',
+        manualSerials: editOrder.serialNumbers
+          ? editOrder.serialNumbers.join(', ')
+          : '',
       });
 
       if (editOrder.model) {
@@ -166,7 +172,7 @@ export const useOrderForm = (isEdit = false, editOrder = null, models = []) => {
       'factory',
       'orderType',
     ];
-    
+
     if (formData.isManual) {
       requiredFields.push('manualSerials');
     }
@@ -196,7 +202,7 @@ export const useOrderForm = (isEdit = false, editOrder = null, models = []) => {
     if (formData.isManual) {
       const serials = formData.manualSerials
         .split(',')
-        .map(s => s.trim().toUpperCase())
+        .map((s) => s.trim().toUpperCase())
         .filter(Boolean);
 
       if (serials.length !== parseInt(formData.totalPumps)) {
@@ -208,7 +214,9 @@ export const useOrderForm = (isEdit = false, editOrder = null, models = []) => {
 
       const uniqueSerials = [...new Set(serials)];
       if (uniqueSerials.length !== serials.length) {
-        const duplicates = serials.filter((item, index) => serials.indexOf(item) !== index);
+        const duplicates = serials.filter(
+          (item, index) => serials.indexOf(item) !== index
+        );
         return {
           valid: false,
           error: `Duplicate serial numbers found in input: ${[...new Set(duplicates)].join(', ')}`,
@@ -238,7 +246,7 @@ export const useOrderForm = (isEdit = false, editOrder = null, models = []) => {
     if (formData.isManual) {
       data.serialNumbers = formData.manualSerials
         .split(',')
-        .map(s => s.trim().toUpperCase())
+        .map((s) => s.trim().toUpperCase())
         .filter(Boolean);
     }
 

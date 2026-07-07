@@ -1,5 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Search, X, User, Phone, MapPin, Calendar, CheckCircle, Info } from 'lucide-react';
+import {
+  Search,
+  X,
+  User,
+  Phone,
+  MapPin,
+  Calendar,
+  CheckCircle,
+  Info,
+} from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import TableExportButtons from '../../global/TableExportButtons';
@@ -10,7 +19,7 @@ export default function ExecutiveCustomers() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Detail Modal State
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -20,7 +29,7 @@ export default function ExecutiveCustomers() {
       setLoading(true);
       const token = localStorage.getItem('token');
       const res = await axios.get(`${API_URL}/executives/me/customers`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setCustomers(res.data);
     } catch (error) {
@@ -36,11 +45,14 @@ export default function ExecutiveCustomers() {
   }, []);
 
   const filteredCustomers = useMemo(() => {
-    return customers.filter(c => 
-      c.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.customerPhone?.includes(searchTerm) ||
-      c.customerAddress?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.product?.serialNumber?.toLowerCase().includes(searchTerm.toLowerCase())
+    return customers.filter(
+      (c) =>
+        c.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.customerPhone?.includes(searchTerm) ||
+        c.customerAddress?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.product?.serialNumber
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase())
     );
   }, [customers, searchTerm]);
 
@@ -49,19 +61,30 @@ export default function ExecutiveCustomers() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-800">Customer Directory</h1>
-          <p className="text-sm text-gray-500 mt-1">View customers registered under your assigned distributors, dealers and sub dealers.</p>
+          <h1 className="text-xl font-bold text-gray-800">
+            Customer Directory
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            View customers registered under your assigned distributors, dealers
+            and sub dealers.
+          </p>
         </div>
         <TableExportButtons
           exportName="Customer_Directory"
-          exportData={filteredCustomers.map(c => ({
+          exportData={filteredCustomers.map((c) => ({
             'Customer Name': c.customerName,
             'Phone Number': c.customerPhone,
-            'Address': c.customerAddress || 'N/A',
+            Address: c.customerAddress || 'N/A',
             'Product Model': c.product?.model?.name || 'N/A',
             'Serial Number': c.product?.serialNumber || 'N/A',
-            'Registration Date': new Date(c.saleDate || c.createdAt).toLocaleDateString(),
-            'Sold By': c.subDealer?.name || c.dealer?.name || c.distributor?.name || 'N/A'
+            'Registration Date': new Date(
+              c.saleDate || c.createdAt
+            ).toLocaleDateString(),
+            'Sold By':
+              c.subDealer?.name ||
+              c.dealer?.name ||
+              c.distributor?.name ||
+              'N/A',
           }))}
         />
       </div>
@@ -116,11 +139,18 @@ export default function ExecutiveCustomers() {
                       {c.customerPhone}
                     </div>
                   </td>
-                  <td className="px-6 py-4 font-semibold text-gray-700">{c.product?.serialNumber}</td>
-                  <td className="px-6 py-4">{c.product?.model?.name || 'N/A'}</td>
+                  <td className="px-6 py-4 font-semibold text-gray-700">
+                    {c.product?.serialNumber}
+                  </td>
+                  <td className="px-6 py-4">
+                    {c.product?.model?.name || 'N/A'}
+                  </td>
                   <td className="px-6 py-4">
                     <span className="bg-gray-100 px-2.5 py-1 rounded text-xs font-semibold text-gray-700">
-                      {c.subDealer?.name || c.dealer?.name || c.distributor?.name || 'Direct'}
+                      {c.subDealer?.name ||
+                        c.dealer?.name ||
+                        c.distributor?.name ||
+                        'Direct'}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -158,7 +188,10 @@ export default function ExecutiveCustomers() {
                   <User className="w-5 h-5 text-[#4d55f5]" />
                   Customer Registration Info
                 </h3>
-                <p className="text-xs text-gray-400 mt-1">Full details of the customer registration and plumber assignment.</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Full details of the customer registration and plumber
+                  assignment.
+                </p>
               </div>
               <button
                 onClick={() => setShowModal(false)}
@@ -171,41 +204,95 @@ export default function ExecutiveCustomers() {
             <div className="space-y-4 text-sm text-gray-600">
               {/* Customer details */}
               <div className="bg-gray-50 p-4 rounded-xl space-y-2 border border-gray-100">
-                <p className="text-xs font-bold uppercase text-gray-400 tracking-wider">Customer Details</p>
-                <p><strong className="text-gray-800">Name:</strong> {selectedCustomer.customerName}</p>
-                <p><strong className="text-gray-800">Phone:</strong> {selectedCustomer.customerPhone}</p>
+                <p className="text-xs font-bold uppercase text-gray-400 tracking-wider">
+                  Customer Details
+                </p>
+                <p>
+                  <strong className="text-gray-800">Name:</strong>{' '}
+                  {selectedCustomer.customerName}
+                </p>
+                <p>
+                  <strong className="text-gray-800">Phone:</strong>{' '}
+                  {selectedCustomer.customerPhone}
+                </p>
                 {selectedCustomer.alternateMobileNumber && (
-                  <p><strong className="text-gray-800">Alt Phone:</strong> {selectedCustomer.alternateMobileNumber}</p>
+                  <p>
+                    <strong className="text-gray-800">Alt Phone:</strong>{' '}
+                    {selectedCustomer.alternateMobileNumber}
+                  </p>
                 )}
                 <p className="flex items-start gap-1">
-                  <strong className="text-gray-800 flex-shrink-0">Address:</strong>
+                  <strong className="text-gray-800 flex-shrink-0">
+                    Address:
+                  </strong>
                   <span>{selectedCustomer.customerAddress || 'N/A'}</span>
                 </p>
               </div>
 
               {/* Product details */}
               <div className="bg-gray-50 p-4 rounded-xl space-y-2 border border-gray-100">
-                <p className="text-xs font-bold uppercase text-gray-400 tracking-wider">Product Information</p>
-                <p><strong className="text-gray-800">Model Name:</strong> {selectedCustomer.product?.model?.name || 'N/A'}</p>
-                <p><strong className="text-gray-800">Serial Number:</strong> {selectedCustomer.product?.serialNumber || 'N/A'}</p>
-                <p><strong className="text-gray-800">Purchase Date:</strong> {new Date(selectedCustomer.saleDate || selectedCustomer.createdAt).toLocaleDateString()}</p>
+                <p className="text-xs font-bold uppercase text-gray-400 tracking-wider">
+                  Product Information
+                </p>
+                <p>
+                  <strong className="text-gray-800">Model Name:</strong>{' '}
+                  {selectedCustomer.product?.model?.name || 'N/A'}
+                </p>
+                <p>
+                  <strong className="text-gray-800">Serial Number:</strong>{' '}
+                  {selectedCustomer.product?.serialNumber || 'N/A'}
+                </p>
+                <p>
+                  <strong className="text-gray-800">Purchase Date:</strong>{' '}
+                  {new Date(
+                    selectedCustomer.saleDate || selectedCustomer.createdAt
+                  ).toLocaleDateString()}
+                </p>
               </div>
 
               {/* Plumber details */}
-              {(selectedCustomer.plumberName || selectedCustomer.plumberMobileNumber) && (
+              {(selectedCustomer.plumberName ||
+                selectedCustomer.plumberMobileNumber) && (
                 <div className="bg-gray-50 p-4 rounded-xl space-y-2 border border-gray-100">
-                  <p className="text-xs font-bold uppercase text-gray-400 tracking-wider">Plumber Details</p>
-                  {selectedCustomer.plumberName && <p><strong className="text-gray-800">Name:</strong> {selectedCustomer.plumberName}</p>}
-                  {selectedCustomer.plumberMobileNumber && <p><strong className="text-gray-800">Phone:</strong> {selectedCustomer.plumberMobileNumber}</p>}
+                  <p className="text-xs font-bold uppercase text-gray-400 tracking-wider">
+                    Plumber Details
+                  </p>
+                  {selectedCustomer.plumberName && (
+                    <p>
+                      <strong className="text-gray-800">Name:</strong>{' '}
+                      {selectedCustomer.plumberName}
+                    </p>
+                  )}
+                  {selectedCustomer.plumberMobileNumber && (
+                    <p>
+                      <strong className="text-gray-800">Phone:</strong>{' '}
+                      {selectedCustomer.plumberMobileNumber}
+                    </p>
+                  )}
                 </div>
               )}
 
               {/* Hierarchy details */}
               <div className="bg-gray-50 p-4 rounded-xl space-y-2 border border-gray-100 text-xs">
-                <p className="text-xs font-bold uppercase text-gray-400 tracking-wider">Hierarchy Audit Trail</p>
-                <p><strong className="text-gray-800">Distributor:</strong> {selectedCustomer.distributor?.name || 'N/A'}</p>
-                {selectedCustomer.dealer && <p><strong className="text-gray-800">Dealer:</strong> {selectedCustomer.dealer.name}</p>}
-                {selectedCustomer.subDealer && <p><strong className="text-gray-800">Sub Dealer:</strong> {selectedCustomer.subDealer.name}</p>}
+                <p className="text-xs font-bold uppercase text-gray-400 tracking-wider">
+                  Hierarchy Audit Trail
+                </p>
+                <p>
+                  <strong className="text-gray-800">Distributor:</strong>{' '}
+                  {selectedCustomer.distributor?.name || 'N/A'}
+                </p>
+                {selectedCustomer.dealer && (
+                  <p>
+                    <strong className="text-gray-800">Dealer:</strong>{' '}
+                    {selectedCustomer.dealer.name}
+                  </p>
+                )}
+                {selectedCustomer.subDealer && (
+                  <p>
+                    <strong className="text-gray-800">Sub Dealer:</strong>{' '}
+                    {selectedCustomer.subDealer.name}
+                  </p>
+                )}
               </div>
             </div>
 

@@ -15,12 +15,17 @@ const DealersModal = ({ isOpen, distributor, dealers, onClose }) => {
             {dealers && dealers.length > 0 && (
               <TableExportButtons
                 exportName={`${distributor?.name || 'Distributor'}_Dealers`}
-                exportData={dealers.map(d => ({
+                exportData={dealers.map((d) => ({
                   'Dealer ID': d.dealerId,
-                  'Name': d.name,
-                  'Location': d.location,
-                  'Sub-Dealers': typeof d.subDealerCount !== 'undefined' ? d.subDealerCount : (d.subDealers ? d.subDealers.length : 0),
-                  'Status': d.status
+                  Name: d.name,
+                  Location: d.location,
+                  'Sub-Dealers':
+                    typeof d.subDealerCount !== 'undefined'
+                      ? d.subDealerCount
+                      : d.subDealers
+                        ? d.subDealers.length
+                        : 0,
+                  Status: d.status,
                 }))}
               />
             )}
@@ -96,10 +101,11 @@ const DealersModal = ({ isOpen, distributor, dealers, onClose }) => {
                         data-label="Status"
                       >
                         <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${dealer.status === 'Active'
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            dealer.status === 'Active'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
-                            }`}
+                          }`}
                         >
                           {dealer.status}
                         </span>

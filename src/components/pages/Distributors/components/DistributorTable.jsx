@@ -23,14 +23,14 @@ const DistributorTable = ({
       <div className="flex justify-end mb-4 px-4 sm:px-6">
         <TableExportButtons
           exportName="Distributors_List"
-          exportData={sortedDistributors.map(d => ({
-            'ID': d.distributorId,
-            'Name': d.name,
+          exportData={sortedDistributors.map((d) => ({
+            ID: d.distributorId,
+            Name: d.name,
             'Contact Person': d.contactPerson,
             'Contact Phone': d.contactPhone,
             'Sales Count': d.salesCount || 0,
             'Inventory Count': d.inventoryCount || 0,
-            'Dealers Count': d.dealerCount || 0
+            'Dealers Count': d.dealerCount || 0,
           }))}
         />
       </div>

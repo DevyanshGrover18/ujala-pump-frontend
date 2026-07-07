@@ -25,9 +25,7 @@ export default function FactoryList({
   if (!loading && factories.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="mt-4 text-gray-500 font-medium">
-          No factories found
-        </p>
+        <p className="mt-4 text-gray-500 font-medium">No factories found</p>
       </div>
     );
   }

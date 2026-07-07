@@ -540,7 +540,7 @@ export default function Products() {
         factories={factories}
         onClearFilters={clearFilters}
       />
-      
+
       <OfflineUploadModal
         isOpen={isOfflineUploadOpen}
         onClose={() => setIsOfflineUploadOpen(false)}

@@ -36,18 +36,28 @@ const CustomerInfoModal = ({ isOpen, onClose, sale, onRequestSubmitted }) => {
 
   if (!isOpen) return null;
 
-  const isFilledPhone = (val) => val && val.trim() !== '' && val.trim() !== 'N/A';
+  const isFilledPhone = (val) =>
+    val && val.trim() !== '' && val.trim() !== 'N/A';
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (isFilledPhone(formData.customerPhone) && !phoneRegex.test(formData.customerPhone)) {
+    if (
+      isFilledPhone(formData.customerPhone) &&
+      !phoneRegex.test(formData.customerPhone)
+    ) {
       newErrors.customerPhone = 'Customer phone must be 10 digits';
     }
-    if (isFilledPhone(formData.alternateMobileNumber) && !phoneRegex.test(formData.alternateMobileNumber)) {
+    if (
+      isFilledPhone(formData.alternateMobileNumber) &&
+      !phoneRegex.test(formData.alternateMobileNumber)
+    ) {
       newErrors.alternateMobileNumber = 'Alternate mobile must be 10 digits';
     }
-    if (isFilledPhone(formData.plumberMobileNumber) && !phoneRegex.test(formData.plumberMobileNumber)) {
+    if (
+      isFilledPhone(formData.plumberMobileNumber) &&
+      !phoneRegex.test(formData.plumberMobileNumber)
+    ) {
       newErrors.plumberMobileNumber = 'Plumber mobile must be 10 digits';
     }
 

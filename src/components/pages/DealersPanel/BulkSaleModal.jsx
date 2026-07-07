@@ -12,7 +12,7 @@ const BulkSaleModal = ({ isOpen, onClose, fetchSalesData, dealers }) => {
   const [manualInput, setManualInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  
+
   const isProcessing = useRef(false);
 
   const videoRef = useRef(null);
@@ -161,7 +161,7 @@ const BulkSaleModal = ({ isOpen, onClose, fetchSalesData, dealers }) => {
   const handleClose = () => {
     stopCamera();
     setScannedItems([]);
-    scannedSet.current.clear(); 
+    scannedSet.current.clear();
     setSelectedDealer('');
     setManualInput('');
     onClose();

@@ -10,10 +10,11 @@ const Management = () => {
   const TabButton = ({ id, label, icon: Icon, isActive, onClick }) => (
     <button
       onClick={() => onClick(id)}
-      className={`flex items-center px-6 py-3 font-medium text-sm rounded-lg transition-all duration-200 ${isActive
+      className={`flex items-center px-6 py-3 font-medium text-sm rounded-lg transition-all duration-200 ${
+        isActive
           ? 'bg-blue-600 text-white shadow-md'
           : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-        }`}
+      }`}
     >
       <Icon className="w-4 h-4 mr-2" />
       {label}
@@ -40,7 +41,11 @@ const Management = () => {
           />
         </div>
 
-        <TableExportButtons exportName={activeTab === 'categories' ? 'Categories_List' : 'Models_List'} />
+        <TableExportButtons
+          exportName={
+            activeTab === 'categories' ? 'Categories_List' : 'Models_List'
+          }
+        />
       </div>
 
       <div className="transition-all duration-300">

@@ -31,7 +31,8 @@ const EditSaleRequestModal = ({
     }
   }, [sale]);
 
-  const isFilledPhone = (val) => val && val.trim() !== '' && val.trim() !== 'N/A';
+  const isFilledPhone = (val) =>
+    val && val.trim() !== '' && val.trim() !== 'N/A';
 
   const validateForm = () => {
     let newErrors = {};
@@ -40,12 +41,20 @@ const EditSaleRequestModal = ({
       newErrors.customerPhone = 'Customer phone must be exactly 10 digits';
     }
 
-    if (isFilledPhone(alternateMobileNumber) && !phoneRegex.test(alternateMobileNumber)) {
-      newErrors.alternateMobileNumber = 'Alternate mobile must be exactly 10 digits';
+    if (
+      isFilledPhone(alternateMobileNumber) &&
+      !phoneRegex.test(alternateMobileNumber)
+    ) {
+      newErrors.alternateMobileNumber =
+        'Alternate mobile must be exactly 10 digits';
     }
 
-    if (isFilledPhone(plumberMobileNumber) && !phoneRegex.test(plumberMobileNumber)) {
-      newErrors.plumberMobileNumber = 'Plumber mobile must be exactly 10 digits';
+    if (
+      isFilledPhone(plumberMobileNumber) &&
+      !phoneRegex.test(plumberMobileNumber)
+    ) {
+      newErrors.plumberMobileNumber =
+        'Plumber mobile must be exactly 10 digits';
     }
 
     setErrors(newErrors);

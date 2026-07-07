@@ -22,7 +22,7 @@ export default function ExecutiveSubDealers() {
       setLoading(true);
       const token = localStorage.getItem('token');
       const res = await axios.get(`${API_URL}/sub-dealers`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setSubDealers(res.data);
     } catch (error) {
@@ -45,7 +45,7 @@ export default function ExecutiveSubDealers() {
       setModalItems([]);
       const token = localStorage.getItem('token');
       const res = await axios.get(`${API_URL}/sub-dealers/${sd._id}/sales`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setModalItems(res.data);
     } catch (error) {
@@ -63,9 +63,12 @@ export default function ExecutiveSubDealers() {
       setModalLoading(true);
       setModalItems([]);
       const token = localStorage.getItem('token');
-      const res = await axios.get(`${API_URL}/sub-dealers/${sd._id}/inventory`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await axios.get(
+        `${API_URL}/sub-dealers/${sd._id}/inventory`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setModalItems(res.data);
     } catch (error) {
       toast.error('Error fetching inventory data');
@@ -76,11 +79,12 @@ export default function ExecutiveSubDealers() {
   };
 
   const filteredSubDealers = useMemo(() => {
-    return subDealers.filter(sd => 
-      sd.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sd.district?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sd.subDealerId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sd.dealer?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    return subDealers.filter(
+      (sd) =>
+        sd.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        sd.district?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        sd.subDealerId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        sd.dealer?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [subDealers, searchTerm]);
 
@@ -89,18 +93,23 @@ export default function ExecutiveSubDealers() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-800">Assigned Sub Dealers</h1>
-          <p className="text-sm text-gray-500 mt-1">View list of assigned sub dealers, their current stock levels, and customer sales history.</p>
+          <h1 className="text-xl font-bold text-gray-800">
+            Assigned Sub Dealers
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            View list of assigned sub dealers, their current stock levels, and
+            customer sales history.
+          </p>
         </div>
         <TableExportButtons
           exportName="Assigned_Sub_Dealers"
-          exportData={filteredSubDealers.map(sd => ({
-            'ID': sd.subDealerId,
-            'Name': sd.name,
-            'District': sd.district || 'N/A',
+          exportData={filteredSubDealers.map((sd) => ({
+            ID: sd.subDealerId,
+            Name: sd.name,
+            District: sd.district || 'N/A',
             'Parent Dealer': sd.dealer?.name || 'N/A',
             'Sales Count': sd.salesCount || 0,
-            'Inventory Count': sd.inventoryCount || 0
+            'Inventory Count': sd.inventoryCount || 0,
           }))}
         />
       </div>
@@ -207,10 +216,15 @@ export default function ExecutiveSubDealers() {
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h3 className="text-lg font-bold text-gray-800">
-                  {modalType === 'sales' ? `Sales History` : `Current Inventory`} - {selectedSubDealer?.name}
+                  {modalType === 'sales'
+                    ? `Sales History`
+                    : `Current Inventory`}{' '}
+                  - {selectedSubDealer?.name}
                 </h3>
                 <p className="text-xs text-gray-400 mt-1">
-                  {modalType === 'sales' ? 'List of all registered customer sales.' : 'Available physical items in sub dealer warehouse.'}
+                  {modalType === 'sales'
+                    ? 'List of all registered customer sales.'
+                    : 'Available physical items in sub dealer warehouse.'}
                 </p>
               </div>
               <button
@@ -227,10 +241,10 @@ export default function ExecutiveSubDealers() {
                 exportData={modalItems.map((item, idx) => {
                   return {
                     'Serial Number': item.product?.serialNumber,
-                    'Model': item.product?.model?.name || 'N/A',
+                    Model: item.product?.model?.name || 'N/A',
                     'Customer Name': item.customerName || 'N/A',
                     'Customer Phone': item.customerPhone || 'N/A',
-                    'Date': new Date(item.createdAt).toLocaleDateString()
+                    Date: new Date(item.createdAt).toLocaleDateString(),
                   };
                 })}
               />
@@ -259,11 +273,21 @@ export default function ExecutiveSubDealers() {
                   <tbody className="divide-y divide-gray-100 bg-white">
                     {modalItems.map((item, idx) => (
                       <tr key={idx} className="hover:bg-gray-50/50">
-                        <td className="px-4 py-3 font-semibold text-gray-900">{item.product?.serialNumber}</td>
-                        <td className="px-4 py-3">{item.product?.model?.name || 'N/A'}</td>
-                        <td className="px-4 py-3 font-semibold text-gray-800">{item.customerName || 'N/A'}</td>
-                        <td className="px-4 py-3">{item.customerPhone || 'N/A'}</td>
-                        <td className="px-4 py-3">{new Date(item.createdAt).toLocaleDateString()}</td>
+                        <td className="px-4 py-3 font-semibold text-gray-900">
+                          {item.product?.serialNumber}
+                        </td>
+                        <td className="px-4 py-3">
+                          {item.product?.model?.name || 'N/A'}
+                        </td>
+                        <td className="px-4 py-3 font-semibold text-gray-800">
+                          {item.customerName || 'N/A'}
+                        </td>
+                        <td className="px-4 py-3">
+                          {item.customerPhone || 'N/A'}
+                        </td>
+                        <td className="px-4 py-3">
+                          {new Date(item.createdAt).toLocaleDateString()}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

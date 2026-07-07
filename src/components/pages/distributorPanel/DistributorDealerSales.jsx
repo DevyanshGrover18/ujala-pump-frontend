@@ -228,10 +228,10 @@ export default function Sales() {
       const matchDate =
         (!dateRange.startDate ||
           new Date(product.assignedToDistributorAt) >=
-          new Date(dateRange.startDate)) &&
+            new Date(dateRange.startDate)) &&
         (!dateRange.endDate ||
           new Date(product.assignedToDistributorAt) <=
-          new Date(new Date(dateRange.endDate).setHours(23, 59, 59, 999)));
+            new Date(new Date(dateRange.endDate).setHours(23, 59, 59, 999)));
 
       const matchModel =
         modelFilter === 'all' || product.model?._id === modelFilter;
@@ -370,12 +370,14 @@ export default function Sales() {
   };
 
   const modalProducts = useMemo(() => {
-    let filtered = filteredProducts.filter((p) => p.model?._id === activeModelId);
+    let filtered = filteredProducts.filter(
+      (p) => p.model?._id === activeModelId
+    );
 
     if (modalStatusFilter === 'sold') {
-      filtered = filtered.filter(p => !!p.sale?.customerName);
+      filtered = filtered.filter((p) => !!p.sale?.customerName);
     } else if (modalStatusFilter === 'unsold') {
-      filtered = filtered.filter(p => !p.sale?.customerName);
+      filtered = filtered.filter((p) => !p.sale?.customerName);
     }
 
     return filtered;
@@ -505,7 +507,9 @@ export default function Sales() {
     });
 
     if (!allSameDealer) {
-      toast.error('All selected products must belong to the same dealer for reversion.');
+      toast.error(
+        'All selected products must belong to the same dealer for reversion.'
+      );
       return;
     }
 
@@ -548,9 +552,9 @@ export default function Sales() {
           <div className="flex items-center gap-4">
             <TableExportButtons
               exportName="Distributor_Sales_Overview"
-              exportData={modelGroups.map(mg => ({
+              exportData={modelGroups.map((mg) => ({
                 'Model Name': mg.model?.name || 'Unknown',
-                'Total Products': mg.count || 0
+                'Total Products': mg.count || 0,
               }))}
             />
             <button
@@ -715,17 +719,23 @@ export default function Sales() {
                 {modalProducts.length > 0 && (
                   <TableExportButtons
                     exportName={`Model_${products.find((p) => p.model?._id === activeModelId)?.model?.name || 'Products'}_Sales`}
-                    exportData={modalProducts.map(product => {
+                    exportData={modalProducts.map((product) => {
                       const warrantyInfo = getWarrantyInfo(product);
                       return {
                         'Serial Number': product.serialNumber,
-                        'Model': product.model?.name || 'N/A',
-                        'Assigned Date': product.assignedToDistributorAt ? new Date(product.assignedToDistributorAt).toLocaleDateString() : 'N/A',
-                        'Dealer': product.dealer?.name || 'N/A',
+                        Model: product.model?.name || 'N/A',
+                        'Assigned Date': product.assignedToDistributorAt
+                          ? new Date(
+                              product.assignedToDistributorAt
+                            ).toLocaleDateString()
+                          : 'N/A',
+                        Dealer: product.dealer?.name || 'N/A',
                         'Sub Dealer': product.subDealer?.name || 'N/A',
                         'Warranty Status': warrantyInfo.status,
                         'Warranty Balance': warrantyInfo.remaining,
-                        'Sold To Customer': product.sale?.customerName ? 'Yes' : 'No'
+                        'Sold To Customer': product.sale?.customerName
+                          ? 'Yes'
+                          : 'No',
                       };
                     })}
                   />
@@ -807,32 +817,37 @@ export default function Sales() {
                   </button>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-700">Status </span>
+                    <span className="text-sm font-medium text-gray-700">
+                      Status{' '}
+                    </span>
                     <div className="flex items-center bg-gray-100 p-1 rounded-lg">
                       <button
                         onClick={() => setModalStatusFilter('all')}
-                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${modalStatusFilter === 'all'
+                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                          modalStatusFilter === 'all'
                             ? 'bg-white text-gray-900 shadow-sm'
                             : 'text-gray-500 hover:text-gray-700'
-                          }`}
+                        }`}
                       >
                         All
                       </button>
                       <button
                         onClick={() => setModalStatusFilter('sold')}
-                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${modalStatusFilter === 'sold'
+                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                          modalStatusFilter === 'sold'
                             ? 'bg-white text-gray-900 shadow-sm'
                             : 'text-gray-500 hover:text-gray-700'
-                          }`}
+                        }`}
                       >
                         Sold
                       </button>
                       <button
                         onClick={() => setModalStatusFilter('unsold')}
-                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${modalStatusFilter === 'unsold'
+                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                          modalStatusFilter === 'unsold'
                             ? 'bg-white text-gray-900 shadow-sm'
                             : 'text-gray-500 hover:text-gray-700'
-                          }`}
+                        }`}
                       >
                         Unsold
                       </button>
@@ -852,7 +867,7 @@ export default function Sales() {
                             checked={
                               paginatedModalProducts.length > 0 &&
                               selectedProducts.size ===
-                              paginatedModalProducts.length
+                                paginatedModalProducts.length
                             }
                           />
                         </th>
@@ -892,10 +907,11 @@ export default function Sales() {
                         return (
                           <tr
                             key={product._id}
-                            className={`hover:bg-gray-50 ${selectedProducts.has(product._id)
-                              ? 'bg-blue-50'
-                              : ''
-                              }`}
+                            className={`hover:bg-gray-50 ${
+                              selectedProducts.has(product._id)
+                                ? 'bg-blue-50'
+                                : ''
+                            }`}
                           >
                             <td className="px-4 py-4">
                               <input
@@ -903,7 +919,9 @@ export default function Sales() {
                                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                 aria-label={`Select product ${product.serialNumber}`}
                                 checked={selectedProducts.has(product._id)}
-                                onChange={() => handleProductSelect(product._id)}
+                                onChange={() =>
+                                  handleProductSelect(product._id)
+                                }
                               />
                             </td>
                             <td className="px-4 py-4 text-sm font-medium whitespace-nowrap">
@@ -916,8 +934,8 @@ export default function Sales() {
                             <td className="px-4 py-4 text-sm">
                               {product.assignedToDistributorAt
                                 ? new Date(
-                                  product.assignedToDistributorAt
-                                ).toLocaleDateString()
+                                    product.assignedToDistributorAt
+                                  ).toLocaleDateString()
                                 : 'N/A'}
                             </td>
                             <td className="px-4 py-4 text-sm">
@@ -1050,9 +1068,9 @@ export default function Sales() {
           details={
             orderToDelete
               ? {
-                'Serial Number': orderToDelete.serialNumber,
-                Factory: orderToDelete.factory?.name,
-              }
+                  'Serial Number': orderToDelete.serialNumber,
+                  Factory: orderToDelete.factory?.name,
+                }
               : null
           }
           className="z-80"
@@ -1069,9 +1087,9 @@ export default function Sales() {
           details={
             orderToDelete
               ? {
-                'Serial Number': orderToDelete.serialNumber,
-                Factory: orderToDelete.factory?.name,
-              }
+                  'Serial Number': orderToDelete.serialNumber,
+                  Factory: orderToDelete.factory?.name,
+                }
               : null
           }
           className="z-80"

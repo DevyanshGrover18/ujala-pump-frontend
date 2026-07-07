@@ -59,7 +59,11 @@ function Dealers() {
   const filteredItems = useMemo(() => {
     let result = dealers;
     if (distributorFilter !== 'all') {
-      result = result.filter(d => d.distributor?._id === distributorFilter || d.distributor === distributorFilter);
+      result = result.filter(
+        (d) =>
+          d.distributor?._id === distributorFilter ||
+          d.distributor === distributorFilter
+      );
     }
     return result;
   }, [dealers, distributorFilter]);
@@ -240,7 +244,9 @@ function Dealers() {
 
   const handleViewSales = async (dealer) => {
     try {
-      const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/dealers/${dealer._id}/sales`);
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/dealers/${dealer._id}/sales`
+      );
       setDealerSales(data);
       setSelectedDealer(dealer);
       setShowSalesModal(true);
@@ -319,7 +325,9 @@ function Dealers() {
                 <h2 className="text-lg font-semibold text-gray-900">
                   Dealer List
                 </h2>
-                <p className="text-sm text-gray-600">Total {filteredItems.length}</p>
+                <p className="text-sm text-gray-600">
+                  Total {filteredItems.length}
+                </p>
               </div>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                 <SearchBar
@@ -335,8 +343,10 @@ function Dealers() {
                   className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4d55f5] focus:border-transparent text-sm bg-white"
                 >
                   <option value="all">All Distributors</option>
-                  {distributors.map(d => (
-                    <option key={d._id} value={d._id}>{d.name}</option>
+                  {distributors.map((d) => (
+                    <option key={d._id} value={d._id}>
+                      {d.name}
+                    </option>
                   ))}
                 </select>
                 {selectedDealers.length > 0 ? (

@@ -192,7 +192,9 @@ function Orders() {
     if (order.isManual) {
       try {
         const itemsRes = await orderService.fetchOrderItems(order._id);
-        orderToEdit.serialNumbers = itemsRes.data.map(item => item.serialNumber);
+        orderToEdit.serialNumbers = itemsRes.data.map(
+          (item) => item.serialNumber
+        );
       } catch (error) {
         console.error('Error fetching order items for editing:', error);
         toast.error('Failed to load serial numbers for editing');
@@ -509,10 +511,10 @@ function Orders() {
         details={
           orderToDelete
             ? {
-              'Order ID': orderToDelete.orderId,
-              'Serial Number': orderToDelete.serialNumber,
-              Factory: orderToDelete.factory?.name,
-            }
+                'Order ID': orderToDelete.orderId,
+                'Serial Number': orderToDelete.serialNumber,
+                Factory: orderToDelete.factory?.name,
+              }
             : null
         }
       />
@@ -528,10 +530,10 @@ function Orders() {
         details={
           orderToDelete
             ? {
-              'Order ID': orderToDelete.orderId,
-              'Serial Number': orderToDelete.serialNumber,
-              Factory: orderToDelete.factory?.name,
-            }
+                'Order ID': orderToDelete.orderId,
+                'Serial Number': orderToDelete.serialNumber,
+                Factory: orderToDelete.factory?.name,
+              }
             : null
         }
       />

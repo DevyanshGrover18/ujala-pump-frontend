@@ -1,6 +1,12 @@
 import { useContext, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, LayoutDashboard, Package, ShoppingBag, Wallet } from 'lucide-react';
+import {
+  LogOut,
+  LayoutDashboard,
+  Package,
+  ShoppingBag,
+  Wallet,
+} from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 
 const subDealerSidebarItems = [

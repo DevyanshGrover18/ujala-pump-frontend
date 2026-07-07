@@ -119,10 +119,18 @@ export default function WalletPage() {
       {/* Claims History Table */}
       <div className="bg-white rounded-xl border border-gray-200">
         <div className="flex items-center justify-between p-4 border-b border-gray-100 flex-wrap gap-2">
-          <h2 className="text-sm font-semibold text-gray-800">Claims History</h2>
+          <h2 className="text-sm font-semibold text-gray-800">
+            Claims History
+          </h2>
           <div className="flex items-center gap-2 flex-wrap">
             <div className="flex gap-1 flex-wrap">
-              {['All', 'Approval Pending', 'Approved', 'Rejected', 'Incomplete'].map((s) => (
+              {[
+                'All',
+                'Approval Pending',
+                'Approved',
+                'Rejected',
+                'Incomplete',
+              ].map((s) => (
                 <button
                   key={s}
                   onClick={() => {
@@ -152,7 +160,14 @@ export default function WalletPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                {['Date', 'Products', 'Incentive', 'Points', 'Status', 'Reason'].map((h) => (
+                {[
+                  'Date',
+                  'Products',
+                  'Incentive',
+                  'Points',
+                  'Status',
+                  'Reason',
+                ].map((h) => (
                   <th
                     key={h}
                     className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -165,13 +180,19 @@ export default function WalletPage() {
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-sm text-gray-400">
+                  <td
+                    colSpan={6}
+                    className="py-10 text-center text-sm text-gray-400"
+                  >
                     Loading...
                   </td>
                 </tr>
               ) : paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-sm text-gray-400">
+                  <td
+                    colSpan={6}
+                    className="py-10 text-center text-sm text-gray-400"
+                  >
                     No claims yet.
                   </td>
                 </tr>
@@ -227,10 +248,14 @@ export default function WalletPage() {
                         g.items?.map((item, idx) => (
                           <tr key={idx} className="bg-gray-50/40">
                             <td className="pl-10 pr-5 py-2 text-xs text-gray-500">
-                              {new Date(item.claimDate).toLocaleDateString('en-IN')}
+                              {new Date(item.claimDate).toLocaleDateString(
+                                'en-IN'
+                              )}
                             </td>
                             <td className="px-5 py-2 text-xs text-gray-700">
-                              <span className="font-medium">{item.modelName}</span>
+                              <span className="font-medium">
+                                {item.modelName}
+                              </span>
                               <span className="ml-2 font-mono text-gray-400">
                                 {item.serialNumber}
                               </span>

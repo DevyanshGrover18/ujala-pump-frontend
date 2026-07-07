@@ -252,7 +252,9 @@ function Distributors() {
 
   const handleViewInventory = async (distributor) => {
     try {
-      const productsResponse = await axios.get(`${API_URL}/${distributor._id}/products`);
+      const productsResponse = await axios.get(
+        `${API_URL}/${distributor._id}/products`
+      );
       setDistributorProducts(productsResponse.data);
       setSelectedDistributor(distributor);
       setShowProductsModal(true);
@@ -264,7 +266,9 @@ function Distributors() {
 
   const handleViewSales = async (distributor) => {
     try {
-      const salesResponse = await axios.get(`${API_URL}/${distributor._id}/sales`);
+      const salesResponse = await axios.get(
+        `${API_URL}/${distributor._id}/sales`
+      );
       setDistributorSales(salesResponse.data);
       setSelectedDistributor(distributor);
       setShowSalesModal(true);

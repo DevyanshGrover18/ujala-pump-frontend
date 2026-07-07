@@ -249,10 +249,10 @@ export default function FactoryOrdersModal({
 
     return {
       'Order ID': boxData.orderId,
-      'Box': `Box ${boxData.boxNumber}`,
+      Box: `Box ${boxData.boxNumber}`,
       'Serial Number': boxData.items.map((it) => it.serialNumber).join(', '),
-      'Model': boxData.model?.name || '',
-      'Type':
+      Model: boxData.model?.name || '',
+      Type:
         boxData.orderType === '2_units'
           ? '2 Units'
           : boxData.orderType === '3_units'
@@ -264,11 +264,11 @@ export default function FactoryOrdersModal({
         'en-US',
         { year: 'numeric', month: 'short', day: 'numeric' }
       ),
-      'Status': boxData.items[0].status,
-      'Completed': latestCompletionDate
+      Status: boxData.items[0].status,
+      Completed: latestCompletionDate
         ? new Date(latestCompletionDate).toLocaleDateString('en-GB')
         : '-',
-      'Dispatched': latestDispatchDate
+      Dispatched: latestDispatchDate
         ? new Date(latestDispatchDate).toLocaleDateString('en-GB')
         : '-',
     };
@@ -304,8 +304,8 @@ export default function FactoryOrdersModal({
                   tab === 'all'
                     ? factoryOrders.length
                     : factoryOrders.filter(
-                      (order) => order.status.toLowerCase() === tab
-                    ).length;
+                        (order) => order.status.toLowerCase() === tab
+                      ).length;
                 return (
                   <button
                     key={tab}
@@ -571,17 +571,17 @@ export default function FactoryOrdersModal({
                             {boxData.model?.name}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
-                             <span
-                               className={`px-2 py-1 text-xs font-medium rounded-full ${boxData.orderType === '2_units' ? 'bg-blue-100 text-blue-800' : boxData.orderType === '3_units' ? 'bg-purple-100 text-purple-800' : boxData.orderType === '4_units' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}
-                             >
-                               {boxData.orderType === '2_units'
-                                 ? '2 Units'
-                                 : boxData.orderType === '3_units'
-                                   ? '3 Units'
-                                   : boxData.orderType === '4_units'
-                                     ? '4 Units'
-                                     : '1 Unit'}
-                             </span>
+                            <span
+                              className={`px-2 py-1 text-xs font-medium rounded-full ${boxData.orderType === '2_units' ? 'bg-blue-100 text-blue-800' : boxData.orderType === '3_units' ? 'bg-purple-100 text-purple-800' : boxData.orderType === '4_units' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}
+                            >
+                              {boxData.orderType === '2_units'
+                                ? '2 Units'
+                                : boxData.orderType === '3_units'
+                                  ? '3 Units'
+                                  : boxData.orderType === '4_units'
+                                    ? '4 Units'
+                                    : '1 Unit'}
+                            </span>
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                             {new Date(
@@ -620,15 +620,15 @@ export default function FactoryOrdersModal({
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                             {latestCompletionDate
                               ? new Date(
-                                latestCompletionDate
-                              ).toLocaleDateString('en-GB')
+                                  latestCompletionDate
+                                ).toLocaleDateString('en-GB')
                               : '-'}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                             {latestDispatchDate
                               ? new Date(latestDispatchDate).toLocaleDateString(
-                                'en-GB'
-                              )
+                                  'en-GB'
+                                )
                               : '-'}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">

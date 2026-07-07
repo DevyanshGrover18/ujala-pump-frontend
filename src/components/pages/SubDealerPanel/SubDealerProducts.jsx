@@ -172,7 +172,7 @@ export default function SubDealerProducts() {
     } catch (error) {
       toast.error(
         'Error selling products: ' +
-        (error.response?.data?.message || error.message)
+          (error.response?.data?.message || error.message)
       );
     }
   };
@@ -264,10 +264,10 @@ export default function SubDealerProducts() {
     const group = modelGroups.find((g) => g.model._id === activeModelId);
     return group
       ? [...group.assignments].sort(
-        (a, b) =>
-          getSerialCounter(b.product.serialNumber) -
-          getSerialCounter(a.product.serialNumber)
-      )
+          (a, b) =>
+            getSerialCounter(b.product.serialNumber) -
+            getSerialCounter(a.product.serialNumber)
+        )
       : [];
   }, [modelGroups, activeModelId]);
 
@@ -314,9 +314,9 @@ export default function SubDealerProducts() {
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <TableExportButtons
                 exportName="SubDealer_Inventory_Models"
-                exportData={modelGroups.map(mg => ({
+                exportData={modelGroups.map((mg) => ({
                   'Model Name': mg.model?.name || 'Unknown',
-                  'Products Count': mg.assignments?.length || 0
+                  'Products Count': mg.assignments?.length || 0,
                 }))}
               />
             </div>
@@ -584,13 +584,15 @@ export default function SubDealerProducts() {
               <div className="flex items-center gap-2">
                 <TableExportButtons
                   exportName={`SubDealer_Products_${activeModel?.name}`}
-                  exportData={modalAssignments.map(assignment => {
+                  exportData={modalAssignments.map((assignment) => {
                     const status = getProductStatus(assignment.product);
                     return {
                       'Serial Number': assignment.product.serialNumber,
-                      'Dealer': assignment.dealer?.name || 'N/A',
-                      'Status': status.label,
-                      'Added Date': new Date(assignment.createdAt).toLocaleDateString()
+                      Dealer: assignment.dealer?.name || 'N/A',
+                      Status: status.label,
+                      'Added Date': new Date(
+                        assignment.createdAt
+                      ).toLocaleDateString(),
                     };
                   })}
                 />

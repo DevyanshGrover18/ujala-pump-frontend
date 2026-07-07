@@ -44,14 +44,15 @@ const SalesModal = ({
   return (
     <div className="fixed inset-0 bg-black/70 bg-opacity-20 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-4xl max-h-[90vh] flex flex-col shadow-xl">
-        
         {/* Header */}
         <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <div>
             <h3 className="text-lg font-bold text-gray-900">
               Sales History for {dealer?.name}
             </h3>
-            <p className="text-xs text-gray-500 mt-1">Dispatches to sub dealers and customer registrations.</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Dispatches to sub dealers and customer registrations.
+            </p>
           </div>
           <div className="flex items-center space-x-4">
             {filteredSales && filteredSales.length > 0 && (
@@ -59,10 +60,10 @@ const SalesModal = ({
                 exportName={`${dealer?.name || 'Dealer'}_Sales`}
                 exportData={filteredSales.map((item) => ({
                   'Serial Number': item.serialNumber,
-                  'Model': item.modelName,
-                  'Type': item.type,
+                  Model: item.modelName,
+                  Type: item.type,
                   'Assigned/Sold To': item.soldTo,
-                  'Date': new Date(item.date).toLocaleDateString()
+                  Date: new Date(item.date).toLocaleDateString(),
                 }))}
               />
             )}
@@ -77,7 +78,9 @@ const SalesModal = ({
 
         {/* Date Filters */}
         <div className="flex flex-wrap items-center gap-3 mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100 flex-shrink-0">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Filter by Date Range:</span>
+          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+            Filter by Date Range:
+          </span>
           <div className="flex items-center gap-2">
             <input
               type="date"
@@ -133,17 +136,27 @@ const SalesModal = ({
               <tbody className="divide-y divide-gray-100 bg-white">
                 {paginatedSales.map((item, idx) => (
                   <tr key={idx} className="hover:bg-gray-50/50">
-                    <td className="px-4 py-3 font-semibold text-gray-900">{item.serialNumber}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900">
+                      {item.serialNumber}
+                    </td>
                     <td className="px-4 py-3">{item.modelName}</td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        item.type === 'Sub Dealer Sale' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'
-                      }`}>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          item.type === 'Sub Dealer Sale'
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'bg-purple-50 text-purple-700'
+                        }`}
+                      >
                         {item.type}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-semibold text-gray-800">{item.soldTo}</td>
-                    <td className="px-4 py-3">{new Date(item.date).toLocaleDateString()}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-800">
+                      {item.soldTo}
+                    </td>
+                    <td className="px-4 py-3">
+                      {new Date(item.date).toLocaleDateString()}
+                    </td>
                   </tr>
                 ))}
               </tbody>
