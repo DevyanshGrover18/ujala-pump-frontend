@@ -112,70 +112,81 @@ export function OrderTable({
           </thead>
           <ListComponent
             items={orders}
-            renderItem={(order) => (
-              <>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    onChange={() => onSelect(order._id)}
-                    checked={selectedOrders.includes(order._id)}
-                  />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {order.orderId}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
-                  {order.serialNumber}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {order.factory?.name}
-                </td>
-                {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.category?.name}</td> */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {order.model?.name}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {order.quantity}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
-                  {getTotalUnits(order)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="inline-flex items-center px-2.5 py-1.5 bg-blue-100 text-blue-800 text-xs font-medium rounded">
-                    <Truck className="h-4 w-4 mr-1.5" />
-                    {order.dispatchedUnits} Dispatched
-                  </div>
-                </td>
-                {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getOrderTypeDisplay(order.orderType).bgColor} ${getOrderTypeDisplay(order.orderType).textColor}`}>
-                  {getOrderTypeDisplay(order.orderType).label}
-                </span>
-              </td> */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => onView(order)}
-                      className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                    >
-                      <Eye size={20} className="text-gray-500" />
-                    </button>
-                    <button
-                      onClick={() => onEdit(order)}
-                      className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                    >
-                      <FilePenLine size={20} className="text-gray-500" />
-                    </button>
-                    <button
-                      onClick={() => onDelete(order)}
-                      className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                    >
-                      <Trash2 size={20} className="text-red-500" />
-                    </button>
-                  </div>
-                </td>
-              </>
-            )}
+            renderItem={(order) => {
+              const isDispatched =
+                order.status === 'Dispatched' ||
+                (order.dispatchedUnits && order.dispatchedUnits > 0);
+              return (
+                <>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {!isDispatched && (
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        onChange={() => onSelect(order._id)}
+                        checked={selectedOrders.includes(order._id)}
+                      />
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {order.orderId}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                    {order.serialNumber}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {order.factory?.name}
+                  </td>
+                  {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.category?.name}</td> */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {order.model?.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {order.quantity}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                    {getTotalUnits(order)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="inline-flex items-center px-2.5 py-1.5 bg-blue-100 text-blue-800 text-xs font-medium rounded">
+                      <Truck className="h-4 w-4 mr-1.5" />
+                      {order.dispatchedUnits} Dispatched
+                    </div>
+                  </td>
+                  {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getOrderTypeDisplay(order.orderType).bgColor} ${getOrderTypeDisplay(order.orderType).textColor}`}>
+                    {getOrderTypeDisplay(order.orderType).label}
+                  </span>
+                </td> */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => onView(order)}
+                        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                      >
+                        <Eye size={20} className="text-gray-500" />
+                      </button>
+                      {!isDispatched && (
+                        <>
+                          <button
+                            onClick={() => onEdit(order)}
+                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                          >
+                            <FilePenLine size={20} className="text-gray-500" />
+                          </button>
+                          <button
+                            onClick={() => onDelete(order)}
+                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                          >
+                            <Trash2 size={20} className="text-red-500" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </>
+              );
+            }}
             itemContainer="tr"
             listContainer="tbody"
             itemClassName="hover:bg-gray-50"
