@@ -11,6 +11,7 @@ export function OrderTable({
   selectedOrders,
   onSelect,
   onSelectAll,
+  isAdmin,
 }) {
   const getOrderTypeDisplay = (orderType) => {
     const types = {
@@ -114,8 +115,9 @@ export function OrderTable({
             items={orders}
             renderItem={(order) => {
               const isDispatched =
-                order.status === 'Dispatched' ||
-                (order.dispatchedUnits && order.dispatchedUnits > 0);
+                (order.status === 'Dispatched' ||
+                  (order.dispatchedUnits && order.dispatchedUnits > 0)) &&
+                !isAdmin;
               return (
                 <>
                   <td className="px-6 py-4 whitespace-nowrap">

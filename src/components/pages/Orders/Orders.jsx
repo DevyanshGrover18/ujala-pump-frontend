@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import ErrorBoundary from '../../global/ErrorBoundary';
 import ConfirmationModal from '../../global/ConfirmationModal';
@@ -13,8 +13,10 @@ import { OrderDetailsModal } from './components/orderDetailsModal';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { orderService } from './services/orderServices';
 import { Trash2 } from 'lucide-react';
+import { AuthContext } from '../../../context/AuthContext';
 
 function Orders() {
+  const { isAdmin } = useContext(AuthContext);
   const [searchTerm, setSearchTerm] = useState('');
   const [factoryFilter, setFactoryFilter] = useState('all');
   const [orderTypeFilter, setOrderTypeFilter] = useState('all');
@@ -324,6 +326,7 @@ function Orders() {
           selectedOrders={selectedOrders}
           onSelect={handleSelect}
           onSelectAll={handleSelectAll}
+          isAdmin={isAdmin}
         />
         <OrderCard
           orders={currentItems}
@@ -333,6 +336,7 @@ function Orders() {
           onStatusChange={updateOrderStatus}
           selectedOrders={selectedOrders}
           onSelect={handleSelect}
+          isAdmin={isAdmin}
         />
       </>
     ) : (

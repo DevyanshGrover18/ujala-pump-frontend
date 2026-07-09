@@ -9,6 +9,7 @@ export function OrderCard({
   onStatusChange,
   selectedOrders,
   onSelect,
+  isAdmin,
 }) {
   const getTotalUnits = (order) => {
     return (
@@ -31,8 +32,9 @@ export function OrderCard({
           items={orders}
           renderItem={(order) => {
             const isDispatched =
-              order.status === 'Dispatched' ||
-              (order.dispatchedUnits && order.dispatchedUnits > 0);
+              (order.status === 'Dispatched' ||
+                (order.dispatchedUnits && order.dispatchedUnits > 0)) &&
+              !isAdmin;
             return (
               <>
                 <div className="flex justify-between items-start">
