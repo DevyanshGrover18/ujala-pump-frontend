@@ -28,12 +28,12 @@ const subDealerSidebarItems = [
     icon: ShoppingBag,
     color: 'green',
   },
-  {
+  /* {
     title: 'My Wallet',
     path: '/sub-dealer/wallet',
     icon: Wallet,
     color: 'orange',
-  },
+  }, */
 ];
 
 export function SubDealerSideBar({ sidebarOpen, toggleSidebar }) {

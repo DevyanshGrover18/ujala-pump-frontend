@@ -369,7 +369,7 @@ const DealerModal = ({
           </div>
 
           {/* Incentive & Points Eligibility */}
-          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+          {/* <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
             <h3 className="text-sm font-semibold text-amber-800 mb-4 uppercase tracking-wide">
               Incentive &amp; Points Eligibility
             </h3>
@@ -439,7 +439,7 @@ const DealerModal = ({
                 </button>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="mt-8">
             <button

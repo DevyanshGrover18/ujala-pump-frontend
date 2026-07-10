@@ -362,7 +362,7 @@ export default function ModelModal({
                   required
                 />
               </div>
-              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              {/* <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                 <h3 className="text-sm font-semibold text-amber-800 mb-3 uppercase tracking-wide">
                   Incentive &amp; Points
                 </h3>
@@ -404,7 +404,7 @@ export default function ModelModal({
                     />
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
             <div>
               <h3 className="text-md font-medium text-gray-900 mb-1">

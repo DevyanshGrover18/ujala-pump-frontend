@@ -24,6 +24,38 @@ export default function Executives() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedExecutives, setSelectedExecutives] = useState([]);
+  const [infoModal, setInfoModal] = useState({
+    isOpen: false,
+    type: '', // 'distributors' | 'dealers' | 'subDealers'
+    title: '',
+    items: [],
+    assignedDealers: [],
+    assignedSubDealers: [],
+  });
+
+  const handleOpenInfoModal = (type, exec) => {
+    let title = '';
+    let items = [];
+    if (type === 'distributors') {
+      title = `Assigned Distributors for ${exec.name}`;
+      items = exec.distributors || [];
+    } else if (type === 'dealers') {
+      title = `Assigned Dealers for ${exec.name}`;
+      items = exec.dealers || [];
+    } else if (type === 'subDealers') {
+      title = `Assigned Sub Dealers for ${exec.name}`;
+      items = exec.subDealers || [];
+    }
+
+    setInfoModal({
+      isOpen: true,
+      type,
+      title,
+      items,
+      assignedDealers: exec.dealers || [],
+      assignedSubDealers: exec.subDealers || [],
+    });
+  };
 
   // Data for assignments
   const [distributors, setDistributors] = useState([]);
@@ -626,19 +658,28 @@ export default function Executives() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded text-xs font-semibold border border-blue-200">
+                          <button
+                            onClick={() => handleOpenInfoModal('distributors', exec)}
+                            className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded text-xs font-semibold border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer"
+                          >
                             {exec.distributors?.length || 0} Distributors
-                          </span>
+                          </button>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="bg-yellow-50 text-yellow-700 px-2.5 py-1 rounded text-xs font-semibold border border-yellow-200">
+                          <button
+                            onClick={() => handleOpenInfoModal('dealers', exec)}
+                            className="bg-yellow-50 text-yellow-700 px-2.5 py-1 rounded text-xs font-semibold border border-yellow-200 hover:bg-yellow-100 transition-colors cursor-pointer"
+                          >
                             {exec.dealers?.length || 0} Dealers
-                          </span>
+                          </button>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="bg-teal-50 text-teal-700 px-2.5 py-1 rounded text-xs font-semibold border border-teal-200">
+                          <button
+                            onClick={() => handleOpenInfoModal('subDealers', exec)}
+                            className="bg-teal-50 text-teal-700 px-2.5 py-1 rounded text-xs font-semibold border border-teal-200 hover:bg-teal-100 transition-colors cursor-pointer"
+                          >
                             {exec.subDealers?.length || 0} Sub Dealers
-                          </span>
+                          </button>
                         </td>
                         <td className="px-6 py-4">
                           <button
@@ -1222,6 +1263,135 @@ export default function Executives() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {infoModal.isOpen && (
+        <div className="fixed inset-0 bg-black/60 bg-opacity-20 flex items-center justify-center z-50 p-4 transition-opacity">
+          <div className="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl relative text-left">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+              <h3 className="text-lg font-bold text-gray-900">
+                {infoModal.title}
+              </h3>
+              <button
+                onClick={() => setInfoModal({ isOpen: false, type: '', title: '', items: [], assignedDealers: [], assignedSubDealers: [] })}
+                className="text-gray-400 hover:text-gray-600 p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* List Table */}
+            <div className="flex-1 overflow-y-auto min-h-0">
+              {infoModal.items.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No assigned items found.
+                </div>
+              ) : (
+                <table className="w-full text-left text-sm text-gray-500">
+                  <thead className="bg-gray-50 text-xs uppercase text-gray-700 font-bold border-b border-gray-200">
+                    <tr>
+                      <th className="px-4 py-3">ID</th>
+                      <th className="px-4 py-3">Name</th>
+                      {infoModal.type === 'distributors' && (
+                        <th className="px-4 py-3 text-right">Dealers Count</th>
+                      )}
+                      {infoModal.type === 'dealers' && (
+                        <>
+                          <th className="px-4 py-3">Distributor</th>
+                          <th className="px-4 py-3 text-right">Sub Dealers Count</th>
+                        </>
+                      )}
+                      {infoModal.type === 'subDealers' && (
+                        <th className="px-4 py-3">Dealer</th>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 bg-white">
+                    {infoModal.items.map((item, idx) => {
+                      if (infoModal.type === 'distributors') {
+                        // Count assigned dealers under this distributor
+                        const dealersCount = infoModal.assignedDealers.filter(ad => {
+                          const fullDealer = dealers.find(dl => dl._id?.toString() === ad._id?.toString());
+                          const dlDistId = fullDealer?.distributor?._id?.toString() || fullDealer?.distributor?.toString();
+                          return dlDistId === item._id?.toString();
+                        }).length;
+
+                        return (
+                          <tr key={idx} className="hover:bg-gray-50/50">
+                            <td className="px-4 py-3 font-mono text-xs text-gray-500">
+                              {item.distributorId}
+                            </td>
+                            <td className="px-4 py-3 font-semibold text-gray-900">
+                              {item.name}
+                            </td>
+                            <td className="px-4 py-3 text-right text-gray-900 font-semibold">
+                              {dealersCount}
+                            </td>
+                          </tr>
+                        );
+                      } else if (infoModal.type === 'dealers') {
+                        const fullDealerObj = dealers.find(dl => dl._id?.toString() === item._id?.toString());
+                        const distName = fullDealerObj?.distributor?.name || 'N/A';
+                        
+                        // Count assigned sub-dealers under this dealer
+                        const subDealersCount = infoModal.assignedSubDealers.filter(asd => {
+                          const fullSubDealer = subDealers.find(sd => sd._id?.toString() === asd._id?.toString());
+                          const sdDealerId = fullSubDealer?.dealer?._id?.toString() || fullSubDealer?.dealer?.toString();
+                          return sdDealerId === item._id?.toString();
+                        }).length;
+
+                        return (
+                          <tr key={idx} className="hover:bg-gray-50/50">
+                            <td className="px-4 py-3 font-mono text-xs text-gray-500">
+                              {item.dealerId}
+                            </td>
+                            <td className="px-4 py-3 font-semibold text-gray-900">
+                              {item.name}
+                            </td>
+                            <td className="px-4 py-3 text-gray-700">
+                              {distName}
+                            </td>
+                            <td className="px-4 py-3 text-right text-gray-900 font-semibold">
+                              {subDealersCount}
+                            </td>
+                          </tr>
+                        );
+                      } else if (infoModal.type === 'subDealers') {
+                        const fullSubDealerObj = subDealers.find(sd => sd._id?.toString() === item._id?.toString());
+                        const dealerName = fullSubDealerObj?.dealer?.name || 'N/A';
+
+                        return (
+                          <tr key={idx} className="hover:bg-gray-50/50">
+                            <td className="px-4 py-3 font-mono text-xs text-gray-500">
+                              {item.subDealerId}
+                            </td>
+                            <td className="px-4 py-3 font-semibold text-gray-900">
+                              {item.name}
+                            </td>
+                            <td className="px-4 py-3 text-gray-700">
+                              {dealerName}
+                            </td>
+                          </tr>
+                        );
+                      }
+                      return null;
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+            {/* Footer */}
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setInfoModal({ isOpen: false, type: '', title: '', items: [], assignedDealers: [], assignedSubDealers: [] })}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

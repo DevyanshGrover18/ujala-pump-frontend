@@ -47,12 +47,12 @@ const dealerSidebarItems = [
       },
     ],
   },
-  {
+  /* {
     title: 'My Wallet',
     path: '/dealer/wallet',
     icon: Wallet,
     color: 'orange',
-  },
+  }, */
 ];
 
 export function DealerSideBar({ sidebarOpen, toggleSidebar }) {

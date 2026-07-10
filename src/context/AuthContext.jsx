@@ -22,6 +22,26 @@ authAxios.interceptors.request.use(
   }
 );
 
+// Function to handle global 401 (Unauthorized) errors by logging out the user
+const handleUnauthorizedError = (error) => {
+  if (error.response && error.response.status === 401) {
+    // Avoid redirect loop or clearing credentials when checking incorrect login credentials
+    const url = error.config?.url || '';
+    if (!url.includes('/auth/login') && !url.includes('/login')) {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+  }
+  return Promise.reject(error);
+};
+
+// Add interceptor to global axios
+axios.interceptors.response.use((response) => response, handleUnauthorizedError);
+
+// Add interceptor to authAxios
+authAxios.interceptors.response.use((response) => response, handleUnauthorizedError);
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {

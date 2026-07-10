@@ -22,6 +22,7 @@ function Orders() {
   const [orderTypeFilter, setOrderTypeFilter] = useState('all');
   const [dispatchedFilter, setDispatchedFilter] = useState('all');
   const [modelFilter, setModelFilter] = useState('all');
+  const [isManualFilter, setIsManualFilter] = useState('all');
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [showOrderDetailsModal, setShowOrderDetailsModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -47,6 +48,7 @@ function Orders() {
     setOrderTypeFilter('all');
     setDispatchedFilter('all');
     setModelFilter('all');
+    setIsManualFilter('all');
     setStartDate('');
     setEndDate('');
   };
@@ -136,12 +138,18 @@ function Orders() {
     const matchesDate =
       (!start || orderDate >= start) && (!end || orderDate <= end);
 
+    const matchesIsManual =
+      isManualFilter === 'all' ||
+      (isManualFilter === 'manual' && order.isManual === true) ||
+      (isManualFilter === 'normal' && !order.isManual);
+
     return (
       matchesSearch &&
       matchesFactory &&
       matchesOrderType &&
       matchesDispatched &&
       matchesModel &&
+      matchesIsManual &&
       matchesDate
     );
   });
@@ -367,15 +375,14 @@ function Orders() {
 
         {/* Filters and Actions */}
         <div className="p-3 sm:p-6 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
+            <div className='mb-3'>
               <h2 className="text-lg font-semibold text-gray-900">Orders</h2>
               <p className="text-sm text-gray-600">
                 Total {filteredOrders.length}
               </p>
             </div>
-
-            <div className="space-y-3 sm:space-y-0 flex flex-col sm:flex-row items-stretch sm:items-center sm:space-x-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
+            <div className="space-y-3 sm:space-y-0 flex flex-col sm:flex-row items-stretch sm:items-center sm:space-x-4 w-full">
               {selectedOrders.length > 0 ? (
                 <button
                   onClick={handleDeleteSelected}
@@ -396,6 +403,8 @@ function Orders() {
                   onDispatchedFilterChange={setDispatchedFilter}
                   modelFilter={modelFilter}
                   onModelFilterChange={setModelFilter}
+                  isManualFilter={isManualFilter}
+                  onIsManualFilterChange={setIsManualFilter}
                   startDate={startDate}
                   onStartDateChange={setStartDate}
                   endDate={endDate}

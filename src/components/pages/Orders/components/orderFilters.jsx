@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Building, Package, Filter, X } from 'lucide-react';
+import { Search, Building, Package, Filter, X, ChevronDown } from 'lucide-react';
 import {
   FilterGroup,
   FilterItem,
@@ -17,6 +17,8 @@ export function OrderFilters({
   onDispatchedFilterChange,
   modelFilter,
   onModelFilterChange,
+  isManualFilter,
+  onIsManualFilterChange,
   startDate,
   onStartDateChange,
   endDate,
@@ -31,43 +33,59 @@ export function OrderFilters({
   return (
     <>
       {/* Desktop Filters */}
-      <div className="hidden lg:block space-y-4">
-        <FilterGroup>
-          <FilterItem>
-            <div className="relative flex-grow">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search orders..."
-                value={searchTerm}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm"
-              />
-            </div>
-          </FilterItem>
-          <FilterItem>
-            <FilterSelector
+      <div className="hidden lg:block space-y-4 w-full">
+        {/* Row 1 — all controls on a single line */}
+        <div className="flex items-center gap-2 flex-nowrap w-full">
+          {/* Search — grows to fill remaining space */}
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search orders..."
+              value={searchTerm}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="w-full pl-9 pr-3 py-2.5 border border-gray-200 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm"
+            />
+          </div>
+
+          {/* Factory */}
+          <div className="relative w-40 shrink-0">
+            <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <select
               value={factoryFilter}
-              onChange={onFactoryFilterChange}
-              options={factories}
-              placeholder="All Factories"
-              icon={Building}
-            />
-          </FilterItem>
-          <FilterItem>
-            <FilterSelector
+              onChange={(e) => onFactoryFilterChange(e.target.value)}
+              className="w-full pl-9 pr-8 py-2.5 border border-gray-200 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm appearance-none"
+            >
+              <option value="all">All Factories</option>
+              {factories.map((f) => (
+                <option key={f._id} value={f._id}>{f.name}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+          </div>
+
+          {/* Model */}
+          <div className="relative w-40 shrink-0">
+            <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <select
               value={modelFilter}
-              onChange={onModelFilterChange}
-              options={models}
-              placeholder="All Models"
-              icon={Package}
-            />
-          </FilterItem>
-          <FilterItem>
+              onChange={(e) => onModelFilterChange(e.target.value)}
+              className="w-full pl-9 pr-8 py-2.5 border border-gray-200 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm appearance-none"
+            >
+              <option value="all">All Models</option>
+              {models.map((m) => (
+                <option key={m._id} value={m._id}>{m.name}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+          </div>
+
+          {/* Order type */}
+          <div className="relative w-36 shrink-0">
             <select
               value={orderTypeFilter}
               onChange={(e) => onOrderTypeFilterChange(e.target.value)}
-              className="w-full sm:w-48 pl-4 pr-10 py-2.5 border border-gray-200 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm appearance-none"
+              className="w-full pl-3 pr-8 py-2.5 border border-gray-200 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm appearance-none"
             >
               <option value="all">All Types</option>
               <option value="1_unit">1N</option>
@@ -75,8 +93,23 @@ export function OrderFilters({
               <option value="3_units">3N</option>
               <option value="4_units">4N (4 Pumps per Box)</option>
             </select>
-          </FilterItem>
-        </FilterGroup>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+          </div>
+
+          {/* Manual / Normal */}
+          <div className="relative w-36 shrink-0">
+            <select
+              value={isManualFilter}
+              onChange={(e) => onIsManualFilterChange(e.target.value)}
+              className="w-full pl-3 pr-8 py-2.5 border border-gray-200 bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm appearance-none"
+            >
+              <option value="all">All Orders</option>
+              <option value="normal">Normal Orders</option>
+              <option value="manual">Manual Orders</option>
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+          </div>
+        </div>
 
         <FilterGroup>
           <FilterItem>
@@ -234,6 +267,21 @@ export function OrderFilters({
                   <option value="2_units">2N</option>
                   <option value="3_units">3N</option>
                   <option value="4_units">4N (4 Pumps per Box)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Order Source
+                </label>
+                <select
+                  value={isManualFilter}
+                  onChange={(e) => onIsManualFilterChange(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                >
+                  <option value="all">All Orders</option>
+                  <option value="normal">Normal Orders</option>
+                  <option value="manual">Manual Orders</option>
                 </select>
               </div>
 
