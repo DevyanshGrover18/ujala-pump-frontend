@@ -108,10 +108,10 @@ function VerifyModal({ group, onClose, onAction }) {
           </div>
         ) : (
           <div className="p-5 space-y-4">
-            {/* Seller */}
+            {/* Seller / Plumber */}
             <div className="border border-gray-200 rounded-lg p-4">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-                Seller
+                {d.sellerType === 'Plumber' ? 'Plumber' : 'Seller'}
               </p>
               <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
                 <div className="flex items-center gap-2">
@@ -121,17 +121,29 @@ function VerifyModal({ group, onClose, onAction }) {
                 <div className="flex items-center gap-2">
                   <span className="text-gray-400">{d.sellerType}</span>
                 </div>
-                {seller.contactPhone && (
+                {(seller.contactPhone || seller.phone) && (
                   <div className="flex items-center gap-2">
                     <Phone className="w-3.5 h-3.5 text-gray-400" />
-                    <span>{seller.contactPhone}</span>
+                    <span>{seller.contactPhone || seller.phone}</span>
+                  </div>
+                )}
+                {seller.plumberId && (
+                  <div className="flex items-center gap-2 col-span-2">
+                    <span className="text-gray-400">Plumber ID:</span>
+                    <span className="font-semibold text-purple-600 font-mono text-xs">{seller.plumberId}</span>
+                  </div>
+                )}
+                {seller.username && (
+                  <div className="flex items-center gap-2 col-span-2">
+                    <span className="text-gray-400">Username:</span>
+                    <span className="font-semibold text-gray-800">{seller.username}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2 col-span-2">
                   <IndianRupee className="w-3.5 h-3.5 text-gray-400" />
                   <span>
-                    Wallet: ₹{seller.walletIncentive ?? 0} incentive &bull;{' '}
-                    {seller.walletPoints ?? 0} pts
+                    Wallet: ₹{seller.walletIncentive ?? 0} incentive 
+                    {d.sellerType !== 'Plumber' && ` &bull; ${seller.walletPoints ?? 0} pts`}
                   </span>
                 </div>
               </div>
@@ -157,8 +169,10 @@ function VerifyModal({ group, onClose, onAction }) {
                       </span>
                     </div>
                     <div className="text-right text-xs text-gray-600">
-                      <span>₹{c.incentiveAmount}</span> &bull;{' '}
-                      <span>{c.points} pts</span>
+                      <span>₹{c.incentiveAmount}</span>
+                      {d.sellerType !== 'Plumber' && (
+                        <> &bull; <span>{c.points} pts</span></>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -166,7 +180,10 @@ function VerifyModal({ group, onClose, onAction }) {
               <div className="mt-3 pt-2 border-t border-gray-100 flex justify-between text-sm font-semibold text-gray-900">
                 <span>Total</span>
                 <span>
-                  ₹{group.totalIncentive} &bull; {group.totalPoints} pts
+                  ₹{group.totalIncentive}
+                  {d.sellerType !== 'Plumber' && (
+                    <> &bull; {group.totalPoints} pts</>
+                  )}
                 </span>
               </div>
             </div>
@@ -227,6 +244,60 @@ function VerifyModal({ group, onClose, onAction }) {
                 </div>
               </div>
             </div>
+
+            {/* Installation Details for Plumbers */}
+            {d.sellerType === 'Plumber' && d.installation && (
+              <div className="border border-gray-200 rounded-lg p-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+                  Installation Details
+                </p>
+                <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                  <div>
+                    <label className="block text-xs text-gray-400 font-medium uppercase mb-0.5">
+                      Geolocation Coordinates
+                    </label>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${d.installation.geolocation?.latitude},${d.installation.geolocation?.longitude}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-600 hover:underline font-mono text-xs flex items-center gap-1 mt-1 font-semibold"
+                    >
+                      <MapPin className="w-3.5 h-3.5" />
+                      {d.installation.geolocation?.latitude?.toFixed(6)}, {d.installation.geolocation?.longitude?.toFixed(6)}
+                    </a>
+                  </div>
+                  {d.installation.installationDate && (
+                    <div>
+                      <label className="block text-xs text-gray-400 font-medium uppercase mb-0.5">
+                        Installation Date
+                      </label>
+                      <p className="font-semibold text-gray-900 mt-0.5">
+                        {new Date(d.installation.installationDate).toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    </div>
+                  )}
+                  {d.installation.image && (
+                    <div className="col-span-2">
+                      <label className="block text-xs text-gray-400 font-medium uppercase mb-1">
+                        Installation Photo
+                      </label>
+                      <div className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50 max-w-xs shadow-sm">
+                        <img
+                          src={d.installation.image}
+                          alt="Installation"
+                          className="w-full h-auto max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => window.open(d.installation.image, '_blank')}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Current status */}
             <div className="flex items-center gap-2 text-sm">
@@ -620,7 +691,7 @@ export default function Incentives() {
                           ₹{g.totalIncentive}
                         </td>
                         <td className="px-5 py-3.5 text-sm text-gray-700">
-                          {g.totalPoints} pts
+                          {g.sellerType === 'Plumber' ? '—' : `${g.totalPoints} pts`}
                         </td>
                         <td className="px-5 py-3.5">
                           <span
@@ -671,7 +742,7 @@ export default function Incentives() {
                               ₹{item.incentiveAmount}
                             </td>
                             <td className="px-5 py-2 text-xs text-gray-700">
-                              {item.points} pts
+                              {g.sellerType === 'Plumber' ? '—' : `${item.points} pts`}
                             </td>
                             <td colSpan={2} />
                           </tr>

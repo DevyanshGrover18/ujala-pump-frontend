@@ -103,6 +103,7 @@ export const AuthProvider = ({ children }) => {
   const isDealerAuthenticated = isAuthenticated && user.role === 'dealer';
   const isSubDealerAuthenticated = isAuthenticated && user.role === 'subdealer';
   const isExecutiveAuthenticated = isAuthenticated && user.role === 'executive';
+  const isPlumberAuthenticated = isAuthenticated && user.role === 'plumber';
 
   // Session timeout useEffect
   useEffect(() => {
@@ -166,6 +167,7 @@ export const AuthProvider = ({ children }) => {
         isDealerAuthenticated,
         isSubDealerAuthenticated,
         isExecutiveAuthenticated,
+        isPlumberAuthenticated,
         login,
         logout,
         loading,

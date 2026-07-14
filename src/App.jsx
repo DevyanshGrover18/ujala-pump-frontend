@@ -48,6 +48,12 @@ import ExecutiveDistributors from './components/pages/ExecutivePanel/ExecutiveDi
 import ExecutiveDealers from './components/pages/ExecutivePanel/ExecutiveDealers';
 import ExecutiveSubDealers from './components/pages/ExecutivePanel/ExecutiveSubDealers';
 import ExecutiveCustomers from './components/pages/ExecutivePanel/ExecutiveCustomers';
+import PlumberLayout from './components/global/PlumberLayout';
+import PlumberDashboard from './components/pages/PlumberPanel/PlumberDashboard';
+import PlumberInstallation from './components/pages/PlumberPanel/PlumberInstallation';
+import PlumberWallet from './components/pages/PlumberPanel/PlumberWallet';
+import PlumberComplaints from './components/pages/PlumberPanel/PlumberComplaints';
+import Plumbers from './components/pages/Plumbers/Plumbers';
 
 const AdminProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading, isAdmin } = useContext(AuthContext);
@@ -156,6 +162,20 @@ const App = () => {
         </Route>
 
         <Route
+          path="/plumber"
+          element={
+            <PlumberProtectedRoute>
+              <PlumberLayout />
+            </PlumberProtectedRoute>
+          }
+        >
+          <Route path="dashboard" element={<PlumberDashboard />} />
+          <Route path="installation" element={<PlumberInstallation />} />
+          <Route path="wallet" element={<PlumberWallet />} />
+          <Route path="complaints" element={<PlumberComplaints />} />
+        </Route>
+
+        <Route
           path="/"
           element={
             <ProtectedRoute>
@@ -256,6 +276,14 @@ const App = () => {
             element={
               <ProtectedSection section="subdealers">
                 <SubDealers />
+              </ProtectedSection>
+            }
+          />
+          <Route
+            path="plumbers"
+            element={
+              <ProtectedSection section="plumbers">
+                <Plumbers />
               </ProtectedSection>
             }
           />
@@ -375,6 +403,24 @@ const ExecutiveProtectedRoute = ({ children }) => {
   }
 
   if (!isExecutiveAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+const PlumberProtectedRoute = ({ children }) => {
+  const { isPlumberAuthenticated, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (!isPlumberAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 

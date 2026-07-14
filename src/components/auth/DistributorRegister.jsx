@@ -41,11 +41,11 @@ export default function DistributorRegister({ onBack }) {
     if (state) {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/locations/cities/${state}`
+          `${import.meta.env.VITE_API_URL}/api/locations/districts/${state}`
         );
         setCities(response.data);
       } catch (error) {
-        console.error(`Error fetching cities for ${state}:`, error);
+        console.error(`Error fetching districts for ${state}:`, error);
       }
     } else {
       setCities([]);

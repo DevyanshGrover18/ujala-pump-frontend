@@ -369,12 +369,12 @@ const DealerModal = ({
           </div>
 
           {/* Incentive & Points Eligibility */}
-          {/* <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-            <h3 className="text-sm font-semibold text-amber-800 mb-4 uppercase tracking-wide">
+          <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+            <h3 className="text-sm font-semibold text-gray-800 mb-4 uppercase tracking-wide">
               Incentive &amp; Points Eligibility
             </h3>
             <div className="grid grid-cols-2 gap-6">
-              <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-200">
+              <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
                 <div>
                   <p className="text-sm font-medium text-gray-800">
                     Eligible for Incentive
@@ -393,7 +393,7 @@ const DealerModal = ({
                   }
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     newDealer.eligibleForIncentive !== false
-                      ? 'bg-amber-500'
+                      ? 'bg-[#4d55f5]'
                       : 'bg-gray-300'
                   }`}
                 >
@@ -406,7 +406,7 @@ const DealerModal = ({
                   />
                 </button>
               </div>
-              <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-200">
+              <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
                 <div>
                   <p className="text-sm font-medium text-gray-800">
                     Eligible for Points
@@ -425,7 +425,7 @@ const DealerModal = ({
                   }
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     newDealer.eligibleForPoints !== false
-                      ? 'bg-amber-500'
+                      ? 'bg-[#4d55f5]'
                       : 'bg-gray-300'
                   }`}
                 >
@@ -439,7 +439,7 @@ const DealerModal = ({
                 </button>
               </div>
             </div>
-          </div> */}
+          </div>
 
           <div className="mt-8">
             <button

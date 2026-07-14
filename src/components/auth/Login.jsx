@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { AuthContext } from '../../context/AuthContext';
-import { Building, Shield, ArrowLeft, X, Eye, EyeOff } from 'lucide-react';
+import { Building, Shield, ArrowLeft, X, Eye, EyeOff, Wrench } from 'lucide-react';
 import DistributorRegister from './DistributorRegister';
+import PlumberRegister from './PlumberRegister';
 
 const userTypes = [
   {
@@ -56,6 +57,13 @@ const userTypes = [
     icon: Building,
     bg: '#8B5CF6',
   },
+  {
+    id: 'plumber',
+    title: 'Plumber',
+    description: 'Plumber portal access',
+    icon: Wrench,
+    bg: '#06B6D4',
+  },
 ];
 
 export default function Login({ isAdminLoginPath }) {
@@ -68,6 +76,7 @@ export default function Login({ isAdminLoginPath }) {
   const [forgotUsername, setForgotUsername] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
   const [showDistributorRegister, setShowDistributorRegister] = useState(false); // New state for distributor registration
+  const [showPlumberRegister, setShowPlumberRegister] = useState(false); // New state for plumber registration
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -124,6 +133,8 @@ export default function Login({ isAdminLoginPath }) {
         navigate('/sub-dealer/dashboard');
       } else if (selectedUserType === 'executive') {
         navigate('/executive/dashboard');
+      } else if (selectedUserType === 'plumber') {
+        navigate('/plumber/dashboard');
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Login failed');
@@ -154,7 +165,7 @@ export default function Login({ isAdminLoginPath }) {
   };
 
   return (
-    <div className="flex md:flex-row flex-col h-full bg-gray-50">
+    <div className="flex md:flex-row flex-col min-h-screen bg-gray-50">
       <div className="hidden md:flex w-1/2 bg-gradient-to-br from-[#5b189b] to-[#5b189b] text-white items-center justify-center p-12">
         <div className="text-center">
           <img
@@ -168,41 +179,39 @@ export default function Login({ isAdminLoginPath }) {
           {/* <p className="text-md md:text-lg text-gray-200">Streamlining factory and order management.</p> */}
         </div>
       </div>
-      <div className="w-full md:w-1/2 flex items-center justify-center p-8">
-        <div className="w-full max-w-2xl">
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12 overflow-y-auto">
+        <div className="w-full max-w-xl py-6">
           {!selectedUserType ? (
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 text-center md:text-left">
                 Welcome Back!
               </h2>
-              <p className="text-gray-600 mb-8">
+              <p className="text-gray-600 mb-6 text-center md:text-left">
                 Please select your user type to continue.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {filteredUserTypes.map((type) => {
                   const Icon = type.icon;
                   return (
                     <button
                       key={type.id}
                       onClick={() => setSelectedUserType(type.id)}
-                      className="rounded-xl shadow-card p-6 text-white transition-transform hover:scale-105 text-left"
+                      className="rounded-xl shadow-card p-4 text-white transition-transform hover:scale-[1.02] text-left flex items-center gap-3.5"
                       style={{ background: type.bg }}
                     >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <div className="bg-white p-2 rounded-md inline-flex items-center justify-center mb-3 shadow-sm">
-                            <Icon
-                              className="w-5 h-5"
-                              style={{ color: type.bg }}
-                            />
-                          </div>
-                          <h3 className="text-lg font-semibold mb-1">
-                            {type.title}
-                          </h3>
-                          <p className="text-sm text-white/80">
-                            {type.description}
-                          </p>
-                        </div>
+                      <div className="bg-white p-2.5 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
+                        <Icon
+                          className="w-5 h-5"
+                          style={{ color: type.bg }}
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-bold leading-tight">
+                          {type.title}
+                        </h3>
+                        <p className="text-xs text-white/80 mt-0.5 leading-snug truncate">
+                          {type.description}
+                        </p>
                       </div>
                     </button>
                   );
@@ -212,6 +221,10 @@ export default function Login({ isAdminLoginPath }) {
           ) : selectedUserType === 'distributor' && showDistributorRegister ? (
             <DistributorRegister
               onBack={() => setShowDistributorRegister(false)}
+            />
+          ) : selectedUserType === 'plumber' && showPlumberRegister ? (
+            <PlumberRegister
+              onBack={() => setShowPlumberRegister(false)}
             />
           ) : (
             <div>
@@ -239,7 +252,9 @@ export default function Login({ isAdminLoginPath }) {
                             ? 'Dealer'
                             : selectedUserType === 'executive'
                               ? 'Executive'
-                              : 'Sub-Dealer'}
+                              : selectedUserType === 'plumber'
+                                ? 'Plumber'
+                                : 'Sub-Dealer'}
                   !
                 </h2>
               </div>
@@ -304,7 +319,8 @@ export default function Login({ isAdminLoginPath }) {
                 {(selectedUserType === 'factory' ||
                   selectedUserType === 'distributor' ||
                   selectedUserType === 'dealer' ||
-                  selectedUserType === 'subdealer') && (
+                  selectedUserType === 'subdealer' ||
+                  selectedUserType === 'plumber') && (
                   <div className="mt-4 text-center flex justify-between items-center">
                     <button
                       type="button"
@@ -320,6 +336,15 @@ export default function Login({ isAdminLoginPath }) {
                         className="text-[#4d55f5] hover:text-[#3d45e5] text-sm font-medium"
                       >
                         Register as Distributor
+                      </button>
+                    )}
+                    {selectedUserType === 'plumber' && (
+                      <button
+                        type="button"
+                        onClick={() => setShowPlumberRegister(true)}
+                        className="text-[#4d55f5] hover:text-[#3d45e5] text-sm font-medium"
+                      >
+                        Register as Plumber
                       </button>
                     )}
                   </div>

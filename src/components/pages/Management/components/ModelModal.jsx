@@ -35,6 +35,7 @@ export default function ModelModal({
     status: 'Active',
     incentive: 0,
     points: 0,
+    plumberIncentive: 0,
   });
   const [codeError, setCodeError] = useState('');
   const [isCheckingCode, setIsCheckingCode] = useState(false);
@@ -137,6 +138,7 @@ export default function ModelModal({
           status: model.status || 'Active',
           incentive: model.incentive ?? 0,
           points: model.points ?? 0,
+          plumberIncentive: model.plumberIncentive ?? 0,
         });
         // Pre-fetch districts for warranty entries so city select shows current value
         if (Array.isArray(model.warranty)) {
@@ -161,6 +163,7 @@ export default function ModelModal({
           status: 'Active',
           incentive: 0,
           points: 0,
+          plumberIncentive: 0,
         });
         setCodeError(''); // Clear error when adding new
       }
@@ -182,8 +185,8 @@ export default function ModelModal({
 
   return (
     <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto scrollbar-hide">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-white rounded-lg flex flex-col w-full max-w-6xl max-h-[90vh]">
+        <div className="flex justify-between items-center p-6 pb-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold">
             {isEditing ? 'Edit Model' : 'Add Model'}
           </h2>
@@ -194,8 +197,9 @@ export default function ModelModal({
             <X className="w-5 h-5" />
           </button>
         </div>
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden flex-1">
+          <div className="p-6 overflow-y-auto flex-1 min-h-0">
+            <div className="grid grid-cols-2 gap-6">
             <div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -362,13 +366,13 @@ export default function ModelModal({
                   required
                 />
               </div>
-              {/* <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <h3 className="text-sm font-semibold text-amber-800 mb-3 uppercase tracking-wide">
-                  Incentive &amp; Points
+              <div className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <h3 className="text-sm font-semibold text-gray-800 mb-3 uppercase tracking-wide">
+                  Incentives &amp; Points
                 </h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs font-medium text-gray-600 mb-2">
                       Incentive Amount (₹ per unit)
                     </label>
                     <input
@@ -381,12 +385,12 @@ export default function ModelModal({
                           incentive: Number(e.target.value),
                         })
                       }
-                      className="w-full px-3 py-2 border border-amber-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                       placeholder="e.g. 500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs font-medium text-gray-600 mb-2">
                       Points (per unit sold)
                     </label>
                     <input
@@ -399,106 +403,170 @@ export default function ModelModal({
                           points: Number(e.target.value),
                         })
                       }
-                      className="w-full px-3 py-2 border border-amber-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                       placeholder="e.g. 10"
                     />
                   </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-2">
+                      Plumber Incentive (₹)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.plumberIncentive}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          plumberIncentive: Number(e.target.value),
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      placeholder="e.g. 150"
+                      required
+                    />
+                  </div>
                 </div>
-              </div> */}
-            </div>
-            <div>
-              <h3 className="text-md font-medium text-gray-900 mb-1">
-                Warranty
-              </h3>
-              {formData.warranty.map((w, index) => (
-                <div
-                  key={index}
-                  className="grid grid-cols-5 gap-4 mb-2 items-center"
-                >
-                  <select
-                    value={w.state}
-                    onChange={(e) =>
-                      handleWarrantyChange(index, 'state', e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select State</option>
-                    {states.map((state) => (
-                      <option key={state} value={state}>
-                        {state}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={w.city}
-                    onChange={(e) =>
-                      handleWarrantyChange(index, 'city', e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select District</option>
-                    {districts[w.state]?.map((district) => (
-                      <option key={district} value={district}>
-                        {district}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={w.durationType}
-                    onChange={(e) =>
-                      handleWarrantyChange(
-                        index,
-                        'durationType',
-                        e.target.value
-                      )
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="Months">Months</option>
-                    <option value="Years">Years</option>
-                  </select>
-                  <input
-                    type="number"
-                    value={w.duration}
-                    onChange={(e) =>
-                      handleWarrantyChange(index, 'duration', e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Duration"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeWarranty(index)}
-                    className="p-2 text-red-500 hover:text-red-700 rounded-full"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addWarranty}
-                className="mb-6 px-4 py-2 text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50"
-              >
-                + Add Warranty
-              </button>
-              <div className="flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving || codeError || isCheckingCode}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {isSaving ? 'Saving...' : isEditing ? 'Update' : 'Create'}
-                </button>
               </div>
             </div>
+             <div className="flex flex-col h-full">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-md font-semibold text-gray-900">
+                  Warranty Rules
+                </h3>
+                <button
+                  type="button"
+                  onClick={addWarranty}
+                  className="px-3 py-1.5 text-xs text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors font-medium"
+                >
+                  + Add Warranty
+                </button>
+              </div>
+
+              {formData.warranty.length === 0 ? (
+                <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-xs mb-6">
+                  No state/city-specific warranty periods set. Click "+ Add Warranty" to create one.
+                </div>
+              ) : (
+                <div className="space-y-4 mb-6 flex-1 min-h-0 overflow-y-auto pr-1">
+                  {formData.warranty.map((w, index) => (
+                    <div
+                      key={index}
+                      className="p-4 bg-gray-50 border border-gray-200 rounded-xl relative space-y-3"
+                    >
+                      <div className="flex justify-between items-center pb-2 border-b border-gray-200/60">
+                        <span className="text-xs font-bold text-gray-400 uppercase">
+                          Rule #{index + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeWarranty(index)}
+                          className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Remove Warranty Rule"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-medium text-gray-500 mb-1">
+                            State
+                          </label>
+                          <select
+                            value={w.state}
+                            onChange={(e) =>
+                              handleWarrantyChange(index, 'state', e.target.value)
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+                          >
+                            <option value="">Select State</option>
+                            {states.map((state) => (
+                              <option key={state} value={state}>
+                                {state}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-medium text-gray-500 mb-1">
+                            District / City
+                          </label>
+                          <select
+                            value={w.city}
+                            onChange={(e) =>
+                              handleWarrantyChange(index, 'city', e.target.value)
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+                          >
+                            <option value="">Select District</option>
+                            {districts[w.state]?.map((district) => (
+                              <option key={district} value={district}>
+                                {district}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-medium text-gray-500 mb-1">
+                            Duration Type
+                          </label>
+                          <select
+                            value={w.durationType}
+                            onChange={(e) =>
+                              handleWarrantyChange(
+                                index,
+                                'durationType',
+                                e.target.value
+                              )
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+                          >
+                            <option value="Months">Months</option>
+                            <option value="Years">Years</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-medium text-gray-500 mb-1">
+                            Duration
+                          </label>
+                          <input
+                            type="number"
+                            value={w.duration}
+                            onChange={(e) =>
+                              handleWarrantyChange(index, 'duration', e.target.value)
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+                            placeholder="e.g. 2"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="p-4 border-t border-gray-200 flex justify-end space-x-3 bg-gray-50 rounded-b-lg mt-auto">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 text-sm font-semibold transition-colors bg-white"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving || codeError || isCheckingCode}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-semibold transition-colors"
+            >
+              {isSaving ? 'Saving...' : isEditing ? 'Update' : 'Create'}
+            </button>
           </div>
         </form>
       </div>

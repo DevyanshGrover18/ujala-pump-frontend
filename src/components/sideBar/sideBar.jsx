@@ -91,6 +91,12 @@ const sidebarItems = [
     icon: Users,
     color: 'teal',
   },
+  {
+    title: 'Plumbers',
+    path: '/plumbers',
+    icon: Users,
+    color: 'indigo',
+  },
 ];
 
 export function SideBar({ sidebarOpen, toggleSidebar, totalNotifications }) {
@@ -107,6 +113,7 @@ export function SideBar({ sidebarOpen, toggleSidebar, totalNotifications }) {
     '/distributors': 'distributors',
     '/dealers': 'dealers',
     '/sub-dealers': 'subdealers',
+    '/plumbers': 'plumbers',
     '/add-members': 'management',
     '/sales': 'sales',
   };
