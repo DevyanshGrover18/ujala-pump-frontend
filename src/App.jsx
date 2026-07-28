@@ -115,6 +115,7 @@ const App = () => {
           <Route path="dealer-sales" element={<DistributorDealerSales />} />
           <Route path="customer-sales" element={<DistributorCustomerSales />} />
           <Route path="replacements" element={<ReplacementRequests />} />
+          <Route path="verify-replacements" element={<AdminReplacementVerification />} />
           {/* <Route path="wallet" element={<WalletPage />} /> */}
         </Route>
 
@@ -133,6 +134,7 @@ const App = () => {
           {/* <Route path="sub-dealer-sales1" element={<DealerSubDealerSales1 />} /> */}
           <Route path="customer-sales" element={<DealerCustomerSales />} />
           <Route path="replacements" element={<ReplacementRequests />} />
+          <Route path="verify-replacements" element={<AdminReplacementVerification />} />
           {/* <Route path="wallet" element={<WalletPage />} /> */}
         </Route>
 

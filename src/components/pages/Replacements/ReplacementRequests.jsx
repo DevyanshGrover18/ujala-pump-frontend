@@ -36,7 +36,7 @@ export default function ReplacementRequests() {
   const fetchReplacements = async () => {
     try {
       setListLoading(true);
-      const res = await axios.get(`${API_URL}/api/replacements`, {
+      const res = await axios.get(`${API_URL}/api/replacements?type=outgoing`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setReplacements(res.data);
@@ -64,7 +64,17 @@ export default function ReplacementRequests() {
         }
       );
       setVerifiedProduct(res.data.product);
-      toast.success('Product verified successfully!');
+      if (res.data.prefilledData) {
+        setReason(res.data.prefilledData.reason || '');
+        setDescription(res.data.prefilledData.description || '');
+        setProofImages(res.data.prefilledData.proofImages || []);
+        toast.success('Product verified! Prior replacement claim details pre-filled.');
+      } else {
+        setReason('');
+        setDescription('');
+        setProofImages([]);
+        toast.success('Product verified successfully!');
+      }
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.message || 'Verification failed');
@@ -135,7 +145,17 @@ export default function ReplacementRequests() {
         }
       );
       setVerifiedProduct(res.data.product);
-      toast.success('Product verified successfully!');
+      if (res.data.prefilledData) {
+        setReason(res.data.prefilledData.reason || '');
+        setDescription(res.data.prefilledData.description || '');
+        setProofImages(res.data.prefilledData.proofImages || []);
+        toast.success('Product verified! Prior replacement claim details pre-filled.');
+      } else {
+        setReason('');
+        setDescription('');
+        setProofImages([]);
+        toast.success('Product verified successfully!');
+      }
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.message || 'Verification failed');
@@ -422,7 +442,7 @@ export default function ReplacementRequests() {
                         ) : item.status === 'Rejected' ? (
                           <span className="text-gray-400 line-through">N/A</span>
                         ) : (
-                          <span className="text-gray-400 italic">Awaiting Admin</span>
+                          <span className="text-gray-400 italic">Awaiting Replacement</span>
                         )}
                         {item.adminRemarks && (
                           <div className="text-[10px] text-gray-400 mt-0.5">

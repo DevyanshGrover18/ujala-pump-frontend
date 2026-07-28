@@ -9,6 +9,7 @@ import {
   Box,
   Wallet,
   RefreshCw,
+  CheckCircle,
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 
@@ -30,6 +31,12 @@ const distributorSidebarItems = [
     path: '/distributor/replacements',
     icon: RefreshCw,
     color: 'teal',
+  },
+  {
+    title: 'Verify Replacements',
+    path: '/distributor/verify-replacements',
+    icon: CheckCircle,
+    color: 'emerald',
   },
   {
     title: 'Dealers',

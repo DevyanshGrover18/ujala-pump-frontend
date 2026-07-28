@@ -714,53 +714,58 @@ export default function DistributorProducts() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {paginatedModalProducts.map((product) => (
-                    <tr key={product._id} className="hover:bg-gray-50">
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <input
-                          type="checkbox"
-                          checked={selectedProductGroups.some(
-                            (p) => p._id === product._id
-                          )}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              if (!product.sold) {
-                                setSelectedProductGroups([
-                                  ...selectedProductGroups,
-                                  product,
-                                ]);
+                  {paginatedModalProducts.map((product) => {
+                    const isReplaced = product.status === 'Replaced';
+                    return (
+                      <tr key={product._id} className={`hover:bg-gray-50 ${(product.sold || isReplaced) ? 'bg-gray-50 opacity-60' : ''}`}>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={selectedProductGroups.some(
+                              (p) => p._id === product._id
+                            )}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                if (!product.sold && !isReplaced) {
+                                  setSelectedProductGroups([
+                                    ...selectedProductGroups,
+                                    product,
+                                  ]);
+                                }
+                              } else {
+                                setSelectedProductGroups(
+                                  selectedProductGroups.filter(
+                                    (p) => p._id !== product._id
+                                  )
+                                );
                               }
-                            } else {
-                              setSelectedProductGroups(
-                                selectedProductGroups.filter(
-                                  (p) => p._id !== product._id
-                                )
-                              );
-                            }
-                          }}
-                          disabled={product.sold}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
-                        />
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {product.serialNumber}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            product.sold
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-green-100 text-green-800'
-                          }`}
-                        >
-                          {product.sold ? 'Sold' : 'Available'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(product.createdAt).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
+                            }}
+                            disabled={product.sold || isReplaced}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                          />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {product.serialNumber}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              isReplaced
+                                ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                : product.sold
+                                  ? 'bg-red-100 text-red-800'
+                                  : 'bg-green-100 text-green-800'
+                            }`}
+                          >
+                            {isReplaced ? 'Defective (Replaced)' : product.sold ? 'Sold' : 'Available'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(product.createdAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

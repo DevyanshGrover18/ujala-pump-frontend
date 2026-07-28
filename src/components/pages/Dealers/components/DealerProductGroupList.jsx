@@ -55,12 +55,13 @@ export default function DealerProductGroupList({
             );
             const isSold = product.sold;
             const isAssigned = product.assignedToSubDealer;
-            const hasAvailableProducts = !isSold && !isAssigned;
+            const isReplaced = product.status === 'Replaced';
+            const hasAvailableProducts = !isSold && !isAssigned && !isReplaced;
 
             return (
               <tr
                 key={assignment._id}
-                className={`hover:bg-gray-50 ${isSelected ? 'bg-blue-100' : ''} ${isSold || isAssigned ? 'bg-gray-100 opacity-60' : ''}`}
+                className={`hover:bg-gray-50 ${isSelected ? 'bg-blue-100' : ''} ${(isSold || isAssigned || isReplaced) ? 'bg-gray-100 opacity-60' : ''}`}
               >
                 {!hideCheckbox && (
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -98,14 +99,16 @@ export default function DealerProductGroupList({
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
                     className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      isSold
-                        ? 'bg-red-100 text-red-800'
-                        : isAssigned
-                          ? 'bg-purple-100 text-purple-800'
-                          : 'bg-green-100 text-green-800'
+                      isReplaced
+                        ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                        : isSold
+                          ? 'bg-red-100 text-red-800'
+                          : isAssigned
+                            ? 'bg-purple-100 text-purple-800'
+                            : 'bg-green-100 text-green-800'
                     }`}
                   >
-                    {isSold ? 'Sold' : isAssigned ? 'Assigned' : 'Available'}
+                    {isReplaced ? 'Defective (Replaced)' : isSold ? 'Sold' : isAssigned ? 'Assigned' : 'Available'}
                   </span>
                 </td>
               </tr>

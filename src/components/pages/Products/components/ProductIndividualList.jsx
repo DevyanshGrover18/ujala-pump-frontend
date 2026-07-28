@@ -36,7 +36,7 @@ export default function ProductIndividualList({
     );
   }
 
-  const availableProducts = (products || []).filter((p) => !p.distributor);
+  const availableProducts = (products || []).filter((p) => !p.distributor && p.status !== 'Replaced');
 
   return (
     <div className="overflow-x-auto">
@@ -173,45 +173,64 @@ export default function ProductIndividualList({
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Distributor
             </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Status
+            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {products.map((product) => (
-            <tr
-              key={product._id}
-              className={`hover:bg-gray-50 ${product.distributor ? 'bg-gray-100' : ''}`}
-            >
-              <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                <input
-                  type="checkbox"
-                  className="form-checkbox h-4 w-4 text-blue-600"
-                  checked={selectedProductIds.includes(product._id)}
-                  onChange={(e) =>
-                    onProductSelect(product._id, e.target.checked)
-                  }
-                  disabled={!!product.distributor}
-                />
-              </td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                {product.model?.name || product.productName}
-              </td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                {product.unitsPerBox}N
-              </td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                {product.serialNumber}
-              </td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                {product.price} /- Each
-              </td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                {product.factory?.name}
-              </td>
-              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                {product.distributor ? product.distributor.name : 'N/A'}
-              </td>
-            </tr>
-          ))}
+          {products.map((product) => {
+            const isReplaced = product.status === 'Replaced';
+            return (
+              <tr
+                key={product._id}
+                className={`hover:bg-gray-50 ${(product.distributor || isReplaced) ? 'bg-gray-100 opacity-60' : ''}`}
+              >
+                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox h-4 w-4 text-blue-600"
+                    checked={selectedProductIds.includes(product._id)}
+                    onChange={(e) =>
+                      onProductSelect(product._id, e.target.checked)
+                    }
+                    disabled={!!product.distributor || isReplaced}
+                  />
+                </td>
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {product.model?.name || product.productName}
+                </td>
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {product.unitsPerBox}N
+                </td>
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {product.serialNumber}
+                </td>
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {product.price} /- Each
+                </td>
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {product.factory?.name}
+                </td>
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {product.distributor ? product.distributor.name : 'N/A'}
+                </td>
+                <td className="px-4 py-4 whitespace-nowrap">
+                  <span
+                    className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      isReplaced
+                        ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                        : product.sold
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-green-100 text-green-800'
+                    }`}
+                  >
+                    {isReplaced ? 'Defective (Replaced)' : product.sold ? 'Sold' : 'Available'}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

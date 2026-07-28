@@ -21,6 +21,8 @@ export default function AdminReplacementVerification() {
   const [newSerialNumber, setNewSerialNumber] = useState('');
   const [adminRemarks, setAdminRemarks] = useState('');
   const [resolving, setResolving] = useState(false);
+  const [availableStock, setAvailableStock] = useState([]);
+  const [fetchingStock, setFetchingStock] = useState(false);
 
   // QR scanner state for scanning new replacement
   const [isScanning, setIsScanning] = useState(false);
@@ -37,7 +39,7 @@ export default function AdminReplacementVerification() {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/api/replacements`, {
+      const res = await axios.get(`${API_URL}/api/replacements?type=incoming`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRequests(res.data);
@@ -131,17 +133,56 @@ export default function AdminReplacementVerification() {
     setIsScanning(false);
   };
 
-  const openResolutionModal = (req, action) => {
+  const openResolutionModal = async (req, action) => {
     setSelectedRequest(req);
     setResolutionAction(action);
     setNewSerialNumber('');
     setAdminRemarks('');
+
+    if (action === 'Approved') {
+      try {
+        setFetchingStock(true);
+        const res = await axios.get(`${API_URL}/api/replacements/${req._id}/available-stock`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setAvailableStock(res.data);
+      } catch (err) {
+        console.error('Error fetching replacement stock:', err);
+        toast.error('Failed to load available stock for this model');
+        setAvailableStock([]);
+      } finally {
+        setFetchingStock(false);
+      }
+    }
   };
 
   const closeResolutionModal = () => {
     setSelectedRequest(null);
     setResolutionAction(null);
+    setAvailableStock([]);
     stopScanning();
+  };
+
+  const canResolve = (req) => {
+    if (!user) return false;
+    
+    if (user.role === 'admin' || user.role === 'member') {
+      return req.assignedToModel === 'UserRole';
+    }
+    
+    if (user.role === 'distributor') {
+      const myId = user.distributorId || user.distributor?._id || user.distributor;
+      const targetId = req.assignedTo?._id || req.assignedTo;
+      return req.assignedToModel === 'Distributor' && myId && targetId && String(myId) === String(targetId);
+    }
+    
+    if (user.role === 'dealer') {
+      const myId = user.dealerId || user.dealer?._id || user.dealer;
+      const targetId = req.assignedTo?._id || req.assignedTo;
+      return req.assignedToModel === 'Dealer' && myId && targetId && String(myId) === String(targetId);
+    }
+    
+    return false;
   };
 
   const filteredRequests = requests.filter((r) => r.status === statusFilter);
@@ -240,6 +281,10 @@ export default function AdminReplacementVerification() {
                   <p className="text-xs text-gray-400 line-clamp-2">
                     {req.description || 'No description provided'}
                   </p>
+                  
+                  <p className="text-[10px] text-gray-500 font-medium pt-1 border-t border-gray-50">
+                    <strong>Assigned Resolver:</strong> {req.assignedToModel === 'UserRole' ? 'Admin / Factory' : (req.assignedTo?.name || 'Parent Seller')}
+                  </p>
                 </div>
 
                 {/* Requester Info */}
@@ -249,7 +294,7 @@ export default function AdminReplacementVerification() {
                   </div>
                   
                   {/* Actions for Pending */}
-                  {req.status === 'Pending' && (
+                  {req.status === 'Pending' && canResolve(req) && (
                     <div className="flex gap-2">
                       <button
                         onClick={() => openResolutionModal(req, 'Rejected')}
@@ -307,39 +352,32 @@ export default function AdminReplacementVerification() {
               {resolutionAction === 'Approved' && (
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-gray-700 block">
-                    Scan or Enter Replacement Serial Number *
+                    Choose Replacement Serial Number (Same Model) *
                   </label>
 
-                  {isScanning ? (
-                    <div className="relative rounded-lg overflow-hidden border border-gray-200 aspect-video bg-black flex items-center justify-center">
-                      <video ref={videoRef} className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={stopScanning}
-                        className="absolute top-2 right-2 p-1 bg-white/90 text-gray-800 rounded-full hover:bg-white"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                  {fetchingStock ? (
+                    <div className="flex items-center gap-2 py-2 text-xs text-gray-400">
+                      <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                      Fetching available stock...
+                    </div>
+                  ) : availableStock.length === 0 ? (
+                    <div className="p-3 bg-amber-50 text-amber-700 border border-amber-100 rounded-lg text-xs">
+                      No active, unsold stock of this model available in your inventory. You must add products of this model to approve.
                     </div>
                   ) : (
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Replacement Serial Number"
-                        value={newSerialNumber}
-                        onChange={(e) => setNewSerialNumber(e.target.value)}
-                        className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={startScanning}
-                        className="px-3 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center justify-center"
-                        title="Scan New QR"
-                      >
-                        <Camera className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <select
+                      value={newSerialNumber}
+                      onChange={(e) => setNewSerialNumber(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    >
+                      <option value="">-- Choose a Serial Number --</option>
+                      {availableStock.map((prod) => (
+                        <option key={prod._id} value={prod.serialNumber}>
+                          {prod.serialNumber}
+                        </option>
+                      ))}
+                    </select>
                   )}
                 </div>
               )}
@@ -367,9 +405,11 @@ export default function AdminReplacementVerification() {
                 </button>
                 <button
                   type="submit"
-                  disabled={resolving}
+                  disabled={resolving || (resolutionAction === 'Approved' && availableStock.length === 0)}
                   className={`px-4 py-2 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-1.5 ${
-                    resolutionAction === 'Approved' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'
+                    resolutionAction === 'Approved'
+                      ? (availableStock.length === 0 ? 'bg-emerald-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700')
+                      : 'bg-rose-600 hover:bg-rose-700'
                   }`}
                 >
                   {resolving ? (
