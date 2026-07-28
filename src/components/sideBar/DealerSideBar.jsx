@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronRight,
   Wallet,
+  RefreshCw,
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 
@@ -24,6 +25,12 @@ const dealerSidebarItems = [
     path: '/dealer/products',
     icon: Package,
     color: 'yellow',
+  },
+  {
+    title: 'Replacements',
+    path: '/dealer/replacements',
+    icon: RefreshCw,
+    color: 'teal',
   },
   {
     title: 'Sub Dealers',

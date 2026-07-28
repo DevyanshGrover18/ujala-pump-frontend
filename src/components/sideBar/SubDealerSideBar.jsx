@@ -6,6 +6,7 @@ import {
   Package,
   ShoppingBag,
   Wallet,
+  RefreshCw,
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 
@@ -21,6 +22,12 @@ const subDealerSidebarItems = [
     path: '/sub-dealer/products',
     icon: Package,
     color: 'yellow',
+  },
+  {
+    title: 'Replacements',
+    path: '/sub-dealer/replacements',
+    icon: RefreshCw,
+    color: 'teal',
   },
   {
     title: 'Sales',

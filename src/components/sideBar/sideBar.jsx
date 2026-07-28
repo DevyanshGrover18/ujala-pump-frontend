@@ -11,6 +11,7 @@ import {
   ShoppingCart,
   ChevronDown,
   Gift,
+  RefreshCw,
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import NotificationIcon from '../global/NotificationIcon';
@@ -66,6 +67,12 @@ const sidebarItems = [
     path: '/inventory',
     icon: Package,
     color: 'yellow',
+  },
+  {
+    title: 'Replacements',
+    path: '/replacements',
+    icon: RefreshCw,
+    color: 'teal',
   },
   {
     title: 'Sales',

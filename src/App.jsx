@@ -34,6 +34,8 @@ import Notifications from './components/pages/Notifications/Notifications';
 import AddMembers from './components/pages/AddMembers/index';
 import Executives from './components/pages/Executives/Executives';
 import Incentives from './components/pages/Incentives/Incentives';
+import ReplacementRequests from './components/pages/Replacements/ReplacementRequests';
+import AdminReplacementVerification from './components/pages/Replacements/AdminReplacementVerification';
 // import WalletPage from './components/pages/Wallet/WalletPage';
 import Unauthorized from './components/pages/AddMembers/Unauthorized';
 import ProtectedSection from './components/auth/ProtectedSection';
@@ -112,6 +114,7 @@ const App = () => {
           <Route path="dealers" element={<DistributorDealers />} />
           <Route path="dealer-sales" element={<DistributorDealerSales />} />
           <Route path="customer-sales" element={<DistributorCustomerSales />} />
+          <Route path="replacements" element={<ReplacementRequests />} />
           {/* <Route path="wallet" element={<WalletPage />} /> */}
         </Route>
 
@@ -129,6 +132,7 @@ const App = () => {
           <Route path="sub-dealer-sales" element={<DealerSubDealerSales />} />
           {/* <Route path="sub-dealer-sales1" element={<DealerSubDealerSales1 />} /> */}
           <Route path="customer-sales" element={<DealerCustomerSales />} />
+          <Route path="replacements" element={<ReplacementRequests />} />
           {/* <Route path="wallet" element={<WalletPage />} /> */}
         </Route>
 
@@ -143,6 +147,7 @@ const App = () => {
           <Route path="dashboard" element={<SubDealerDashboard />} />
           <Route path="products" element={<SubDealerProducts />} />
           <Route path="sales" element={<SubDealerSales />} />
+          <Route path="replacements" element={<ReplacementRequests />} />
           {/* <Route path="wallet" element={<WalletPage />} /> */}
         </Route>
 
@@ -243,6 +248,14 @@ const App = () => {
             element={
               <ProtectedSection section="products">
                 <Products />
+              </ProtectedSection>
+            }
+          />
+          <Route
+            path="replacements"
+            element={
+              <ProtectedSection section="products">
+                <AdminReplacementVerification />
               </ProtectedSection>
             }
           />
