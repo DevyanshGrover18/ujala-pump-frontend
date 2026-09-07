@@ -64,6 +64,13 @@ const userTypes = [
     icon: Wrench,
     bg: '#06B6D4',
   },
+  {
+    id: 'accounts',
+    title: 'Accounts',
+    description: 'Accounts team portal',
+    icon: Building,
+    bg: '#0EA5E9',
+  },
 ];
 
 export default function Login({ isAdminLoginPath }) {
@@ -135,6 +142,8 @@ export default function Login({ isAdminLoginPath }) {
         navigate('/executive/dashboard');
       } else if (selectedUserType === 'plumber') {
         navigate('/plumber/dashboard');
+      } else if (selectedUserType === 'accounts') {
+        navigate('/accounts-panel/dashboard');
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Login failed');
@@ -254,7 +263,9 @@ export default function Login({ isAdminLoginPath }) {
                               ? 'Executive'
                               : selectedUserType === 'plumber'
                                 ? 'Plumber'
-                                : 'Sub-Dealer'}
+                                : selectedUserType === 'accounts'
+                                  ? 'Accounts'
+                                  : 'Sub-Dealer'}
                   !
                 </h2>
               </div>

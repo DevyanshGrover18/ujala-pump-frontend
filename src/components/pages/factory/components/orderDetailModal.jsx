@@ -18,7 +18,8 @@ export default function OrderDetailsModal({
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10); // Add itemsPerPage state
   const [selectedItems, setSelectedItems] = useState([]);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingMrp, setIsDownloadingMrp] = useState(false);
+  const [isDownloadingWarranty, setIsDownloadingWarranty] = useState(false);
   const [startSerialNumber, setStartSerialNumber] = useState('');
   const [endSerialNumber, setEndSerialNumber] = useState('');
   // Range validation modal state
@@ -92,10 +93,10 @@ export default function OrderDetailsModal({
 
   const handleDownloadClick = async () => {
     if (selectedItems.length === 0) {
-      toast.error('Please select items to download.');
+      toast.error('Please select items to download MRP stickers.');
       return;
     }
-    setIsDownloading(true);
+    setIsDownloadingMrp(true);
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/pdf/download-combined`,
@@ -106,19 +107,19 @@ export default function OrderDetailsModal({
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `combined-stickers-${Date.now()}.pdf`;
+      link.download = `mrp-stickers-${Date.now()}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      toast.success('Combined PDF downloaded successfully!');
+      toast.success('MRP stickers downloaded successfully!');
     } catch (err) {
       toast.error(
-        err.response?.data?.message || 'Error downloading combined PDF.'
+        err.response?.data?.message || 'Error downloading MRP stickers.'
       );
-      console.error('Combined PDF Download Error:', err);
+      console.error('MRP Stickers Download Error:', err);
     } finally {
-      setIsDownloading(false);
+      setIsDownloadingMrp(false);
     }
   };
 
@@ -127,7 +128,7 @@ export default function OrderDetailsModal({
       toast.error('Please select items to download warranty stickers.');
       return;
     }
-    setIsDownloading(true);
+    setIsDownloadingWarranty(true);
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/warranty-stickers`,
@@ -155,7 +156,7 @@ export default function OrderDetailsModal({
       );
       console.error('Warranty Sticker Download Error:', err);
     } finally {
-      setIsDownloading(false);
+      setIsDownloadingWarranty(false);
     }
   };
 
@@ -356,24 +357,32 @@ export default function OrderDetailsModal({
                   </select>
                   <button
                     onClick={handleDownloadClick}
-                    disabled={isDownloading || selectedItems.length === 0}
+                    disabled={
+                      isDownloadingMrp ||
+                      isDownloadingWarranty ||
+                      selectedItems.length === 0
+                    }
                     className="px-3 py-2 bg-purple-600 text-white text-xs sm:text-sm rounded hover:bg-purple-700 disabled:opacity-50 flex items-center justify-center gap-1"
                   >
-                    {isDownloading ? (
+                    {isDownloadingMrp ? (
                       <>
                         <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                         Downloading...
                       </>
                     ) : (
-                      'Download PDFs'
+                      'Download MRP Stickers'
                     )}
                   </button>
                   <button
                     onClick={() => handleWarrantyDownload(selectedOrderItems)}
-                    disabled={isDownloading || selectedItems.length === 0}
+                    disabled={
+                      isDownloadingMrp ||
+                      isDownloadingWarranty ||
+                      selectedItems.length === 0
+                    }
                     className="px-3 py-2 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1"
                   >
-                    {isDownloading ? (
+                    {isDownloadingWarranty ? (
                       <>
                         <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                         Downloading...

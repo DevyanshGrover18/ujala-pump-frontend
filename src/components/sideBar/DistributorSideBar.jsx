@@ -59,12 +59,12 @@ const distributorSidebarItems = [
       },
     ],
   },
-  /* {
+  {
     title: 'My Wallet',
     path: '/distributor/wallet',
     icon: Wallet,
     color: 'orange',
-  }, */
+  },
 ];
 
 export function DistributorSideBar({ sidebarOpen, toggleSidebar }) {

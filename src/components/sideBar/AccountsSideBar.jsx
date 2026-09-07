@@ -1,52 +1,45 @@
-import { useContext, useState } from 'react';
+import { useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LogOut,
+  ShoppingCart,
   LayoutDashboard,
-  Package,
-  ShoppingBag,
-  Wallet,
-  RefreshCw,
+  Gift,
+  CreditCard,
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 
-const subDealerSidebarItems = [
+const accountsSidebarItems = [
   {
     title: 'Dashboard',
-    path: '/sub-dealer/dashboard',
+    path: '/accounts-panel/dashboard',
     icon: LayoutDashboard,
     color: 'blue',
   },
   {
-    title: 'Inventory',
-    path: '/sub-dealer/products',
-    icon: Package,
-    color: 'yellow',
-  },
-  {
-    title: 'Replacements',
-    path: '/sub-dealer/replacements',
-    icon: RefreshCw,
-    color: 'teal',
-  },
-  {
     title: 'Sales',
-    path: '/sub-dealer/sales',
-    icon: ShoppingBag,
+    path: '/accounts-panel/sales',
+    icon: ShoppingCart,
     color: 'green',
   },
   {
-    title: 'My Wallet',
-    path: '/sub-dealer/wallet',
-    icon: Wallet,
+    title: 'Incentives',
+    path: '/accounts-panel/incentives',
+    icon: Gift,
     color: 'orange',
+  },
+  {
+    title: 'Payouts',
+    path: '/accounts-panel/payouts',
+    icon: CreditCard,
+    color: 'purple',
   },
 ];
 
-export function SubDealerSideBar({ sidebarOpen, toggleSidebar }) {
+export function AccountsSideBar({ sidebarOpen, toggleSidebar }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
 
   const isActive = (path) => location.pathname === path;
 
@@ -67,7 +60,7 @@ export function SubDealerSideBar({ sidebarOpen, toggleSidebar }) {
           className="h-full flex flex-col px-4 pb-4 overflow-y-auto"
           style={{ background: 'var(--sidebar-bg)' }}
         >
-          {/* Sidebar Header */}
+          {/* Header */}
           <div
             className={`flex items-center h-20 ${
               sidebarOpen ? 'justify-between px-2' : 'justify-center'
@@ -81,7 +74,7 @@ export function SubDealerSideBar({ sidebarOpen, toggleSidebar }) {
                   className="w-10 h-10 object-contain"
                 />
                 <div>
-                  <div className="text-sm font-extrabold">Sub-Dealer</div>
+                  <div className="text-sm font-extrabold">Accounts</div>
                   <div className="text-xs text-white/80 -mt-1">Dashboard</div>
                 </div>
               </div>
@@ -107,51 +100,64 @@ export function SubDealerSideBar({ sidebarOpen, toggleSidebar }) {
             </button>
           </div>
 
-          {/* Sidebar Items */}
+          {/* Nav Items */}
           {sidebarOpen ? (
             <ul className="mt-1 space-y-1 font-bold">
-              {subDealerSidebarItems.map((item, index) => {
+              {accountsSidebarItems.map((item, index) => {
                 const Icon = item.icon;
-
+                const active = isActive(item.path);
                 return (
                   <li key={index}>
                     <Link
                       to={item.path}
-                      className={`flex items-center py-1 px-3 rounded-xl group transition-all duration-200 ${isActive(item.path) ? 'bg-white' : ''}`}
+                      className={`flex items-center py-1 px-3 rounded-xl group transition-all duration-200 ${
+                        active ? 'bg-white' : ''
+                      }`}
                     >
                       <div
-                        className={`p-2 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ${isActive(item.path) ? 'bg-white' : 'bg-white/10'}`}
+                        className={`p-2 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ${
+                          active ? 'bg-white' : 'bg-white/10'
+                        }`}
                       >
                         <Icon
-                          className={`w-5 h-5 ${isActive(item.path) ? 'text-[var(--sidebar-bg)]' : 'text-white/90'}`}
+                          className={`w-5 h-5 ${
+                            active
+                              ? 'text-[var(--sidebar-bg)]'
+                              : 'text-white/90'
+                          }`}
                         />
                       </div>
-                      {sidebarOpen && (
-                        <span
-                          className={`ml-4 font-bold ${isActive(item.path) ? 'text-[var(--sidebar-bg)]' : 'text-white/90'}`}
-                        >
-                          {item.title}
-                        </span>
-                      )}
+                      <span
+                        className={`ml-4 font-bold ${
+                          active ? 'text-[var(--sidebar-bg)]' : 'text-white/90'
+                        }`}
+                      >
+                        {item.title}
+                      </span>
                     </Link>
                   </li>
                 );
               })}
             </ul>
           ) : (
-            // --- UPDATED COLLAPSED STYLING (from example) ---
             <ul className="mt-6 flex flex-col items-center space-y-4">
-              {subDealerSidebarItems.map((item, index) => {
+              {accountsSidebarItems.map((item, index) => {
                 const Icon = item.icon;
                 const active = isActive(item.path);
                 return (
                   <li key={index}>
                     <Link to={item.path} className="block">
                       <div
-                        className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors ${active ? 'bg-white sidebar-pill' : 'bg-white/10'}`}
+                        className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors ${
+                          active ? 'bg-white sidebar-pill' : 'bg-white/10'
+                        }`}
                       >
                         <Icon
-                          className={`${active ? 'text-[var(--sidebar-bg)]' : 'text-white/90'} w-4 h-4`}
+                          className={`${
+                            active
+                              ? 'text-[var(--sidebar-bg)]'
+                              : 'text-white/90'
+                          } w-4 h-4`}
                         />
                       </div>
                     </Link>
@@ -161,7 +167,7 @@ export function SubDealerSideBar({ sidebarOpen, toggleSidebar }) {
             </ul>
           )}
 
-          {/* --- UPDATED User Info & Logout (from example) --- */}
+          {/* Logout */}
           <div className="mt-auto">
             <div className="mt-4">
               {sidebarOpen ? (
@@ -189,12 +195,12 @@ export function SubDealerSideBar({ sidebarOpen, toggleSidebar }) {
         </div>
       </aside>
 
-      {/* --- ADDED Overlay for Mobile (from example) --- */}
+      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/80 sm:hidden"
           onClick={toggleSidebar}
-        ></div>
+        />
       )}
     </>
   );

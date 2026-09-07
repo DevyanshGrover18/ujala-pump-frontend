@@ -34,9 +34,10 @@ import Notifications from './components/pages/Notifications/Notifications';
 import AddMembers from './components/pages/AddMembers/index';
 import Executives from './components/pages/Executives/Executives';
 import Incentives from './components/pages/Incentives/Incentives';
+import Payouts from './components/pages/Payouts/Payouts';
 import ReplacementRequests from './components/pages/Replacements/ReplacementRequests';
 import AdminReplacementVerification from './components/pages/Replacements/AdminReplacementVerification';
-// import WalletPage from './components/pages/Wallet/WalletPage';
+import WalletPage from './components/pages/Wallet/WalletPage';
 import Unauthorized from './components/pages/AddMembers/Unauthorized';
 import ProtectedSection from './components/auth/ProtectedSection';
 import { SideBar } from './components/sideBar/sideBar';
@@ -56,6 +57,12 @@ import PlumberInstallation from './components/pages/PlumberPanel/PlumberInstalla
 import PlumberWallet from './components/pages/PlumberPanel/PlumberWallet';
 import PlumberComplaints from './components/pages/PlumberPanel/PlumberComplaints';
 import Plumbers from './components/pages/Plumbers/Plumbers';
+import Accounts from './components/pages/Accounts/Accounts';
+import AccountsLayout from './components/global/AccountsLayout';
+import AccountsDashboard from './components/pages/AccountsPanel/AccountsDashboard';
+import AccountsSales from './components/pages/AccountsPanel/AccountsSales';
+import AccountsIncentives from './components/pages/AccountsPanel/AccountsIncentives';
+import AccountsPayouts from './components/pages/AccountsPanel/AccountsPayouts';
 
 const AdminProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading, isAdmin } = useContext(AuthContext);
@@ -116,7 +123,7 @@ const App = () => {
           <Route path="customer-sales" element={<DistributorCustomerSales />} />
           <Route path="replacements" element={<ReplacementRequests />} />
           <Route path="verify-replacements" element={<AdminReplacementVerification />} />
-          {/* <Route path="wallet" element={<WalletPage />} /> */}
+          <Route path="wallet" element={<WalletPage />} />
         </Route>
 
         <Route
@@ -135,7 +142,7 @@ const App = () => {
           <Route path="customer-sales" element={<DealerCustomerSales />} />
           <Route path="replacements" element={<ReplacementRequests />} />
           <Route path="verify-replacements" element={<AdminReplacementVerification />} />
-          {/* <Route path="wallet" element={<WalletPage />} /> */}
+          <Route path="wallet" element={<WalletPage />} />
         </Route>
 
         <Route
@@ -150,7 +157,7 @@ const App = () => {
           <Route path="products" element={<SubDealerProducts />} />
           <Route path="sales" element={<SubDealerSales />} />
           <Route path="replacements" element={<ReplacementRequests />} />
-          {/* <Route path="wallet" element={<WalletPage />} /> */}
+          <Route path="wallet" element={<WalletPage />} />
         </Route>
 
         <Route
@@ -180,6 +187,20 @@ const App = () => {
           <Route path="installation" element={<PlumberInstallation />} />
           <Route path="wallet" element={<PlumberWallet />} />
           <Route path="complaints" element={<PlumberComplaints />} />
+        </Route>
+
+        <Route
+          path="/accounts-panel"
+          element={
+            <AccountsProtectedRoute>
+              <AccountsLayout />
+            </AccountsProtectedRoute>
+          }
+        >
+          <Route path="dashboard" element={<AccountsDashboard />} />
+          <Route path="sales" element={<AccountsSales />} />
+          <Route path="incentives" element={<AccountsIncentives />} />
+          <Route path="payouts" element={<AccountsPayouts />} />
         </Route>
 
         <Route
@@ -218,6 +239,14 @@ const App = () => {
             element={
               <AdminProtectedRoute>
                 <Incentives />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="payouts"
+            element={
+              <AdminProtectedRoute>
+                <Payouts />
               </AdminProtectedRoute>
             }
           />
@@ -300,6 +329,14 @@ const App = () => {
               <ProtectedSection section="plumbers">
                 <Plumbers />
               </ProtectedSection>
+            }
+          />
+          <Route
+            path="accounts"
+            element={
+              <AdminProtectedRoute>
+                <Accounts />
+              </AdminProtectedRoute>
             }
           />
           <Route path="unauthorized" element={<Unauthorized />} />
@@ -436,6 +473,24 @@ const PlumberProtectedRoute = ({ children }) => {
   }
 
   if (!isPlumberAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+const AccountsProtectedRoute = ({ children }) => {
+  const { isAccountsAuthenticated, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (!isAccountsAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 

@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect, useContext } from 'react';
+import { useState, useRef, useEffect, useContext, useMemo } from 'react';
 import { Camera, X, CheckCircle, RefreshCw, Loader2, Upload, Eye } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import QrScanner from 'qr-scanner';
 import { AuthContext } from '../../../context/AuthContext';
+import TableExportButtons from '../../global/TableExportButtons';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -230,6 +231,26 @@ export default function ReplacementRequests() {
     }
   };
 
+  const exportData = useMemo(() => {
+    return replacements.map((item, idx) => ({
+      'S.No': idx + 1,
+      'Defective Serial': item.oldSerialNumber || 'N/A',
+      Reason: item.reason || 'N/A',
+      Description: item.description || 'N/A',
+      'Request Date': item.createdAt
+        ? new Date(item.createdAt).toLocaleDateString()
+        : '',
+      Status: item.status || 'Pending',
+      'Replacement Serial':
+        item.status === 'Approved'
+          ? item.newSerialNumber || 'N/A'
+          : item.status === 'Rejected'
+          ? 'N/A'
+          : 'Awaiting Replacement',
+      'Admin Remarks': item.adminRemarks || '',
+    }));
+  }, [replacements]);
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
       {/* Page Header */}
@@ -393,7 +414,15 @@ export default function ReplacementRequests() {
 
         {/* Right Side: Request History */}
         <div className="w-full bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-6">
-          <h2 className="text-lg font-semibold text-gray-950">Request History</h2>
+          <div className="flex justify-between items-center flex-wrap gap-3">
+            <h2 className="text-lg font-semibold text-gray-950">Request History</h2>
+            {replacements.length > 0 && (
+              <TableExportButtons
+                exportName="My_Replacement_History"
+                exportData={exportData}
+              />
+            )}
+          </div>
 
           {listLoading ? (
             <div className="flex items-center justify-center py-12">

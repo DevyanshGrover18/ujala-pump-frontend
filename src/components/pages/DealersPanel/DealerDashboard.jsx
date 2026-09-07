@@ -2,15 +2,21 @@ import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../../context/AuthContext';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { Package, Users } from 'lucide-react';
+import { Package, Users, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/distributor-dealer-products/dealer`;
 const API_URL_1 = `${import.meta.env.VITE_API_URL}/api/distributor-dealer-products/dealer-inventory`;
+
 export default function DealerDashboard() {
   const { user } = useContext(AuthContext);
   const [productCount, setProductCount] = useState(0);
   const [subDealerCount, setSubDealerCount] = useState(0);
+  const [walletInfo, setWalletInfo] = useState({
+    incentive: null,
+    points: null,
+    eligibleForIncentive: true,
+    eligibleForPoints: true,
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,25 +28,34 @@ export default function DealerDashboard() {
 
       setLoading(true);
       try {
-        // const productsResponse = await axios.get(`${API_URL}/${user.dealer._id}/products`);
-        // setProductCount(productsResponse.data.length);
+        const token = localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+
         const productsResponse = await axios.get(
           `${API_URL_1}/${user.dealer._id}/products`
         );
         setProductCount(productsResponse.data.length);
-        // setProducts(response.data);
 
         const subDealersResponse = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/dealer/my-sub-dealers`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          }
+          { headers }
         );
         setSubDealerCount(subDealersResponse.data.length);
+
+        // Fetch wallet status
+        const walletRes = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/incentives/my/claims`,
+          { headers }
+        );
+        if (walletRes.data) {
+          setWalletInfo({
+            incentive: walletRes.data.wallet?.incentive,
+            points: walletRes.data.wallet?.points,
+            eligibleForIncentive: walletRes.data.eligibleForIncentive !== false,
+            eligibleForPoints: walletRes.data.eligibleForPoints !== false,
+          });
+        }
       } catch (error) {
-        toast.error('Error fetching dashboard data');
         console.error('Error fetching dashboard data:', error);
       } finally {
         setLoading(false);
@@ -66,6 +81,24 @@ export default function DealerDashboard() {
       path: '/dealer/sub-dealers',
     },
   ];
+
+  if (walletInfo.eligibleForIncentive && typeof walletInfo.incentive === 'number') {
+    cardData.push({
+      title: 'Wallet Incentive',
+      count: `₹${walletInfo.incentive.toLocaleString('en-IN')}`,
+      icon: <Wallet className="w-5 h-5" />,
+      bg: '#10B981',
+      path: '/dealer/wallet',
+    });
+  } else if (walletInfo.eligibleForPoints && typeof walletInfo.points === 'number') {
+    cardData.push({
+      title: 'Wallet Points',
+      count: `${walletInfo.points.toLocaleString('en-IN')} pts`,
+      icon: <Wallet className="w-5 h-5" />,
+      bg: '#10B981',
+      path: '/dealer/wallet',
+    });
+  }
 
   return (
     <div className="p-4">

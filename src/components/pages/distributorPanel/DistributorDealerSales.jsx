@@ -721,6 +721,10 @@ export default function Sales() {
                     exportName={`Model_${products.find((p) => p.model?._id === activeModelId)?.model?.name || 'Products'}_Sales`}
                     exportData={modalProducts.map((product) => {
                       const warrantyInfo = getWarrantyInfo(product);
+                      const soldDateVal =
+                        product.sale?.saleDate ||
+                        product.saleDate ||
+                        product.sale?.soldAt;
                       return {
                         'Serial Number': product.serialNumber,
                         Model: product.model?.name || 'N/A',
@@ -733,6 +737,9 @@ export default function Sales() {
                         'Sub Dealer': product.subDealer?.name || 'N/A',
                         'Warranty Status': warrantyInfo.status,
                         'Warranty Balance': warrantyInfo.remaining,
+                        'Sold Date': soldDateVal
+                          ? new Date(soldDateVal).toLocaleDateString()
+                          : 'N/A',
                         'Sold To Customer': product.sale?.customerName
                           ? 'Yes'
                           : 'No',
@@ -877,7 +884,6 @@ export default function Sales() {
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                           Serial Number
                         </th>
-                        {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Distributor</th> */}
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                           Assigned Date
                         </th>
@@ -894,6 +900,9 @@ export default function Sales() {
                           Warranty Balance
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Sold Date
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                           Sold to
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -904,6 +913,10 @@ export default function Sales() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {paginatedModalProducts.map((product) => {
                         const warrantyInfo = getWarrantyInfo(product);
+                        const soldDateVal =
+                          product.sale?.saleDate ||
+                          product.saleDate ||
+                          product.sale?.soldAt;
                         return (
                           <tr
                             key={product._id}
@@ -930,7 +943,6 @@ export default function Sales() {
                             <td className="px-4 py-4 text-sm">
                               {product.serialNumber}
                             </td>
-                            {/* <td className="px-4 py-4 text-sm">{product.distributor?.name || 'N/A'}</td> */}
                             <td className="px-4 py-4 text-sm">
                               {product.assignedToDistributorAt
                                 ? new Date(
@@ -954,8 +966,14 @@ export default function Sales() {
                             >
                               {warrantyInfo.remaining}
                             </td>
+                            <td className="px-4 py-4 text-sm whitespace-nowrap">
+                              {soldDateVal ? (
+                                new Date(soldDateVal).toLocaleDateString()
+                              ) : (
+                                <span className="text-gray-400">N/A</span>
+                              )}
+                            </td>
                             <td className="px-4 py-4 text-sm">
-                              {/* Add View button - 20-12 */}
                               <button
                                 onClick={() => handleViewCustomer(product)}
                                 disabled={!product.sale?.customerName}

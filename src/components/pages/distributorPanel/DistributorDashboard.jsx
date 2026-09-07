@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../../context/AuthContext';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { Package, Users } from 'lucide-react';
+import { Package, Users, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api/distributors`;
@@ -11,6 +11,12 @@ export default function DistributorDashboard() {
   const { user } = useContext(AuthContext);
   const [productCount, setProductCount] = useState(0);
   const [dealerCount, setDealerCount] = useState(0);
+  const [walletInfo, setWalletInfo] = useState({
+    incentive: null,
+    points: null,
+    eligibleForIncentive: true,
+    eligibleForPoints: true,
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,6 +28,9 @@ export default function DistributorDashboard() {
 
       setLoading(true);
       try {
+        const token = localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+
         // Fetch product count
         const productsResponse = await axios.get(
           `${API_URL}/${user.distributor._id}/products`
@@ -33,8 +42,21 @@ export default function DistributorDashboard() {
           `${API_URL}/${user.distributor._id}/dealers`
         );
         setDealerCount(dealersResponse.data.length);
+
+        // Fetch wallet status
+        const walletRes = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/incentives/my/claims`,
+          { headers }
+        );
+        if (walletRes.data) {
+          setWalletInfo({
+            incentive: walletRes.data.wallet?.incentive,
+            points: walletRes.data.wallet?.points,
+            eligibleForIncentive: walletRes.data.eligibleForIncentive !== false,
+            eligibleForPoints: walletRes.data.eligibleForPoints !== false,
+          });
+        }
       } catch (error) {
-        toast.error('Error fetching dashboard data');
         console.error('Error fetching dashboard data:', error);
       } finally {
         setLoading(false);
@@ -60,6 +82,24 @@ export default function DistributorDashboard() {
       path: '/distributor/dealers',
     },
   ];
+
+  if (walletInfo.eligibleForIncentive && typeof walletInfo.incentive === 'number') {
+    cardData.push({
+      title: 'Wallet Incentive',
+      count: `₹${walletInfo.incentive.toLocaleString('en-IN')}`,
+      icon: <Wallet className="w-5 h-5" />,
+      bg: '#10B981',
+      path: '/distributor/wallet',
+    });
+  } else if (walletInfo.eligibleForPoints && typeof walletInfo.points === 'number') {
+    cardData.push({
+      title: 'Wallet Points',
+      count: `${walletInfo.points.toLocaleString('en-IN')} pts`,
+      icon: <Wallet className="w-5 h-5" />,
+      bg: '#10B981',
+      path: '/distributor/wallet',
+    });
+  }
 
   return (
     <div className="p-4">

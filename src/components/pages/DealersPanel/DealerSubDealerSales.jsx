@@ -710,6 +710,12 @@ export default function Sales() {
                     ).toLocaleDateString(),
                     Dealer: p.dealer?.name || 'N/A',
                     'Sub Dealer': p.subDealer?.name || 'N/A',
+                    'Sold Date':
+                      p.sale?.saleDate || p.saleDate || p.sale?.soldAt
+                        ? new Date(
+                            p.sale?.saleDate || p.saleDate || p.sale?.soldAt
+                          ).toLocaleDateString()
+                        : 'N/A',
                   }))}
                 />
                 <button
@@ -830,6 +836,9 @@ export default function Sales() {
                           Warranty Balance
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Sold Date
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                           Sold to
                         </th>
                         {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th> */}
@@ -838,6 +847,10 @@ export default function Sales() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {paginatedModalProducts.map((product) => {
                         const warrantyInfo = getWarrantyInfo(product);
+                        const soldDateVal =
+                          product.sale?.saleDate ||
+                          product.saleDate ||
+                          product.sale?.soldAt;
                         return (
                           <tr
                             key={product._id}
@@ -888,6 +901,13 @@ export default function Sales() {
                               className={`px-4 py-4 text-sm ${warrantyInfo.color}`}
                             >
                               {warrantyInfo.remaining}
+                            </td>
+                            <td className="px-4 py-4 text-sm whitespace-nowrap">
+                              {soldDateVal ? (
+                                new Date(soldDateVal).toLocaleDateString()
+                              ) : (
+                                <span className="text-gray-400">N/A</span>
+                              )}
                             </td>
                             <td className="px-4 py-4 text-sm">
                               {/* Add View button - 20-12 */}

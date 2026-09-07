@@ -111,7 +111,7 @@ export const bulkUpdateOrderStatus = async (factoryId, itemIds, status) => {
 
 export const downloadMultiplePDFs = async (boxKeys) => {
   if (boxKeys.length === 0) {
-    toast.error('Please select items to download PDFs');
+    toast.error('Please select items to download MRP stickers');
     return;
   }
 

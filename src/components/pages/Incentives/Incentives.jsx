@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext, useMemo } from 'react';
 import axios from 'axios';
+import { AuthContext } from '../../../context/AuthContext';
 import {
   Gift,
   Search,
@@ -389,10 +390,16 @@ function VerifyModal({ group, onClose, onAction }) {
 const PER_PAGE = 15;
 
 export default function Incentives() {
+  const { user } = useContext(AuthContext);
+  const isReadOnly = user?.role === 'accounts';
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [roleFilter, setRoleFilter] = useState('All');
+  const [memberFilter, setMemberFilter] = useState('All');
+  const [membersList, setMembersList] = useState([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [page, setPage] = useState(1);
   const [expanded, setExpanded] = useState({});
@@ -405,7 +412,7 @@ export default function Incentives() {
       const { data } = await axios.get(`${API}/api/incentives`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setGroups(data);
+      setGroups(data || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -416,6 +423,95 @@ export default function Incentives() {
   useEffect(() => {
     fetchClaims();
   }, [fetchClaims]);
+
+  // Fetch / extract members when roleFilter changes
+  useEffect(() => {
+    if (roleFilter === 'All') {
+      setMembersList([]);
+      setMemberFilter('All');
+      return;
+    }
+
+    setMemberFilter('All');
+
+    const fetchMembersForRole = async () => {
+      try {
+        setLoadingMembers(true);
+        const token = localStorage.getItem('token');
+        let endpoint = '';
+        if (roleFilter === 'Distributor') endpoint = `${API}/api/distributors`;
+        else if (roleFilter === 'Dealer') endpoint = `${API}/api/dealers`;
+        else if (roleFilter === 'SubDealer') endpoint = `${API}/api/sub-dealers`;
+        else if (roleFilter === 'Plumber') endpoint = `${API}/api/plumbers`;
+
+        let fetchedList = [];
+        if (endpoint) {
+          const res = await axios.get(endpoint, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const rawData =
+            res.data?.data ||
+            res.data?.subDealers ||
+            res.data?.dealers ||
+            res.data?.distributors ||
+            res.data?.plumbers ||
+            res.data ||
+            [];
+          fetchedList = Array.isArray(rawData) ? rawData : [];
+        }
+
+        const combinedMap = new Map();
+        fetchedList.forEach((m) => {
+          const id = m._id ? String(m._id) : m.name;
+          const code =
+            m.distributorId || m.dealerId || m.subDealerId || m.plumberId || '';
+          combinedMap.set(id, {
+            _id: id,
+            name: m.name || m.contactPerson || 'Unnamed',
+            code,
+          });
+        });
+
+        // Also merge any sellers found in the groups data
+        groups
+          .filter((g) => g.sellerType === roleFilter && g.sellerName)
+          .forEach((g) => {
+            const key = g.sellerId ? String(g.sellerId) : g.sellerName;
+            if (!combinedMap.has(key)) {
+              combinedMap.set(key, {
+                _id: key,
+                name: g.sellerName,
+                code: '',
+              });
+            }
+          });
+
+        setMembersList(Array.from(combinedMap.values()));
+      } catch (err) {
+        console.error('Error fetching members for role:', err);
+        const uniqueFromGroups = [];
+        const seen = new Set();
+        groups
+          .filter((g) => g.sellerType === roleFilter && g.sellerName)
+          .forEach((g) => {
+            const key = g.sellerId ? String(g.sellerId) : g.sellerName;
+            if (!seen.has(key)) {
+              seen.add(key);
+              uniqueFromGroups.push({
+                _id: key,
+                name: g.sellerName,
+                code: '',
+              });
+            }
+          });
+        setMembersList(uniqueFromGroups);
+      } finally {
+        setLoadingMembers(false);
+      }
+    };
+
+    fetchMembersForRole();
+  }, [roleFilter, groups]);
 
   const handleAction = async (claimId, action, rejectionReason) => {
     const token = localStorage.getItem('token');
@@ -483,21 +579,44 @@ export default function Incentives() {
     }
   };
 
-  const filtered = groups.filter((g) => {
-    const matchSearch =
-      !search ||
-      g.sellerName?.toLowerCase().includes(search.toLowerCase()) ||
-      g.items?.some(
-        (i) =>
-          i.serialNumber?.toLowerCase().includes(search.toLowerCase()) ||
-          i.modelName?.toLowerCase().includes(search.toLowerCase())
-      );
-    const matchStatus = statusFilter === 'All' || g.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const filtered = useMemo(() => {
+    return groups.filter((g) => {
+      const matchSearch =
+        !search ||
+        g.sellerName?.toLowerCase().includes(search.toLowerCase()) ||
+        g.items?.some(
+          (i) =>
+            i.serialNumber?.toLowerCase().includes(search.toLowerCase()) ||
+            i.modelName?.toLowerCase().includes(search.toLowerCase())
+        );
+      const matchStatus = statusFilter === 'All' || g.status === statusFilter;
+      const matchRole = roleFilter === 'All' || g.sellerType === roleFilter;
+      const matchMember =
+        memberFilter === 'All' ||
+        (g.sellerId && String(g.sellerId) === String(memberFilter)) ||
+        g.sellerName === memberFilter;
 
-  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+      return matchSearch && matchStatus && matchRole && matchMember;
+    });
+  }, [groups, search, statusFilter, roleFilter, memberFilter]);
+
+  const totalPages = Math.ceil(filtered.length / PER_PAGE) || 1;
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  // Bottom Totals Calculation
+  const totalIncentiveAmount = useMemo(() => {
+    return filtered.reduce((sum, g) => sum + (Number(g.totalIncentive) || 0), 0);
+  }, [filtered]);
+
+  const totalPointsAmount = useMemo(() => {
+    return filtered.reduce((sum, g) => sum + (Number(g.totalPoints) || 0), 0);
+  }, [filtered]);
+
+  const selectedMemberName = useMemo(() => {
+    if (memberFilter === 'All') return null;
+    const found = membersList.find((m) => String(m._id) === String(memberFilter) || m.name === memberFilter);
+    return found ? (found.code ? `${found.name} (${found.code})` : found.name) : memberFilter;
+  }, [memberFilter, membersList]);
 
   const stats = {
     total: groups.length,
@@ -507,36 +626,37 @@ export default function Incentives() {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Incentive Claims</h1>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Incentive Claims</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          Review and approve incentive & points claims from sellers
+          Review and approve incentive & points claims from sellers and plumbers.
         </p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-3 mb-5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total', value: stats.total },
-          { label: 'Pending', value: stats.pending },
-          { label: 'Approved', value: stats.approved },
-          { label: 'Rejected', value: stats.rejected },
+          { label: 'Total', value: stats.total, color: 'text-gray-900' },
+          { label: 'Pending', value: stats.pending, color: 'text-yellow-600' },
+          { label: 'Approved', value: stats.approved, color: 'text-emerald-600' },
+          { label: 'Rejected', value: stats.rejected, color: 'text-rose-600' },
         ].map((s) => (
           <div
             key={s.label}
-            className="bg-white rounded-xl border border-gray-200 px-5 py-4"
+            className="bg-white rounded-xl border border-gray-200 px-5 py-4 shadow-xs"
           >
-            <p className="text-2xl font-bold text-gray-900">{s.value}</p>
+            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
             <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* Table card */}
-      <div className="bg-white rounded-xl border border-gray-200">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
         <div className="flex items-center gap-3 p-4 border-b border-gray-100 flex-wrap">
-          <div className="relative flex-1 min-w-48">
+          {/* Search Box */}
+          <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
@@ -547,10 +667,58 @@ export default function Incentives() {
                 setPage(1);
                 setSelectedClaims([]);
               }}
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+              className="w-full pl-9 pr-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
           </div>
-          <div className="flex gap-1.5">
+
+          {/* 1. Select Role Filter */}
+          <select
+            value={roleFilter}
+            onChange={(e) => {
+              setRoleFilter(e.target.value);
+              setPage(1);
+              setSelectedClaims([]);
+            }}
+            className="px-3 py-2 border border-gray-200 rounded-lg text-xs bg-white font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="All">All Roles</option>
+            <option value="Distributor">Distributor</option>
+            <option value="Dealer">Dealer</option>
+            <option value="SubDealer">Sub-Dealer</option>
+            <option value="Plumber">Plumber</option>
+          </select>
+
+          {/* 2. Select Member Filter (Dynamic based on Role) */}
+          <select
+            value={memberFilter}
+            onChange={(e) => {
+              setMemberFilter(e.target.value);
+              setPage(1);
+              setSelectedClaims([]);
+            }}
+            disabled={roleFilter === 'All'}
+            className={`px-3 py-2 border border-gray-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[170px] ${
+              roleFilter === 'All'
+                ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                : 'bg-white text-gray-800 border-blue-200'
+            }`}
+          >
+            <option value="All">
+              {roleFilter === 'All'
+                ? 'All Members (Select Role)'
+                : loadingMembers
+                ? 'Loading Members...'
+                : `All ${roleFilter}s (${membersList.length})`}
+            </option>
+            {membersList.map((m) => (
+              <option key={m._id} value={m._id}>
+                {m.name} {m.code ? `(${m.code})` : ''}
+              </option>
+            ))}
+          </select>
+
+          {/* Status Tabs */}
+          <div className="flex gap-1 overflow-x-auto">
             {[
               'All',
               'Approval Pending',
@@ -565,48 +733,58 @@ export default function Incentives() {
                   setPage(1);
                   setSelectedClaims([]);
                 }}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg ${statusFilter === s ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
+                  statusFilter === s
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
               >
                 {s === 'Approval Pending' ? 'Pending' : s}
               </button>
             ))}
           </div>
-          {selectedClaims.length > 0 && (
+
+          {!isReadOnly && selectedClaims.length > 0 && (
             <button
               onClick={handleDeleteSelected}
-              className="flex items-center justify-center space-x-2 bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors text-xs font-semibold"
+              className="flex items-center justify-center space-x-1.5 bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors text-xs font-semibold shadow-xs"
             >
               <Trash2 className="h-3.5 w-3.5" />
               <span>Delete ({selectedClaims.length})</span>
             </button>
           )}
+
           <button
             onClick={() => {
               fetchClaims();
               setSelectedClaims([]);
             }}
-            className="p-2 hover:bg-gray-100 rounded-lg text-gray-500"
+            className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition"
+            title="Refresh Claims"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
+          <table className="w-full text-left">
+            <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                <th className="px-5 py-3 text-left">
-                  <input
-                    type="checkbox"
-                    onChange={handleSelectAll}
-                    checked={
-                      paginated.length > 0 &&
-                      selectedClaims.length === paginated.length
-                    }
-                  />
-                </th>
+                {!isReadOnly && (
+                  <th className="px-5 py-3 text-left w-10">
+                    <input
+                      type="checkbox"
+                      onChange={handleSelectAll}
+                      checked={
+                        paginated.length > 0 &&
+                        selectedClaims.length === paginated.length
+                      }
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                  </th>
+                )}
                 {[
-                  'Seller',
+                  'Seller / Member',
                   'Type',
                   'Products',
                   'Date',
@@ -617,7 +795,7 @@ export default function Incentives() {
                 ].map((h) => (
                   <th
                     key={h}
-                    className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
                   >
                     {h}
                   </th>
@@ -629,18 +807,21 @@ export default function Incentives() {
                 <tr>
                   <td
                     colSpan={9}
-                    className="py-12 text-center text-sm text-gray-400"
+                    className="py-16 text-center text-sm text-gray-400"
                   >
-                    Loading...
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                      <span>Loading incentive claims...</span>
+                    </div>
                   </td>
                 </tr>
               ) : paginated.length === 0 ? (
                 <tr>
                   <td
                     colSpan={9}
-                    className="py-12 text-center text-sm text-gray-400"
+                    className="py-16 text-center text-sm text-gray-400"
                   >
-                    No claims found.
+                    No claims found matching current filters.
                   </td>
                 </tr>
               ) : (
@@ -649,19 +830,22 @@ export default function Incentives() {
                   const isExpanded = expanded[g.saleGroupId || g._id];
                   return (
                     <React.Fragment key={g._id}>
-                      <tr className="hover:bg-gray-50/50">
-                        <td className="px-5 py-3.5 whitespace-nowrap text-sm font-medium text-gray-900">
-                          <input
-                            type="checkbox"
-                            checked={selectedClaims.includes(g._id)}
-                            onChange={() => handleSelect(g._id)}
-                          />
-                        </td>
+                      <tr className="hover:bg-gray-50/60 transition-colors">
+                        {!isReadOnly && (
+                          <td className="px-5 py-3.5 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <input
+                              type="checkbox"
+                              checked={selectedClaims.includes(g._id)}
+                              onChange={() => handleSelect(g._id)}
+                              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                            />
+                          </td>
+                        )}
                         <td className="px-5 py-3.5 text-sm font-medium text-gray-900">
                           {g.sellerName}
                         </td>
                         <td className="px-5 py-3.5">
-                          <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                          <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600 border border-gray-200 font-medium">
                             {g.sellerType}
                           </span>
                         </td>
@@ -673,29 +857,33 @@ export default function Incentives() {
                                 [g.saleGroupId || g._id]: !isExpanded,
                               }))
                             }
-                            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800"
+                            className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 font-medium"
                           >
                             {g.items?.length || 1} item
                             {g.items?.length !== 1 ? 's' : ''}
                             {g.items?.length > 1 && (
                               <ChevronDown
-                                className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                className={`w-3.5 h-3.5 transition-transform ${
+                                  isExpanded ? 'rotate-180' : ''
+                                }`}
                               />
                             )}
                           </button>
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-gray-600">
+                        <td className="px-5 py-3.5 text-xs text-gray-500">
                           {new Date(g.claimDate).toLocaleDateString('en-IN')}
                         </td>
-                        <td className="px-5 py-3.5 text-sm font-semibold text-gray-900">
-                          ₹{g.totalIncentive}
+                        <td className="px-5 py-3.5 text-sm font-bold text-gray-900">
+                          ₹{g.totalIncentive?.toLocaleString('en-IN') || 0}
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-gray-700">
-                          {g.sellerType === 'Plumber' ? '—' : `${g.totalPoints} pts`}
+                        <td className="px-5 py-3.5 text-sm text-purple-700 font-semibold">
+                          {g.sellerType === 'Plumber' ? '—' : `${g.totalPoints || 0} pts`}
                         </td>
                         <td className="px-5 py-3.5">
                           <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[g.status] || ''}`}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                              STATUS_BADGE[g.status] || ''
+                            }`}
                           >
                             <SIcon className="w-3 h-3" />
                             {g.status}
@@ -705,43 +893,45 @@ export default function Incentives() {
                           <div className="flex gap-2">
                             <button
                               onClick={() => setSelectedGroup(g)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 transition"
                             >
                               <Eye className="w-3.5 h-3.5" />
                               Verify
                             </button>
-                            <button
-                              onClick={() => handleDelete(g._id)}
-                              className="inline-flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium border border-red-200 rounded-lg hover:bg-red-50 text-red-600 transition-colors"
-                              title="Delete Claim"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            {!isReadOnly && (
+                              <button
+                                onClick={() => handleDelete(g._id)}
+                                className="inline-flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium border border-red-200 rounded-lg hover:bg-red-50 text-red-600 transition-colors"
+                                title="Delete Claim"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
                       {isExpanded &&
                         g.items?.map((item, idx) => (
-                          <tr key={idx} className="bg-gray-50/50">
-                            <td className="px-5 py-2" />
-                            <td className="pl-10 pr-5 py-2 text-xs text-gray-500 font-mono">
+                          <tr key={idx} className="bg-gray-50/50 text-xs">
+                            {!isReadOnly && <td className="px-5 py-2" />}
+                            <td className="pl-10 pr-5 py-2 text-gray-500 font-mono">
                               {item.serialNumber}
                             </td>
                             <td
                               colSpan={2}
-                              className="px-5 py-2 text-xs text-gray-700"
+                              className="px-5 py-2 text-gray-700 font-medium"
                             >
                               {item.modelName}
                             </td>
-                            <td className="px-5 py-2 text-xs text-gray-500">
+                            <td className="px-5 py-2 text-gray-500">
                               {new Date(item.claimDate).toLocaleDateString(
                                 'en-IN'
                               )}
                             </td>
-                            <td className="px-5 py-2 text-xs text-gray-700">
+                            <td className="px-5 py-2 text-gray-800 font-semibold">
                               ₹{item.incentiveAmount}
                             </td>
-                            <td className="px-5 py-2 text-xs text-gray-700">
+                            <td className="px-5 py-2 text-purple-700 font-medium">
                               {g.sellerType === 'Plumber' ? '—' : `${item.points} pts`}
                             </td>
                             <td colSpan={2} />
@@ -752,27 +942,107 @@ export default function Incentives() {
                 })
               )}
             </tbody>
+
+            {/* Table Footer Totals */}
+            {!loading && filtered.length > 0 && (
+              <tfoot className="bg-gray-50 border-t-2 border-gray-200 text-xs font-bold text-gray-900">
+                <tr>
+                  {!isReadOnly && <td className="px-5 py-3"></td>}
+                  <td className="px-5 py-3 uppercase tracking-wider text-gray-500">
+                    Total
+                  </td>
+                  <td className="px-5 py-3">
+                    <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px]">
+                      {filtered.length} claim(s)
+                    </span>
+                  </td>
+                  <td colSpan={2} className="px-5 py-3 text-gray-500 font-normal">
+                    {selectedMemberName ? `For ${selectedMemberName}` : roleFilter !== 'All' ? `For all ${roleFilter}s` : 'Across all claims'}
+                  </td>
+                  <td className="px-5 py-3 text-sm font-black text-gray-950 whitespace-nowrap">
+                    ₹{totalIncentiveAmount.toLocaleString('en-IN')}
+                  </td>
+                  <td className="px-5 py-3 text-sm font-black text-purple-700 whitespace-nowrap">
+                    {roleFilter === 'Plumber' ? '—' : `${totalPointsAmount.toLocaleString('en-IN')} pts`}
+                  </td>
+                  <td colSpan={2} className="px-5 py-3"></td>
+                </tr>
+              </tfoot>
+            )}
           </table>
         </div>
 
+        {/* Bottom Filter & Total Summary Banner */}
+        {!loading && filtered.length > 0 && (
+          <div className="bg-blue-50/40 border-t border-blue-100 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold text-gray-700">
+                {selectedMemberName ? (
+                  <>
+                    Showing summary for{' '}
+                    <span className="text-blue-700 font-bold bg-white px-2 py-0.5 rounded border border-blue-200">
+                      {selectedMemberName}
+                    </span>
+                  </>
+                ) : roleFilter !== 'All' ? (
+                  <>
+                    Showing totals for all{' '}
+                    <span className="text-blue-700 font-bold bg-white px-2 py-0.5 rounded border border-blue-200">
+                      {roleFilter}s
+                    </span>
+                  </>
+                ) : (
+                  <>Showing totals for all filtered records</>
+                )}
+              </span>
+              <span className="text-gray-400">&bull;</span>
+              <span className="text-gray-600 font-medium">
+                {filtered.length} total claims
+              </span>
+            </div>
+
+            <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-xl border border-blue-100 shadow-2xs">
+              <div>
+                <span className="text-[10px] text-gray-400 block font-semibold uppercase">
+                  Total Incentive
+                </span>
+                <span className="font-black text-sm text-gray-900">
+                  ₹{totalIncentiveAmount.toLocaleString('en-IN')}
+                </span>
+              </div>
+              {roleFilter !== 'Plumber' && (
+                <div className="border-l border-gray-100 pl-4">
+                  <span className="text-[10px] text-gray-400 block font-semibold uppercase">
+                    Total Points
+                  </span>
+                  <span className="font-black text-sm text-purple-700">
+                    {totalPointsAmount.toLocaleString('en-IN')} pts
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 text-sm text-gray-500">
+          <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 text-xs text-gray-500">
             <span>
               Showing {(page - 1) * PER_PAGE + 1}–
               {Math.min(page * PER_PAGE, filtered.length)} of {filtered.length}
             </span>
-            <div className="flex gap-1">
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => {
                   setPage((p) => Math.max(1, p - 1));
                   setSelectedClaims([]);
                 }}
                 disabled={page === 1}
-                className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40"
+                className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 disabled:opacity-40"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="px-3 py-1 text-sm border border-gray-200 rounded-lg">
+              <span className="px-3 py-1 font-semibold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg">
                 {page} / {totalPages}
               </span>
               <button
@@ -781,7 +1051,7 @@ export default function Incentives() {
                   setSelectedClaims([]);
                 }}
                 disabled={page === totalPages}
-                className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-40"
+                className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 disabled:opacity-40"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -800,3 +1070,4 @@ export default function Incentives() {
     </div>
   );
 }
+

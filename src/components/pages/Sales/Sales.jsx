@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { Package, X, Box, QrCode, Trash } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { AuthContext } from '../../../context/AuthContext';
 import { SaleFilters } from './components/SaleFilters';
 import BulkSaleModal from './components/BulkSaleModal';
 import ConfirmationModal from '../../global/ConfirmationModal';
@@ -12,6 +13,9 @@ import TableExportButtons from '../../global/TableExportButtons';
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Sales() {
+  const { user } = useContext(AuthContext);
+  const isReadOnly = user?.role === 'accounts';
+
   // --- Main State ---
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -471,14 +475,15 @@ export default function Sales() {
                 'Total Products': mg.count || 0,
               }))}
             />
-            <button
-              onClick={() => setIsBulkSaleOpen(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-            >
-              <QrCode className="h-4 w-4" />
-              <span>Sale Products</span>
-            </button>
-          </div>
+            {!isReadOnly && (
+              <button
+                onClick={() => setIsBulkSaleOpen(true)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+              >
+                <QrCode className="h-4 w-4" />
+                <span>Sale Products</span>
+              </button>
+            )}          </div>
         </div>
         <SaleFilters
           searchTerm={searchTerm}
@@ -643,7 +648,7 @@ export default function Sales() {
                   exportName={`Model_${products.find((p) => p.model?._id === activeModelId)?.model?.name || 'Sales'}_Products`}
                   pdfOrientation="l"
                   pdfSize="a3"
-                  exportData={modalProducts.map((p) => ({
+                    exportData={modalProducts.map((p) => ({
                     Model: p.model?.name || 'N/A',
                     'Serial Number': p.serialNumber,
                     Distributor: p.distributor?.name || 'N/A',
@@ -655,15 +660,18 @@ export default function Sales() {
                     Factory: p.factory?.name || 'N/A',
                     'Warranty Status': getWarrantyInfo(p).status,
                     'Warranty Balance': getWarrantyInfo(p).remaining,
+                    'Sold Date':
+                      p.sale?.saleDate || p.saleDate || p.sale?.soldAt
+                        ? new Date(
+                            p.sale?.saleDate || p.saleDate || p.sale?.soldAt
+                          ).toLocaleDateString()
+                        : 'N/A',
                     'Customer Name': p.sale?.customerName || 'N/A',
                     'Customer Phone': p.sale?.customerPhone || 'N/A',
                     'Customer Address': p.sale?.customerAddress || 'N/A',
                     'Alt Phone': p.sale?.alternateMobileNumber || 'N/A',
                     'Plumber Name': p.sale?.plumberName || 'N/A',
                     'Plumber Phone': p.sale?.plumberMobileNumber || 'N/A',
-                    'Sale Date': p.sale?.saleDate
-                      ? new Date(p.sale.saleDate).toLocaleDateString()
-                      : 'N/A',
                   }))}
                 />
                 <button
@@ -676,6 +684,7 @@ export default function Sales() {
             </div>
 
             {/* --- Range Selection --- */}
+            {!isReadOnly && (
             <div className="px-4 py-3 bg-white border-b border-gray-200">
               <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                 <span className="text-sm font-medium text-gray-700">
@@ -724,9 +733,11 @@ export default function Sales() {
                 </button>
               </div>
             </div>
+            )}
 
             {/* --- Bulk Actions --- */}
             <div className="px-4 py-3 bg-white border-b border-gray-200 flex flex-wrap items-center justify-between gap-4">
+              {!isReadOnly && (
               <button
                 onClick={handleRevertAssignment}
                 disabled={selectedProducts.size === 0}
@@ -734,6 +745,7 @@ export default function Sales() {
               >
                 Transfer back to Inventory ({selectedProducts.size})
               </button>
+              )}
 
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-700">
@@ -785,6 +797,7 @@ export default function Sales() {
                   <table className="min-w-full divide-y divide-gray-200 hidden sm:table">
                     <thead className="bg-gray-50">
                       <tr>
+                        {!isReadOnly && (
                         <th className="px-4 py-3">
                           <input
                             type="checkbox"
@@ -798,6 +811,7 @@ export default function Sales() {
                             }
                           />
                         </th>
+                        )}
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                           Model
                         </th>
@@ -826,16 +840,27 @@ export default function Sales() {
                           Warranty Balance
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Sold Date
+                        </th>
+                        {!isReadOnly && (
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                           Sold to
                         </th>
+                        )}
+                        {!isReadOnly && (
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                           Action
                         </th>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {paginatedModalProducts.map((product) => {
                         const warrantyInfo = getWarrantyInfo(product);
+                        const soldDateVal =
+                          product.sale?.saleDate ||
+                          product.saleDate ||
+                          product.sale?.soldAt;
                         return (
                           <tr
                             key={product._id}
@@ -845,6 +870,7 @@ export default function Sales() {
                                 : ''
                             }`}
                           >
+                            {!isReadOnly && (
                             <td className="px-4 py-4">
                               <input
                                 type="checkbox"
@@ -856,6 +882,7 @@ export default function Sales() {
                                 }
                               />
                             </td>
+                            )}
                             <td className="px-4 py-4 text-sm font-medium whitespace-nowrap">
                               {product.model?.name || 'N/A'}
                             </td>
@@ -891,6 +918,14 @@ export default function Sales() {
                             >
                               {warrantyInfo.remaining}
                             </td>
+                            <td className="px-4 py-4 text-sm whitespace-nowrap">
+                              {soldDateVal ? (
+                                new Date(soldDateVal).toLocaleDateString()
+                              ) : (
+                                <span className="text-gray-400">N/A</span>
+                              )}
+                            </td>
+                            {!isReadOnly && (
                             <td className="px-4 py-4 text-sm">
                               {product.sale?.customerName ? (
                                 <button
@@ -908,6 +943,8 @@ export default function Sales() {
                                 </button>
                               )}
                             </td>
+                            )}
+                            {!isReadOnly && (
                             <td className="px-4 py-4 text-sm">
                               <button
                                 onClick={() => handleDeleteClick(product)}
@@ -916,6 +953,7 @@ export default function Sales() {
                                 <Trash className="h-4 w-4" />
                               </button>
                             </td>
+                            )}
                           </tr>
                         );
                       })}

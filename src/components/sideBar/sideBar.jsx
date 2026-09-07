@@ -12,6 +12,7 @@ import {
   ChevronDown,
   Gift,
   RefreshCw,
+  Banknote,
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import NotificationIcon from '../global/NotificationIcon';
@@ -40,6 +41,12 @@ const sidebarItems = [
     path: '/incentives',
     icon: Gift,
     color: 'amber',
+  },
+  {
+    title: 'Payouts',
+    path: '/payouts',
+    icon: Banknote,
+    color: 'emerald',
   },
   {
     title: 'Management',
@@ -103,6 +110,12 @@ const sidebarItems = [
     path: '/plumbers',
     icon: Users,
     color: 'indigo',
+  },
+  {
+    title: 'Accounts Team',
+    path: '/accounts',
+    icon: Users,
+    color: 'sky',
   },
 ];
 
@@ -213,6 +226,8 @@ export function SideBar({ sidebarOpen, toggleSidebar, totalNotifications }) {
                   if (item.title === 'Staff' && !isAdmin) return false; // Hide Staff if not admin
                   if (item.path === '/executives' && !isAdmin) return false;
                   if (item.path === '/incentives' && !isAdmin) return false;
+                  if (item.path === '/payouts' && !isAdmin) return false;
+                  if (item.path === '/accounts' && !isAdmin) return false;
                   if (item.children) {
                     return item.children.some((child) => {
                       const section = pathToSection[child.path] || null;
@@ -333,6 +348,10 @@ export function SideBar({ sidebarOpen, toggleSidebar, totalNotifications }) {
                 .filter((item) => {
                   if (item.path === '/') return true;
                   if (item.title === 'Staff' && !isAdmin) return false; // Hide Staff if not admin
+                  if (item.path === '/executives' && !isAdmin) return false;
+                  if (item.path === '/incentives' && !isAdmin) return false;
+                  if (item.path === '/payouts' && !isAdmin) return false;
+                  if (item.path === '/accounts' && !isAdmin) return false;
                   if (item.children) {
                     return item.children.some((child) => {
                       const section = pathToSection[child.path] || null;

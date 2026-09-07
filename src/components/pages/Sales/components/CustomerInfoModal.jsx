@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { X, User, Phone, MapPin, Pencil } from 'lucide-react';
+import { X, User, Phone, MapPin, Pencil, Calendar } from 'lucide-react';
+import { AuthContext } from '../../../../context/AuthContext';
 
 const CustomerInfoModal = ({ isOpen, onClose, sale, onRequestSubmitted }) => {
+  const { user } = useContext(AuthContext);
+  const isReadOnly = user?.role === 'accounts';
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -15,12 +18,14 @@ const CustomerInfoModal = ({ isOpen, onClose, sale, onRequestSubmitted }) => {
     customerAddress: '',
     plumberName: '',
     plumberMobileNumber: '',
+    saleDate: '',
   });
 
   const phoneRegex = /^[0-9]{10}$/;
 
   useEffect(() => {
     if (sale) {
+      const dateVal = sale.saleDate || sale.soldAt;
       setFormData({
         customerName: sale.customerName || '',
         customerPhone: sale.customerPhone || '',
@@ -28,6 +33,7 @@ const CustomerInfoModal = ({ isOpen, onClose, sale, onRequestSubmitted }) => {
         customerAddress: sale.customerAddress || '',
         plumberName: sale.plumberName || '',
         plumberMobileNumber: sale.plumberMobileNumber || '',
+        saleDate: dateVal ? new Date(dateVal).toISOString().split('T')[0] : '',
       });
       setErrors({});
       setIsEditing(false);
@@ -136,7 +142,7 @@ const CustomerInfoModal = ({ isOpen, onClose, sale, onRequestSubmitted }) => {
             Customer Information
           </h3>
           <div className="flex items-center gap-8">
-            {!isEditing && (
+            {!isEditing && !isReadOnly && (
               <button
                 onClick={() => setIsEditing(true)}
                 className="text-blue-600 hover:text-blue-800 flex items-center gap-1 rounded"
@@ -189,6 +195,29 @@ const CustomerInfoModal = ({ isOpen, onClose, sale, onRequestSubmitted }) => {
             <Phone className="h-6 w-6 text-gray-500" />,
             true
           )}
+          <div className="flex items-start">
+            <Calendar className="h-6 w-6 text-gray-500" />
+            <div className="ml-4 w-full">
+              <p className="text-sm text-gray-500">Sale Date</p>
+              {isEditing ? (
+                <input
+                  type="date"
+                  name="saleDate"
+                  value={formData.saleDate}
+                  onChange={(e) =>
+                    setFormData({ ...formData, saleDate: e.target.value })
+                  }
+                  className="mt-1 w-full border border-gray-200 rounded-md px-3 py-2"
+                />
+              ) : (
+                <p className="text-lg font-semibold text-gray-800">
+                  {formData.saleDate
+                    ? new Date(formData.saleDate).toLocaleDateString()
+                    : 'N/A'}
+                </p>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Footer */}

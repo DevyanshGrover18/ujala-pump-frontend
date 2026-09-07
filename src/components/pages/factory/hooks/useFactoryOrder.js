@@ -105,7 +105,7 @@ export const useFactoryOrders = () => {
     ];
 
     if (keysToDownload.length === 0) {
-      toast.error('Please select items to download PDFs.');
+      toast.error('Please select items to download MRP stickers.');
       return;
     }
 
