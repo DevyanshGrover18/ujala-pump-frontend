@@ -58,8 +58,9 @@ export default function ReplacementRequests() {
     try {
       setVerifying(true);
       setVerifiedProduct(null);
+      const cleanSerial = serialNumber.trim().toUpperCase();
       const res = await axios.get(
-        `${API_URL}/api/replacements/verify/${encodeURIComponent(serialNumber.trim())}`,
+        `${API_URL}/api/replacements/verify/${encodeURIComponent(cleanSerial)}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -104,7 +105,8 @@ export default function ReplacementRequests() {
               }
               const cleaned = String(scannedSerial)
                 .replace(/[\u0000-\u001F\u007F-\u009F\uFEFF]/g, '')
-                .trim();
+                .trim()
+                .toUpperCase();
               if (cleaned) {
                 setSerialNumber(cleaned);
                 stopScanning();
@@ -139,8 +141,9 @@ export default function ReplacementRequests() {
     try {
       setVerifying(true);
       setVerifiedProduct(null);
+      const cleanSerial = String(scannedSerial).trim().toUpperCase();
       const res = await axios.get(
-        `${API_URL}/api/replacements/verify/${encodeURIComponent(scannedSerial)}`,
+        `${API_URL}/api/replacements/verify/${encodeURIComponent(cleanSerial)}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -294,9 +297,9 @@ export default function ReplacementRequests() {
                   type="text"
                   placeholder="Enter Serial Number"
                   value={serialNumber}
-                  onChange={(e) => setSerialNumber(e.target.value)}
+                  onChange={(e) => setSerialNumber(e.target.value.toUpperCase())}
                   disabled={verifying}
-                  className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase font-mono"
                 />
                 <button
                   type="button"

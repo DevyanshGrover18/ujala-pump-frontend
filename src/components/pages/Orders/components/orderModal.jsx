@@ -275,10 +275,10 @@ export function OrderModal({
                   rows={4}
                   value={formData.manualSerials}
                   onChange={(e) =>
-                    onUpdateField('manualSerials', e.target.value)
+                    onUpdateField('manualSerials', e.target.value.toUpperCase())
                   }
                   placeholder="Enter serial numbers separated by commas (e.g. SN-01, SN-02, SN-03)"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4d55f5] focus:border-transparent font-mono text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4d55f5] focus:border-transparent font-mono text-sm uppercase"
                 />
                 <div className="flex flex-col gap-1 mt-1">
                   <div className="flex justify-between items-center">

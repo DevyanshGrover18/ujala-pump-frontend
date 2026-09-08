@@ -76,7 +76,7 @@ export default function InstallationModal({
       await axios.post(
         `${API}/api/installations`,
         {
-          serialNumber: verifiedProduct.serialNumber,
+          serialNumber: String(verifiedProduct.serialNumber || '').trim().toUpperCase(),
           latitude: locationCoords.latitude,
           longitude: locationCoords.longitude,
           image: capturedImage, // Base64 image upload
@@ -144,7 +144,7 @@ export default function InstallationModal({
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wide">Motor Specifications</h3>
                 <div className="text-xs space-y-1">
                   <div>
-                    <span className="text-gray-400">Serial No:</span> <span className="font-semibold text-gray-700 font-mono">{verifiedProduct.serialNumber}</span>
+                    <span className="text-gray-400">Serial No:</span> <span className="font-semibold text-gray-700 font-mono uppercase">{verifiedProduct.serialNumber}</span>
                   </div>
                   <div>
                     <span className="text-gray-400">Model Name:</span> <span className="font-semibold text-gray-700">{verifiedProduct.modelName || 'N/A'}</span>

@@ -62,7 +62,8 @@ const BulkSaleModal = ({ isOpen, onClose, fetchSalesData, dealers }) => {
           ''
         )
           .toString()
-          .trim();
+          .trim()
+          .toUpperCase();
       } else if (typeof scannedResult === 'object') {
         cleanSerial = (
           scannedResult.serialNumber ||
@@ -71,9 +72,10 @@ const BulkSaleModal = ({ isOpen, onClose, fetchSalesData, dealers }) => {
           ''
         )
           .toString()
-          .trim();
+          .trim()
+          .toUpperCase();
       } else {
-        cleanSerial = scannedResult?.toString().trim();
+        cleanSerial = scannedResult?.toString().trim().toUpperCase();
       }
 
       if (!cleanSerial) {
@@ -234,7 +236,7 @@ const BulkSaleModal = ({ isOpen, onClose, fetchSalesData, dealers }) => {
                   className="flex-1 bg-white border border-slate-200 p-2.5 rounded-xl text-sm font-mono focus:border-indigo-500 outline-none uppercase"
                   placeholder="Serial..."
                   value={manualInput}
-                  onChange={(e) => setManualInput(e.target.value)}
+                  onChange={(e) => setManualInput(e.target.value.toUpperCase())}
                   onKeyDown={(e) =>
                     e.key === 'Enter' && handleValidateProduct(manualInput)
                   }

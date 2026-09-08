@@ -21,16 +21,19 @@ import {
   Star,
   ChevronDown,
   Trash2,
+  RotateCcw,
 } from 'lucide-react';
+
 
 const API = import.meta.env.VITE_API_URL;
 
 const STATUS_BADGE = {
-  'Approval Pending': 'bg-yellow-50 text-yellow-700 border border-yellow-200',
-  Approved: 'bg-green-50 text-green-700 border border-green-200',
-  Rejected: 'bg-red-50 text-red-700 border border-red-200',
-  Incomplete: 'bg-gray-100 text-gray-600 border border-gray-200',
+  'Approval Pending': 'bg-amber-50 text-amber-800 border border-amber-200',
+  Approved: 'bg-emerald-50 text-emerald-800 border border-emerald-200',
+  Rejected: 'bg-rose-50 text-rose-800 border border-rose-200',
+  Incomplete: 'bg-gray-100 text-gray-700 border border-gray-200',
 };
+
 
 const STATUS_ICON = {
   'Approval Pending': Clock,
@@ -144,11 +147,31 @@ function VerifyModal({ group, onClose, onAction }) {
                   <IndianRupee className="w-3.5 h-3.5 text-gray-400" />
                   <span>
                     Wallet: ₹{seller.walletIncentive ?? 0} incentive 
-                    {d.sellerType !== 'Plumber' && ` &bull; ${seller.walletPoints ?? 0} pts`}
+                    {/* {d.sellerType !== 'Plumber' && ` &bull; ${seller.walletPoints ?? 0} pts`} */}
                   </span>
                 </div>
               </div>
             </div>
+
+            {/* Reapply Notes / Clarification if reapplied */}
+            {(d.reapplyNotes || d.reappliedAt) && (
+              <div className="bg-amber-50 border border-amber-200/80 rounded-lg p-3.5 space-y-1">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800">
+                  <RotateCcw className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Re-applied Claim (Submitted: {d.reappliedAt ? new Date(d.reappliedAt).toLocaleDateString() : 'Recent'})</span>
+                </div>
+                {d.previousRejectionReason && (
+                  <p className="text-xs text-rose-700">
+                    <span className="font-semibold">Previous Rejection:</span> {d.previousRejectionReason}
+                  </p>
+                )}
+                {d.reapplyNotes && (
+                  <p className="text-xs text-amber-900 mt-1">
+                    <span className="font-semibold">Claimant's Clarification:</span> "{d.reapplyNotes}"
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Products in this claim group */}
             <div className="border border-gray-200 rounded-lg p-4">
@@ -171,9 +194,9 @@ function VerifyModal({ group, onClose, onAction }) {
                     </div>
                     <div className="text-right text-xs text-gray-600">
                       <span>₹{c.incentiveAmount}</span>
-                      {d.sellerType !== 'Plumber' && (
+                      {/* {d.sellerType !== 'Plumber' && (
                         <> &bull; <span>{c.points} pts</span></>
-                      )}
+                      )} */}
                     </div>
                   </div>
                 ))}
@@ -182,9 +205,9 @@ function VerifyModal({ group, onClose, onAction }) {
                 <span>Total</span>
                 <span>
                   ₹{group.totalIncentive}
-                  {d.sellerType !== 'Plumber' && (
+                  {/* {d.sellerType !== 'Plumber' && (
                     <> &bull; {group.totalPoints} pts</>
-                  )}
+                  )} */}
                 </span>
               </div>
             </div>
@@ -413,12 +436,14 @@ export default function Incentives() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setGroups(data || []);
+      window.dispatchEvent(new Event('incentives-updated'));
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
   }, []);
+
 
   useEffect(() => {
     fetchClaims();
@@ -630,7 +655,7 @@ export default function Incentives() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Incentive Claims</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          Review and approve incentive & points claims from sellers and plumbers.
+          Review and approve incentive claims from sellers and plumbers.
         </p>
       </div>
 
@@ -789,7 +814,7 @@ export default function Incentives() {
                   'Products',
                   'Date',
                   'Incentive',
-                  'Points',
+                  // 'Points',
                   'Status',
                   'Actions',
                 ].map((h) => (
@@ -806,7 +831,7 @@ export default function Incentives() {
               {loading ? (
                 <tr>
                   <td
-                    colSpan={9}
+                    colSpan={!isReadOnly ? 8 : 7}
                     className="py-16 text-center text-sm text-gray-400"
                   >
                     <div className="flex flex-col items-center justify-center gap-2">
@@ -818,7 +843,7 @@ export default function Incentives() {
               ) : paginated.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={9}
+                    colSpan={!isReadOnly ? 8 : 7}
                     className="py-16 text-center text-sm text-gray-400"
                   >
                     No claims found matching current filters.
@@ -841,67 +866,81 @@ export default function Incentives() {
                             />
                           </td>
                         )}
-                        <td className="px-5 py-3.5 text-sm font-medium text-gray-900">
+                        <td className="px-5 py-3.5 text-sm font-semibold text-gray-900">
                           {g.sellerName}
                         </td>
                         <td className="px-5 py-3.5">
-                          <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600 border border-gray-200 font-medium">
+                          <span className="px-2.5 py-0.5 text-xs rounded-md bg-gray-100 text-gray-700 border border-gray-200/80 font-medium">
                             {g.sellerType}
                           </span>
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-gray-700">
-                          <button
-                            onClick={() =>
-                              setExpanded((e) => ({
-                                ...e,
-                                [g.saleGroupId || g._id]: !isExpanded,
-                              }))
-                            }
-                            className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 font-medium"
-                          >
-                            {g.items?.length || 1} item
-                            {g.items?.length !== 1 ? 's' : ''}
-                            {g.items?.length > 1 && (
+                        <td className="px-5 py-3.5 text-xs">
+                          {g.items?.length > 1 ? (
+                            <button
+                              onClick={() =>
+                                setExpanded((e) => ({
+                                  ...e,
+                                  [g.saleGroupId || g._id]: !isExpanded,
+                                }))
+                              }
+                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 hover:bg-gray-200/80 rounded-md text-gray-800 font-semibold transition-colors cursor-pointer"
+                            >
+                              <span>{g.items?.length} items</span>
                               <ChevronDown
-                                className={`w-3.5 h-3.5 transition-transform ${
+                                className={`w-3.5 h-3.5 transition-transform text-gray-500 ${
                                   isExpanded ? 'rotate-180' : ''
                                 }`}
                               />
-                            )}
-                          </button>
+                            </button>
+                          ) : (
+                            <span className="text-gray-600 font-mono">
+                              {g.items?.[0]?.serialNumber || '1 item'}
+                            </span>
+                          )}
                         </td>
                         <td className="px-5 py-3.5 text-xs text-gray-500">
                           {new Date(g.claimDate).toLocaleDateString('en-IN')}
                         </td>
-                        <td className="px-5 py-3.5 text-sm font-bold text-gray-900">
-                          ₹{g.totalIncentive?.toLocaleString('en-IN') || 0}
+                        <td className="px-5 py-3.5 text-sm font-bold text-gray-900 font-mono">
+                          ₹{(g.totalIncentive || 0).toLocaleString('en-IN')}
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-purple-700 font-semibold">
+                        {/* <td className="px-5 py-3.5 text-xs font-semibold text-gray-700 font-mono">
                           {g.sellerType === 'Plumber' ? '—' : `${g.totalPoints || 0} pts`}
+                        </td> */}
+                        <td className="px-5 py-3.5 whitespace-nowrap">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                                STATUS_BADGE[g.status] || 'bg-gray-100 text-gray-700'
+                              }`}
+                            >
+                              <SIcon className="w-3 h-3" />
+                              <span>{g.status === 'Approval Pending' ? 'Pending' : g.status}</span>
+                            </span>
+                            {g.reappliedAt && (
+                              <span
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200"
+                                title={g.reapplyNotes ? `Note: ${g.reapplyNotes}` : 'Claim has been re-submitted'}
+                              >
+                                <RotateCcw className="w-2.5 h-2.5 text-blue-600" />
+                                <span>Reapplied</span>
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-5 py-3.5">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                              STATUS_BADGE[g.status] || ''
-                            }`}
-                          >
-                            <SIcon className="w-3 h-3" />
-                            {g.status}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <div className="flex gap-2">
+                          <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => setSelectedGroup(g)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 transition"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-700 bg-white shadow-2xs transition-all active:scale-95 cursor-pointer"
                             >
-                              <Eye className="w-3.5 h-3.5" />
-                              Verify
+                              <Eye className="w-3.5 h-3.5 text-gray-400" />
+                              <span>Verify</span>
                             </button>
                             {!isReadOnly && (
                               <button
                                 onClick={() => handleDelete(g._id)}
-                                className="inline-flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium border border-red-200 rounded-lg hover:bg-red-50 text-red-600 transition-colors"
+                                className="p-1 rounded-lg border border-red-200 bg-red-50/50 hover:bg-red-100/70 text-red-600 transition-colors cursor-pointer"
                                 title="Delete Claim"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -912,10 +951,10 @@ export default function Incentives() {
                       </tr>
                       {isExpanded &&
                         g.items?.map((item, idx) => (
-                          <tr key={idx} className="bg-gray-50/50 text-xs">
+                          <tr key={idx} className="bg-gray-50/60 text-xs">
                             {!isReadOnly && <td className="px-5 py-2" />}
-                            <td className="pl-10 pr-5 py-2 text-gray-500 font-mono">
-                              {item.serialNumber}
+                            <td className="pl-8 pr-5 py-2 text-gray-600 font-mono font-medium">
+                              #{idx + 1} &bull; {item.serialNumber}
                             </td>
                             <td
                               colSpan={2}
@@ -928,15 +967,16 @@ export default function Incentives() {
                                 'en-IN'
                               )}
                             </td>
-                            <td className="px-5 py-2 text-gray-800 font-semibold">
+                            <td className="px-5 py-2 text-gray-900 font-bold font-mono">
                               ₹{item.incentiveAmount}
                             </td>
-                            <td className="px-5 py-2 text-purple-700 font-medium">
+                            {/* <td className="px-5 py-2 text-gray-700 font-medium font-mono">
                               {g.sellerType === 'Plumber' ? '—' : `${item.points} pts`}
-                            </td>
+                            </td> */}
                             <td colSpan={2} />
                           </tr>
                         ))}
+
                     </React.Fragment>
                   );
                 })
@@ -962,9 +1002,9 @@ export default function Incentives() {
                   <td className="px-5 py-3 text-sm font-black text-gray-950 whitespace-nowrap">
                     ₹{totalIncentiveAmount.toLocaleString('en-IN')}
                   </td>
-                  <td className="px-5 py-3 text-sm font-black text-purple-700 whitespace-nowrap">
+                  {/* <td className="px-5 py-3 text-sm font-black text-purple-700 whitespace-nowrap">
                     {roleFilter === 'Plumber' ? '—' : `${totalPointsAmount.toLocaleString('en-IN')} pts`}
-                  </td>
+                  </td> */}
                   <td colSpan={2} className="px-5 py-3"></td>
                 </tr>
               </tfoot>
@@ -1010,7 +1050,7 @@ export default function Incentives() {
                   ₹{totalIncentiveAmount.toLocaleString('en-IN')}
                 </span>
               </div>
-              {roleFilter !== 'Plumber' && (
+              {/* {roleFilter !== 'Plumber' && (
                 <div className="border-l border-gray-100 pl-4">
                   <span className="text-[10px] text-gray-400 block font-semibold uppercase">
                     Total Points
@@ -1019,7 +1059,7 @@ export default function Incentives() {
                     {totalPointsAmount.toLocaleString('en-IN')} pts
                   </span>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         )}

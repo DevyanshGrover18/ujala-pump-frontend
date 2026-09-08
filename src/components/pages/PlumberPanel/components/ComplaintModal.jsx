@@ -25,7 +25,7 @@ export default function ComplaintModal({
       await axios.post(
         `${API}/api/complaints`,
         {
-          serialNumber,
+          serialNumber: String(serialNumber || '').trim().toUpperCase(),
           motorDetails,
           additionalDetails,
         },
@@ -73,7 +73,7 @@ export default function ComplaintModal({
               type="text"
               readOnly
               value={serialNumber}
-              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl font-mono text-sm text-gray-700 focus:outline-none"
+              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl font-mono text-sm text-gray-700 uppercase focus:outline-none"
             />
           </div>
 

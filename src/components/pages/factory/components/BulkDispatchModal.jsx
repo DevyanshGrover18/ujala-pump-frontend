@@ -61,7 +61,8 @@ const BulkDispatchModal = ({
         const parsed = JSON.parse(scannedResult);
         cleanSerial = (parsed.serialNumber || parsed.serial || parsed.id || '')
           .toString()
-          .trim();
+          .trim()
+          .toUpperCase();
       } else if (typeof scannedResult === 'object') {
         cleanSerial = (
           scannedResult.serialNumber ||
@@ -70,9 +71,10 @@ const BulkDispatchModal = ({
           ''
         )
           .toString()
-          .trim();
+          .trim()
+          .toUpperCase();
       } else {
-        cleanSerial = scannedResult?.toString().trim();
+        cleanSerial = scannedResult?.toString().trim().toUpperCase();
       }
 
       if (!cleanSerial) {
@@ -220,7 +222,7 @@ const BulkDispatchModal = ({
                   className="flex-1 bg-white border border-slate-200 p-2.5 rounded-xl text-sm focus:border-indigo-500 outline-none uppercase"
                   placeholder="Serial number"
                   value={manualInput}
-                  onChange={(e) => setManualInput(e.target.value)}
+                  onChange={(e) => setManualInput(e.target.value.toUpperCase())}
                   onKeyDown={(e) =>
                     e.key === 'Enter' && handleValidateProduct(manualInput)
                   }

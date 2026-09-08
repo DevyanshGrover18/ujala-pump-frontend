@@ -30,7 +30,8 @@ export default function PlumberQRScannerModal({ isOpen, onClose, onScanSuccess }
                 if (s === null || s === undefined) return '';
                 return String(s)
                   .replace(/[\u0000-\u001F\u007F-\u009F\uFEFF]/g, '')
-                  .trim();
+                  .trim()
+                  .toUpperCase();
               };
 
               const serial = normalize(candidate);
@@ -69,14 +70,15 @@ export default function PlumberQRScannerModal({ isOpen, onClose, onScanSuccess }
   };
 
   const handleScanComplete = (serial) => {
-    onScanSuccess(serial);
+    onScanSuccess(String(serial || '').trim().toUpperCase());
     handleClose();
   };
 
   const handleManualSubmit = () => {
     const normalized = String(manualInput || '')
       .replace(/[\u0000-\u001F\u007F-\u009F\uFEFF]/g, '')
-      .trim();
+      .trim()
+      .toUpperCase();
     if (normalized) {
       handleScanComplete(normalized);
     }
@@ -99,7 +101,6 @@ export default function PlumberQRScannerModal({ isOpen, onClose, onScanSuccess }
       if (scanTimeoutRef.current) clearTimeout(scanTimeoutRef.current);
       if (qrScannerRef.current) {
         qrScannerRef.current.destroy();
-        qrScannerRef.current = null;
       }
     };
   }, [isOpen]);
@@ -107,26 +108,28 @@ export default function PlumberQRScannerModal({ isOpen, onClose, onScanSuccess }
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 bg-opacity-50">
-      <div className="bg-white rounded-2xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100">
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">Scan Motor QR Code</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <QrCode className="w-5 h-5 text-[#5b189b]" />
+            <h2 className="text-base font-bold text-gray-800">Scan Product QR Code</h2>
+          </div>
           <button
             onClick={handleClose}
-            className="p-1.5 hover:bg-gray-100 rounded-xl transition-colors text-gray-500 hover:text-gray-700"
+            className="p-1 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-700 transition"
           >
-            <X className="h-5 w-5" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-5 space-y-5">
+        <div className="p-5 space-y-4">
           <div className="text-center">
-            <div className="relative overflow-hidden rounded-2xl border border-gray-100 bg-black">
+            <div className="relative aspect-square max-w-[260px] mx-auto bg-black rounded-2xl overflow-hidden shadow-inner ring-4 ring-gray-50">
               <video
                 ref={videoRef}
-                autoPlay
+                className="w-full h-full object-cover"
                 playsInline
-                className="w-full h-64 object-cover animate-fade-in"
               />
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="w-36 h-36 border-2 border-white border-dashed rounded-2xl flex items-center justify-center">
@@ -134,7 +137,6 @@ export default function PlumberQRScannerModal({ isOpen, onClose, onScanSuccess }
                 </div>
               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">Align the QR code within the frame to scan.</p>
           </div>
 
           <div className="flex items-center">
@@ -148,7 +150,7 @@ export default function PlumberQRScannerModal({ isOpen, onClose, onScanSuccess }
               type="text"
               placeholder="Enter Serial Number"
               value={manualInput}
-              onChange={(e) => setManualInput(e.target.value)}
+              onChange={(e) => setManualInput(e.target.value.toUpperCase())}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#5b189b] focus:border-transparent font-mono text-sm uppercase"
               onKeyPress={(e) => e.key === 'Enter' && handleManualSubmit()}
             />

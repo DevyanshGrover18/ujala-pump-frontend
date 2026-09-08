@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import NotificationIcon from '../global/NotificationIcon';
+import { usePendingPayoutCount } from '../../hooks/usePendingPayoutCount';
+import { usePendingIncentiveCount } from '../../hooks/usePendingIncentiveCount';
 
 const sidebarItems = [
   {
@@ -23,30 +25,6 @@ const sidebarItems = [
     path: '/',
     icon: LayoutDashboard,
     color: 'blue',
-  },
-  {
-    title: 'Staff',
-    path: '/staff',
-    icon: Users,
-    color: 'orange',
-  },
-  {
-    title: 'Executives',
-    path: '/executives',
-    icon: Users,
-    color: 'pink',
-  },
-  {
-    title: 'Incentives',
-    path: '/incentives',
-    icon: Gift,
-    color: 'amber',
-  },
-  {
-    title: 'Payouts',
-    path: '/payouts',
-    icon: Banknote,
-    color: 'emerald',
   },
   {
     title: 'Management',
@@ -76,16 +54,22 @@ const sidebarItems = [
     color: 'yellow',
   },
   {
-    title: 'Replacements',
-    path: '/replacements',
-    icon: RefreshCw,
-    color: 'teal',
-  },
-  {
     title: 'Sales',
     path: '/sales',
     icon: ShoppingCart,
     color: 'green',
+  },
+  {
+    title: 'Staff',
+    path: '/staff',
+    icon: Users,
+    color: 'orange',
+  },
+  {
+    title: 'Executives',
+    path: '/executives',
+    icon: Users,
+    color: 'pink',
   },
   {
     title: 'Distributors',
@@ -117,36 +101,75 @@ const sidebarItems = [
     icon: Users,
     color: 'sky',
   },
+  {
+    title: 'Incentives',
+    path: '/incentives',
+    icon: Gift,
+    color: 'amber',
+  },
+  {
+    title: 'Payouts',
+    path: '/payouts',
+    icon: Banknote,
+    color: 'emerald',
+  },
+  {
+    title: 'Replacements',
+    path: '/replacements',
+    icon: RefreshCw,
+    color: 'teal',
+  },
 ];
 
 export function SideBar({ sidebarOpen, toggleSidebar, totalNotifications }) {
   const [factoryDropdownOpen, setFactoryDropdownOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout, hasPrivilege, isAdmin } = useContext(AuthContext);
+  const { user, logout, hasPrivilege, hasAnyPrivilege, isAdmin } =
+    useContext(AuthContext);
+  const { pendingCount: pendingPayoutCount } = usePendingPayoutCount();
+  const { pendingCount: pendingIncentiveCount } = usePendingIncentiveCount();
 
   const pathToSection = {
     '/management': 'management',
     '/factory-management': 'factories',
     '/orders': 'orders',
-    '/inventory': 'products', // Add this line
+    '/inventory': 'products',
+    '/replacements': 'products',
     '/distributors': 'distributors',
     '/dealers': 'dealers',
-    '/sub-dealers': 'subdealers',
+    '/sub-dealers': 'subDealers',
     '/plumbers': 'plumbers',
     '/add-members': 'management',
     '/sales': 'sales',
+    '/staff': 'management',
+    '/executives': 'management',
   };
 
   const canAccessSection = (section) => {
-    if (!section) return true;
     if (isAdmin) return true;
-    return (
-      hasPrivilege(section, 'full') ||
-      hasPrivilege(section, 'add') ||
-      hasPrivilege(section, 'modify') ||
-      hasPrivilege(section, 'delete')
-    );
+    if (!section) return false;
+    return hasAnyPrivilege(section);
+  };
+
+  const isItemVisible = (item) => {
+    if (item.path === '/') return true;
+    if (item.title === 'Staff' && !isAdmin) return false;
+    if (item.path === '/executives' && !isAdmin) return false;
+    if (item.path === '/incentives' && !isAdmin) return false;
+    if (item.path === '/payouts' && !isAdmin) return false;
+    if (item.path === '/accounts' && !isAdmin) return false;
+    if (item.path === '/add-members') return isAdmin;
+
+    if (item.children) {
+      return item.children.some((child) => {
+        const section = pathToSection[child.path] || null;
+        return canAccessSection(section);
+      });
+    }
+
+    const section = pathToSection[item.path] || null;
+    return canAccessSection(section);
   };
 
   useEffect(() => {
@@ -220,168 +243,176 @@ export function SideBar({ sidebarOpen, toggleSidebar, totalNotifications }) {
           {/* Sidebar Items */}
           {sidebarOpen ? (
             <ul className="mt-1 space-y-1 font-bold">
-              {sidebarItems
-                .filter((item) => {
-                  if (item.path === '/') return true;
-                  if (item.title === 'Staff' && !isAdmin) return false; // Hide Staff if not admin
-                  if (item.path === '/executives' && !isAdmin) return false;
-                  if (item.path === '/incentives' && !isAdmin) return false;
-                  if (item.path === '/payouts' && !isAdmin) return false;
-                  if (item.path === '/accounts' && !isAdmin) return false;
-                  if (item.children) {
-                    return item.children.some((child) => {
-                      const section = pathToSection[child.path] || null;
-                      return canAccessSection(section);
-                    });
-                  }
-                  if (item.path === '/add-members') return isAdmin;
-                  const section = pathToSection[item.path] || null;
-                  return canAccessSection(section);
-                })
-                .map((item, index) => {
-                  const Icon = item.icon;
+              {sidebarItems.filter(isItemVisible).map((item, index) => {
+                const Icon = item.icon;
 
-                  if (item.children) {
-                    const active = isChildActive(item.children);
-                    return (
-                      <li key={index}>
-                        <button
-                          onClick={() =>
-                            setFactoryDropdownOpen(!factoryDropdownOpen)
-                          }
-                          type="button"
-                          className={`flex items-center w-full py-1 px-3 rounded-xl group transition-all duration-200 font-bold ${
-                            active ? 'bg-white sidebar-pill' : ''
-                          }`}
-                        >
-                          <div
-                            className={`p-2 rounded-full transition-colors duration-200 flex-shrink-0 ${
-                              active
-                                ? 'bg-[var(--primary-purple)]'
-                                : 'bg-white/10'
-                            }`}
-                          >
-                            <Icon
-                              className={`w-5 h-5 ${active ? 'text-white' : 'text-white/90'}`}
-                            />
-                          </div>
-                          <span
-                            className={`flex-1 ml-4 text-left font-bold ${
-                              active
-                                ? 'text-[var(--sidebar-bg)]'
-                                : 'text-white/90'
-                            }`}
-                          >
-                            {item.title}
-                          </span>
-                          <ChevronDown
-                            className={`w-4 h-4 transition-transform duration-200 ${
-                              factoryDropdownOpen ? 'rotate-180' : ''
-                            }`}
-                          />
-                        </button>
-
-                        {factoryDropdownOpen && (
-                          <ul className="pl-11 mt-2 space-y-1">
-                            {item.children.map((child, childIndex) => (
-                              <li key={childIndex}>
-                                <Link
-                                  to={child.path}
-                                  className={`block py-1 px-3 rounded-md text-sm ${
-                                    isActive(child.path)
-                                      ? 'bg-white/20 text-white'
-                                      : 'text-white/80 hover:bg-white/10'
-                                  }`}
-                                >
-                                  • {child.title}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </li>
-                    );
-                  }
-
+                if (item.children) {
+                  const active = isChildActive(item.children);
                   return (
                     <li key={index}>
-                      <Link
-                        to={item.path}
-                        className={`flex items-center py-1 px-3 rounded-xl group transition-all duration-200 ${
-                          isActive(item.path) ? 'bg-white' : ''
+                      <button
+                        onClick={() =>
+                          setFactoryDropdownOpen(!factoryDropdownOpen)
+                        }
+                        type="button"
+                        className={`flex items-center w-full py-1 px-3 rounded-xl group transition-all duration-200 font-bold ${
+                          active ? 'bg-white sidebar-pill' : ''
                         }`}
                       >
                         <div
-                          className={`p-2 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ${
-                            isActive(item.path) ? 'bg-white' : 'bg-white/10'
+                          className={`p-2 rounded-full transition-colors duration-200 flex-shrink-0 ${
+                            active
+                              ? 'bg-[var(--primary-purple)]'
+                              : 'bg-white/10'
                           }`}
                         >
-                          {item.showIcon ? (
-                            <NotificationIcon count={totalNotifications} />
-                          ) : (
-                            <Icon
-                              className={`w-5 h-5 ${
-                                isActive(item.path)
-                                  ? 'text-[var(--sidebar-bg)]'
-                                  : 'text-white/90'
-                              }`}
-                            />
-                          )}
+                          <Icon
+                            className={`w-5 h-5 ${active ? 'text-white' : 'text-white/90'}`}
+                          />
                         </div>
                         <span
-                          className={`ml-4 font-bold ${
-                            isActive(item.path)
+                          className={`flex-1 ml-4 text-left font-bold ${
+                            active
                               ? 'text-[var(--sidebar-bg)]'
                               : 'text-white/90'
                           }`}
                         >
                           {item.title}
                         </span>
-                      </Link>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform duration-200 ${
+                            factoryDropdownOpen ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+
+                      {factoryDropdownOpen && (
+                        <ul className="pl-11 mt-2 space-y-1">
+                          {item.children.map((child, childIndex) => (
+                            <li key={childIndex}>
+                              <Link
+                                to={child.path}
+                                className={`block py-1 px-3 rounded-md text-sm ${
+                                  isActive(child.path)
+                                    ? 'bg-white/20 text-white'
+                                    : 'text-white/80 hover:bg-white/10'
+                                }`}
+                              >
+                                • {child.title}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </li>
                   );
-                })}
+                }
+
+                return (
+                  <li key={index}>
+                    <Link
+                      to={item.path}
+                      className={`flex items-center py-1 px-3 rounded-xl group transition-all duration-200 ${
+                        isActive(item.path) ? 'bg-white' : ''
+                      }`}
+                    >
+                      <div
+                        className={`p-2 rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0 ${
+                          isActive(item.path) ? 'bg-white' : 'bg-white/10'
+                        }`}
+                      >
+                        {item.showIcon ? (
+                          <NotificationIcon count={totalNotifications} />
+                        ) : (
+                          <Icon
+                            className={`w-5 h-5 ${
+                              isActive(item.path)
+                                ? 'text-[var(--sidebar-bg)]'
+                                : 'text-white/90'
+                            }`}
+                          />
+                        )}
+                      </div>
+                      <span
+                        className={`ml-4 font-bold flex-1 ${
+                          isActive(item.path)
+                            ? 'text-[var(--sidebar-bg)]'
+                            : 'text-white/90'
+                        }`}
+                      >
+                        {item.title}
+                      </span>
+                      {item.path === '/payouts' && pendingPayoutCount > 0 && (
+                        <span
+                          className={`ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold rounded-full transition-colors ${
+                            isActive(item.path)
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-white/20 text-white'
+                          }`}
+                          title={`${pendingPayoutCount} Pending Payout Request${pendingPayoutCount > 1 ? 's' : ''}`}
+                        >
+                          {pendingPayoutCount}
+                        </span>
+                      )}
+                      {item.path === '/incentives' &&
+                        pendingIncentiveCount > 0 && (
+                          <span
+                            className={`ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold rounded-full transition-colors ${
+                              isActive(item.path)
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-white/20 text-white'
+                            }`}
+                            title={`${pendingIncentiveCount} Pending Incentive Claim${pendingIncentiveCount > 1 ? 's' : ''}`}
+                          >
+                            {pendingIncentiveCount}
+                          </span>
+                        )}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <ul className="mt-6 flex flex-col items-center space-y-2">
-              {sidebarItems
-                .filter((item) => {
-                  if (item.path === '/') return true;
-                  if (item.title === 'Staff' && !isAdmin) return false; // Hide Staff if not admin
-                  if (item.path === '/executives' && !isAdmin) return false;
-                  if (item.path === '/incentives' && !isAdmin) return false;
-                  if (item.path === '/payouts' && !isAdmin) return false;
-                  if (item.path === '/accounts' && !isAdmin) return false;
-                  if (item.children) {
-                    return item.children.some((child) => {
-                      const section = pathToSection[child.path] || null;
-                      return canAccessSection(section);
-                    });
-                  }
-                  if (item.path === '/add-members') return isAdmin;
-                  const section = pathToSection[item.path] || null;
-                  return canAccessSection(section);
-                })
-                .map((item, index) => {
-                  const Icon = item.icon;
-                  const active = item.children
-                    ? isChildActive(item.children)
-                    : isActive(item.path);
-                  return (
-                    <li key={index}>
-                      {item.children ? (
-                        <button
-                          onClick={() => {
-                            if (!sidebarOpen) toggleSidebar();
-                            setFactoryDropdownOpen(!factoryDropdownOpen);
-                          }}
-                          className="block"
+              {sidebarItems.filter(isItemVisible).map((item, index) => {
+                const Icon = item.icon;
+                const active = item.children
+                  ? isChildActive(item.children)
+                  : isActive(item.path);
+                return (
+                  <li key={index}>
+                    {item.children ? (
+                      <button
+                        onClick={() => {
+                          if (!sidebarOpen) toggleSidebar();
+                          setFactoryDropdownOpen(!factoryDropdownOpen);
+                        }}
+                        className="block"
+                      >
+                        <div
+                          className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors ${
+                            active ? 'bg-white sidebar-pill' : 'bg-white/10'
+                          }`}
                         >
-                          <div
-                            className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors ${
-                              active ? 'bg-white sidebar-pill' : 'bg-white/10'
-                            }`}
-                          >
+                          <Icon
+                            className={`${
+                              active
+                                ? 'text-[var(--sidebar-bg)]'
+                                : 'text-white/90'
+                            } w-4 h-4`}
+                          />
+                        </div>
+                      </button>
+                    ) : (
+                      <Link to={item.path} className="block relative">
+                        <div
+                          className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors relative ${
+                            active ? 'bg-white sidebar-pill' : 'bg-white/10'
+                          }`}
+                        >
+                          {item.showIcon ? (
+                            <NotificationIcon count={totalNotifications} />
+                          ) : (
                             <Icon
                               className={`${
                                 active
@@ -389,32 +420,35 @@ export function SideBar({ sidebarOpen, toggleSidebar, totalNotifications }) {
                                   : 'text-white/90'
                               } w-4 h-4`}
                             />
-                          </div>
-                        </button>
-                      ) : (
-                        <Link to={item.path} className="block">
-                          <div
-                            className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors ${
-                              active ? 'bg-white sidebar-pill' : 'bg-white/10'
-                            }`}
-                          >
-                            {item.showIcon ? (
-                              <NotificationIcon count={totalNotifications} />
-                            ) : (
-                              <Icon
-                                className={`${
-                                  active
-                                    ? 'text-[var(--sidebar-bg)]'
-                                    : 'text-white/90'
-                                } w-4 h-4`}
-                              />
+                          )}
+                          {item.path === '/payouts' &&
+                            pendingPayoutCount > 0 && (
+                              <span
+                                className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 flex items-center justify-center rounded-full bg-amber-500 text-[10px] font-semibold text-white shadow-xs"
+                                title={`${pendingPayoutCount} Pending Payout Request${pendingPayoutCount > 1 ? 's' : ''}`}
+                              >
+                                {pendingPayoutCount > 99
+                                  ? '99+'
+                                  : pendingPayoutCount}
+                              </span>
                             )}
-                          </div>
-                        </Link>
-                      )}
-                    </li>
-                  );
-                })}
+                          {item.path === '/incentives' &&
+                            pendingIncentiveCount > 0 && (
+                              <span
+                                className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 flex items-center justify-center rounded-full bg-amber-500 text-[10px] font-semibold text-white shadow-xs"
+                                title={`${pendingIncentiveCount} Pending Incentive Claim${pendingIncentiveCount > 1 ? 's' : ''}`}
+                              >
+                                {pendingIncentiveCount > 99
+                                  ? '99+'
+                                  : pendingIncentiveCount}
+                              </span>
+                            )}
+                        </div>
+                      </Link>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
 

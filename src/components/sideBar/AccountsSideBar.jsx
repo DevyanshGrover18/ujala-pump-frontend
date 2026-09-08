@@ -8,6 +8,8 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
+import { usePendingPayoutCount } from '../../hooks/usePendingPayoutCount';
+import { usePendingIncentiveCount } from '../../hooks/usePendingIncentiveCount';
 
 const accountsSidebarItems = [
   {
@@ -40,6 +42,8 @@ export function AccountsSideBar({ sidebarOpen, toggleSidebar }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useContext(AuthContext);
+  const { pendingCount: pendingPayoutCount } = usePendingPayoutCount();
+  const { pendingCount: pendingIncentiveCount } = usePendingIncentiveCount();
 
   const isActive = (path) => location.pathname === path;
 
@@ -128,12 +132,36 @@ export function AccountsSideBar({ sidebarOpen, toggleSidebar }) {
                         />
                       </div>
                       <span
-                        className={`ml-4 font-bold ${
+                        className={`ml-4 font-bold flex-1 ${
                           active ? 'text-[var(--sidebar-bg)]' : 'text-white/90'
                         }`}
                       >
                         {item.title}
                       </span>
+                      {item.path === '/accounts-panel/payouts' && pendingPayoutCount > 0 && (
+                        <span
+                          className={`ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold rounded-full transition-colors ${
+                            active
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-white/20 text-white'
+                          }`}
+                          title={`${pendingPayoutCount} Pending Payout Request${pendingPayoutCount > 1 ? 's' : ''}`}
+                        >
+                          {pendingPayoutCount}
+                        </span>
+                      )}
+                      {item.path === '/accounts-panel/incentives' && pendingIncentiveCount > 0 && (
+                        <span
+                          className={`ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold rounded-full transition-colors ${
+                            active
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-white/20 text-white'
+                          }`}
+                          title={`${pendingIncentiveCount} Pending Incentive Claim${pendingIncentiveCount > 1 ? 's' : ''}`}
+                        >
+                          {pendingIncentiveCount}
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );
@@ -146,9 +174,9 @@ export function AccountsSideBar({ sidebarOpen, toggleSidebar }) {
                 const active = isActive(item.path);
                 return (
                   <li key={index}>
-                    <Link to={item.path} className="block">
+                    <Link to={item.path} className="block relative">
                       <div
-                        className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors ${
+                        className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors relative ${
                           active ? 'bg-white sidebar-pill' : 'bg-white/10'
                         }`}
                       >
@@ -159,6 +187,22 @@ export function AccountsSideBar({ sidebarOpen, toggleSidebar }) {
                               : 'text-white/90'
                           } w-4 h-4`}
                         />
+                        {item.path === '/accounts-panel/payouts' && pendingPayoutCount > 0 && (
+                          <span
+                            className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 flex items-center justify-center rounded-full bg-amber-500 text-[10px] font-semibold text-white shadow-xs"
+                            title={`${pendingPayoutCount} Pending Payout Request${pendingPayoutCount > 1 ? 's' : ''}`}
+                          >
+                            {pendingPayoutCount > 99 ? '99+' : pendingPayoutCount}
+                          </span>
+                        )}
+                        {item.path === '/accounts-panel/incentives' && pendingIncentiveCount > 0 && (
+                          <span
+                            className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 flex items-center justify-center rounded-full bg-amber-500 text-[10px] font-semibold text-white shadow-xs"
+                            title={`${pendingIncentiveCount} Pending Incentive Claim${pendingIncentiveCount > 1 ? 's' : ''}`}
+                          >
+                            {pendingIncentiveCount > 99 ? '99+' : pendingIncentiveCount}
+                          </span>
+                        )}
                       </div>
                     </Link>
                   </li>

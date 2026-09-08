@@ -93,9 +93,10 @@ function SubDealerQRScannerModal({ isOpen, onClose, onProductScanned }) {
   const fetchProductDetails = async (serialNumber) => {
     try {
       setLoading(true);
+      const cleanSerial = String(serialNumber).trim().toUpperCase();
 
       const response = await axios.get(
-        `${API_URL_1}/api/qr/sub-dealer/${serialNumber}`,
+        `${API_URL_1}/api/qr/sub-dealer/${cleanSerial}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -203,8 +204,8 @@ function SubDealerQRScannerModal({ isOpen, onClose, onProductScanned }) {
                     type="text"
                     placeholder="Serial number..."
                     value={manualInput}
-                    onChange={(e) => setManualInput(e.target.value)}
-                    className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 uppercase"
+                    onChange={(e) => setManualInput(e.target.value.toUpperCase())}
+                    className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono uppercase"
                     onKeyPress={(e) =>
                       e.key === 'Enter' && handleManualSubmit()
                     }
@@ -226,7 +227,7 @@ function SubDealerQRScannerModal({ isOpen, onClose, onProductScanned }) {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Serial:</span>
-                  <span className="font-medium">
+                  <span className="font-medium font-mono uppercase">
                     {productDetails.serialNumber}
                   </span>
                 </div>

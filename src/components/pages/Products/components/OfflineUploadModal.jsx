@@ -34,10 +34,10 @@ export default function OfflineUploadModal({
       return;
     }
 
-    // Parse serial numbers: split by comma or newline, trim whitespace, remove empty
+    // Parse serial numbers: split by comma or newline, trim whitespace, uppercase, remove empty
     const serialsArray = serialNumbersText
       .split(/[\n,]+/)
-      .map((s) => s.trim())
+      .map((s) => s.trim().toUpperCase())
       .filter((s) => s.length > 0);
 
     if (serialsArray.length === 0) {
@@ -141,10 +141,10 @@ export default function OfflineUploadModal({
             </label>
             <textarea
               value={serialNumbersText}
-              onChange={(e) => setSerialNumbersText(e.target.value)}
+              onChange={(e) => setSerialNumbersText(e.target.value.toUpperCase())}
               placeholder="Enter serial numbers separated by commas or new lines..."
               rows={6}
-              className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 resize-y text-sm font-mono"
+              className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 resize-y text-sm font-mono uppercase"
               disabled={loading}
             />
             <p className="mt-1 text-xs text-gray-500">

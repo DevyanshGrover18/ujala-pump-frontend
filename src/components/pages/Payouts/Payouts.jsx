@@ -101,6 +101,7 @@ export default function Payouts() {
       setPayouts(data.payouts || []);
       if (data.stats) setStats(data.stats);
       if (data.thresholds) setThresholds(data.thresholds);
+      window.dispatchEvent(new Event('payouts-updated'));
     } catch (err) {
       console.error('Error fetching payouts:', err);
       toast.error('Failed to load payout requests');

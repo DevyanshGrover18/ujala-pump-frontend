@@ -59,20 +59,21 @@ export default function PlumberInstallation() {
 
   const handleVerify = async (e, directSerial) => {
     if (e) e.preventDefault();
-    const targetSerial = directSerial || serialInput;
-    if (!targetSerial.trim()) return;
+    const rawSerial = directSerial || serialInput;
+    if (!rawSerial.trim()) return;
+    const targetSerial = rawSerial.trim().toUpperCase();
 
     setVerifying(true);
     setInstallError(null);
     setVerifiedProduct(null);
 
     if (directSerial) {
-      setSerialInput(directSerial);
+      setSerialInput(targetSerial);
     }
 
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`${API}/api/installations/check/${targetSerial.trim()}`, {
+      const res = await axios.get(`${API}/api/installations/check/${encodeURIComponent(targetSerial)}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -88,7 +89,7 @@ export default function PlumberInstallation() {
       } else {
         setInstallError({
           type: 'notFound',
-          message: errorData?.message || 'Product serial number not found.',
+          message: errorData?.message || 'Motor serial number not found or invalid.',
         });
       }
     } finally {
@@ -96,14 +97,13 @@ export default function PlumberInstallation() {
     }
   };
 
-
-
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-3xl font-extrabold text-gray-900">Motor Installation Tracker</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Scan QR code or enter motor serial number to log an installation.
+    <div className="flex-1 bg-[#f9fafb] p-4 sm:p-8 min-h-screen">
+      {/* Top Banner */}
+      <div className="bg-gradient-to-r from-[#5b189b] to-[#7b2cbf] rounded-2xl p-6 sm:p-8 text-white mb-8 shadow-sm">
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Motor Installation</h1>
+        <p className="text-purple-100 mt-1 text-sm sm:text-base font-normal">
+          Verify and register newly installed motors seamlessly
         </p>
       </div>
 
@@ -122,7 +122,7 @@ export default function PlumberInstallation() {
                   id="serialInput"
                   type="text"
                   value={serialInput}
-                  onChange={(e) => setSerialInput(e.target.value)}
+                  onChange={(e) => setSerialInput(e.target.value.toUpperCase())}
                   placeholder="Enter Serial Number"
                   className="flex-grow min-w-0 px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#5b189b] focus:border-transparent font-mono text-sm uppercase"
                   disabled={verifying}

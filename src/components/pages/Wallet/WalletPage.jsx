@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useContext } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { AuthContext } from '../../../context/AuthContext';
+import ReapplyIncentiveModal from './components/ReapplyIncentiveModal';
 import {
   IndianRupee,
   Star,
@@ -24,7 +25,12 @@ import {
   X,
   Eye,
   FileCheck,
+  RotateCcw,
+  TrendingUp,
+  Wallet,
+  Send,
 } from 'lucide-react';
+
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -74,7 +80,10 @@ export default function WalletPage() {
 
   // Modals
   const [showRequestPayoutModal, setShowRequestPayoutModal] = useState(false);
+  const [reapplyPayoutData, setReapplyPayoutData] = useState(null);
   const [selectedPayoutDetail, setSelectedPayoutDetail] = useState(null);
+  const [showReapplyIncentiveModal, setShowReapplyIncentiveModal] = useState(false);
+  const [selectedIncentiveToReapply, setSelectedIncentiveToReapply] = useState(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -114,88 +123,76 @@ export default function WalletPage() {
 
   const isPlumber = user?.role === 'plumber' || data.sellerType === 'Plumber';
   const showIncentive = data.eligibleForIncentive !== false;
-  const showPoints = !isPlumber && data.eligibleForPoints !== false;
+  // const showPoints = !isPlumber && data.eligibleForPoints !== false;
+  const showPoints = false; // Points system commented out
 
   // Minimum threshold for current role
   let roleMinThreshold = 500;
-  if (data.sellerType === 'Distributor' || user?.role === 'distributor')
-    roleMinThreshold = thresholds.distributorMinPayout || 500;
-  else if (data.sellerType === 'Dealer' || user?.role === 'dealer')
-    roleMinThreshold = thresholds.dealerMinPayout || 500;
-  else if (data.sellerType === 'SubDealer' || user?.role === 'subdealer')
-    roleMinThreshold = thresholds.subDealerMinPayout || 500;
-  else if (isPlumber)
-    roleMinThreshold = thresholds.plumberMinPayout || 200;
+  if (data.sellerType === 'Distributor') roleMinThreshold = thresholds.distributorMinPayout;
+  else if (data.sellerType === 'Dealer') roleMinThreshold = thresholds.dealerMinPayout;
+  else if (data.sellerType === 'SubDealer') roleMinThreshold = thresholds.subDealerMinPayout;
+  else if (isPlumber) roleMinThreshold = thresholds.plumberMinPayout;
 
-  const currentWalletBalance = data.wallet?.incentive ?? 0;
-  const canRequestPayout = showIncentive && currentWalletBalance >= roleMinThreshold;
+  const currentWalletBalance = Number(data.wallet?.incentive || 0);
 
-  // Filter items based on activeTab
-  const filteredClaims = data.claims.filter((g) => {
-    const matchesStatus = statusFilter === 'All' || g.status === statusFilter;
-    const term = search.toLowerCase().trim();
-    if (!term) return matchesStatus;
-
-    return (
-      matchesStatus &&
-      (g.items?.some(
-        (i) =>
-          i.serialNumber?.toLowerCase().includes(term) ||
-          i.modelName?.toLowerCase().includes(term) ||
-          i.model?.code?.toLowerCase().includes(term)
-      ) ||
-        g.modelName?.toLowerCase().includes(term) ||
-        g.rejectionReason?.toLowerCase().includes(term))
-    );
+  // Filter items
+  const activeItems = activeTab === 'claims' ? data.claims || [] : payoutsHistory || [];
+  const filteredItems = activeItems.filter((item) => {
+    if (statusFilter !== 'All') {
+      if (activeTab === 'claims') {
+        const itemStatus = item.status === 'Approval Pending' ? 'Pending' : item.status;
+        if (itemStatus !== statusFilter) return false;
+      } else {
+        if (item.status !== statusFilter) return false;
+      }
+    }
+    if (search.trim()) {
+      const term = search.toLowerCase();
+      if (activeTab === 'claims') {
+        const serials = item.items?.map((i) => i.serialNumber).join(' ') || item.serialNumber || '';
+        const model = item.modelName || item.model?.name || '';
+        return serials.toLowerCase().includes(term) || model.toLowerCase().includes(term);
+      } else {
+        const ref = item.referenceId || '';
+        const upi = item.upiId || '';
+        const acc = item.bankDetails?.accountNumber || '';
+        return ref.toLowerCase().includes(term) || upi.toLowerCase().includes(term) || acc.toLowerCase().includes(term);
+      }
+    }
+    return true;
   });
 
-  const filteredPayouts = payoutsHistory.filter((p) => {
-    const matchesStatus = statusFilter === 'All' || p.status === statusFilter;
-    const term = search.toLowerCase().trim();
-    if (!term) return matchesStatus;
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / PER_PAGE));
+  const paginatedItems = filteredItems.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-    return (
-      matchesStatus &&
-      (p.referenceId?.toLowerCase().includes(term) ||
-        p.upiId?.toLowerCase().includes(term) ||
-        p.bankDetails?.accountNumber?.toLowerCase().includes(term) ||
-        p.rejectionReason?.toLowerCase().includes(term))
-    );
-  });
-
-  const activeItems = activeTab === 'claims' ? filteredClaims : filteredPayouts;
-  const totalPages = Math.max(1, Math.ceil(activeItems.length / PER_PAGE));
-  const paginatedItems = activeItems.slice((page - 1) * PER_PAGE, page * PER_PAGE);
-
-  // Status counts for filter badges
+  // Status counts
   const counts = {
-    claimsAll: data.claims.length,
-    claimsPending: data.claims.filter((c) => c.status === 'Approval Pending').length,
-    claimsApproved: data.claims.filter((c) => c.status === 'Approved').length,
-    claimsRejected: data.claims.filter((c) => c.status === 'Rejected').length,
-
-    payoutsAll: payoutsHistory.length,
-    payoutsPending: payoutsHistory.filter((p) => p.status === 'Pending').length,
-    payoutsApproved: payoutsHistory.filter((p) => p.status === 'Approved').length,
-    payoutsRejected: payoutsHistory.filter((p) => p.status === 'Rejected').length,
+    claimsAll: data.claims?.length || 0,
+    claimsPending: data.claims?.filter((c) => c.status === 'Approval Pending' || c.status === 'Pending').length || 0,
+    claimsApproved: data.claims?.filter((c) => c.status === 'Approved').length || 0,
+    claimsRejected: data.claims?.filter((c) => c.status === 'Rejected').length || 0,
+    payoutsAll: payoutsHistory?.length || 0,
+    payoutsPending: payoutsHistory?.filter((p) => p.status === 'Pending').length || 0,
+    payoutsApproved: payoutsHistory?.filter((p) => p.status === 'Approved').length || 0,
+    payoutsRejected: payoutsHistory?.filter((p) => p.status === 'Rejected').length || 0,
   };
 
-  // KPI cards
   const kpiCards = [];
 
   if (showIncentive) {
     kpiCards.push({
-      title: 'Incentive Earned',
+      title: 'Wallet Balance',
       count: `₹${currentWalletBalance.toLocaleString('en-IN')}`,
       subtitle:
         typeof data.stats?.pendingIncentive === 'number' && data.stats.pendingIncentive > 0
-          ? `+ ₹${data.stats.pendingIncentive.toLocaleString('en-IN')} pending`
-          : 'Available for Payout',
+          ? `+ ₹${data.stats.pendingIncentive.toLocaleString('en-IN')} pending approval`
+          : 'Ready for withdrawal',
       icon: <IndianRupee className="w-5 h-5" />,
-      bg: '#10B981', // Green
+      bg: '#059669', // Emerald
     });
   }
 
+  /* Points system commented out
   if (showPoints) {
     kpiCards.push({
       title: 'Points Earned',
@@ -208,6 +205,7 @@ export default function WalletPage() {
       bg: '#F59E0B', // Amber
     });
   }
+  */
 
   kpiCards.push({
     title: 'Pending Claims',
@@ -220,58 +218,61 @@ export default function WalletPage() {
   kpiCards.push({
     title: 'Approved Claims',
     count: counts.claimsApproved,
-    subtitle: `Out of ${counts.claimsAll} total claims`,
+    subtitle: 'Successfully verified',
     icon: <CheckCircle2 className="w-5 h-5" />,
     bg: '#7C3AED', // Purple
   });
 
+  kpiCards.push({
+    title: 'Total Claims',
+    count: counts.claimsAll,
+    subtitle: `${counts.claimsRejected} rejected`,
+    icon: <TrendingUp className="w-5 h-5" />,
+    bg: '#0EA5E9', // Sky Blue
+  });
+
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
-              My Wallet
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200">
-              {data.sellerType || user?.role || 'Seller'}
-            </span>
-          </div>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+            <Wallet className="w-7 h-7 text-[#7C3AED]" />
+            {data.sellerType ? `${data.sellerType} Wallet` : 'Seller Wallet'}
+          </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Track your verified rewards balance and request incentive payouts.
+            Track your earned incentives, claims history, and payout disbursements
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          {showIncentive && (
-            <button
-              onClick={() => setShowRequestPayoutModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition-all text-sm"
-            >
-              <ArrowUpRight className="w-4 h-4" />
-              <span>Request Payout</span>
-            </button>
-          )}
-
           <button
             onClick={fetchData}
-            disabled={loading}
-            className="flex items-center gap-2 px-3.5 py-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl border border-gray-200 shadow-sm transition-all text-sm disabled:opacity-50"
+            className="p-2 text-gray-500 hover:text-gray-900 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-2xs"
+            title="Refresh"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
+          {showIncentive && (
+            <button
+              onClick={() => setShowRequestPayoutModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#7C3AED] hover:bg-purple-700 text-white font-bold rounded-xl shadow-sm hover:shadow transition-all active:scale-95 text-xs sm:text-sm cursor-pointer"
+            >
+              <Send className="w-4 h-4" />
+              <span>Request Payout</span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* Ineligibility notice banner if rewards are disabled */}
-      {!showIncentive && !showPoints && (
+      {!showIncentive && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 sm:p-5 mb-6 flex items-start gap-3.5 text-amber-900">
           <ShieldAlert className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div className="text-sm">
-            <p className="font-bold">Rewards Program Status</p>
+            <p className="font-bold">Incentives Program Status</p>
             <p className="text-xs text-amber-700 mt-0.5">
-              Your account is currently not configured to receive cash incentives or reward points.
+              Your account is currently not configured to receive cash incentives.
             </p>
           </div>
         </div>
@@ -451,6 +452,7 @@ export default function WalletPage() {
                   {showPoints && <th className="py-3.5 px-5 text-right">Points</th>}
                   <th className="py-3.5 px-5 text-center">Status</th>
                   <th className="py-3.5 px-5">Details</th>
+                  <th className="py-3.5 px-5 text-center">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 text-sm text-gray-700">
@@ -551,6 +553,33 @@ export default function WalletPage() {
                             <span className="text-gray-400">
                               {claim.saleGroupId ? 'Grouped Sale' : 'Direct Claim'}
                             </span>
+                          )}
+                          {claim.reapplyNotes && (
+                            <span className="text-amber-700 text-[11px] block mt-0.5 truncate" title={claim.reapplyNotes}>
+                              Note: {claim.reapplyNotes}
+                            </span>
+                          )}
+                        </td>
+
+                        <td className="py-4 px-5 text-center whitespace-nowrap">
+                          {claim.status === 'Rejected' ? (
+                            <button
+                              onClick={() => {
+                                setSelectedIncentiveToReapply(claim);
+                                setShowReapplyIncentiveModal(true);
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold rounded-lg border border-amber-200 shadow-2xs transition-colors cursor-pointer"
+                              title="Reapply for this rejected claim"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                              <span>Reapply</span>
+                            </button>
+                          ) : claim.reappliedAt && claim.status === 'Approval Pending' ? (
+                            <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                              Re-submitted
+                            </span>
+                          ) : (
+                            <span className="text-gray-300 text-xs">—</span>
                           )}
                         </td>
                       </tr>
@@ -670,9 +699,22 @@ export default function WalletPage() {
                           </div>
                         )}
                         {payout.status === 'Rejected' && (
-                          <span className="text-rose-600 font-medium block max-w-xs truncate" title={payout.rejectionReason}>
-                            Reason: {payout.rejectionReason || 'Rejected'}
-                          </span>
+                          <div className="space-y-1.5">
+                            <span className="text-rose-600 font-medium block max-w-xs truncate" title={payout.rejectionReason}>
+                              Reason: {payout.rejectionReason || 'Rejected'}
+                            </span>
+                            <button
+                              onClick={() => {
+                                setReapplyPayoutData(payout);
+                                setShowRequestPayoutModal(true);
+                              }}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold text-xs rounded-lg shadow-xs transition-all hover:scale-105"
+                              title="Reapply with corrected details"
+                            >
+                              <RefreshCw className="w-3 h-3" />
+                              <span>Reapply</span>
+                            </button>
+                          </div>
                         )}
                         {payout.status === 'Pending' && (
                           <span className="text-amber-600 font-medium text-xs">
@@ -740,13 +782,31 @@ export default function WalletPage() {
           availableBalance={currentWalletBalance}
           minThreshold={roleMinThreshold}
           savedPayoutDetails={savedPayoutDetails}
-          onClose={() => setShowRequestPayoutModal(false)}
+          reapplyData={reapplyPayoutData}
+          onClose={() => {
+            setShowRequestPayoutModal(false);
+            setReapplyPayoutData(null);
+          }}
           onSuccess={() => {
             setShowRequestPayoutModal(false);
+            setReapplyPayoutData(null);
             fetchData();
           }}
         />
       )}
+
+      {/* Reapply Incentive Modal */}
+      {showReapplyIncentiveModal && (
+        <ReapplyIncentiveModal
+          claim={selectedIncentiveToReapply}
+          onClose={() => {
+            setShowReapplyIncentiveModal(false);
+            setSelectedIncentiveToReapply(null);
+          }}
+          onSuccess={fetchData}
+        />
+      )}
+
 
       {/* Proof Image Viewer Modal */}
       {selectedPayoutDetail && (
@@ -788,8 +848,15 @@ export default function WalletPage() {
 // -------------------------------------------------------------
 // Request Payout Modal Component
 // -------------------------------------------------------------
-function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails, onClose, onSuccess }) {
+function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails, reapplyData, onClose, onSuccess }) {
   const getInitialDetails = () => {
+    if (reapplyData) {
+      return {
+        payoutMethod: reapplyData.payoutMethod || 'Bank',
+        bankDetails: reapplyData.bankDetails || {},
+        upiId: reapplyData.upiId || '',
+      };
+    }
     if (savedPayoutDetails) return savedPayoutDetails;
     try {
       const local = localStorage.getItem('saved_payout_details');
@@ -799,7 +866,9 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
   };
 
   const initialDetails = getInitialDetails();
-  const [amount, setAmount] = useState(availableBalance > 0 ? String(availableBalance) : '');
+  const [amount, setAmount] = useState(
+    reapplyData?.amount ? String(reapplyData.amount) : availableBalance > 0 ? String(availableBalance) : ''
+  );
   const [payoutMethod, setPayoutMethod] = useState(initialDetails?.payoutMethod || 'Bank'); // 'Bank' | 'UPI'
   const [bankDetails, setBankDetails] = useState({
     accountNumber: initialDetails?.bankDetails?.accountNumber || '',
@@ -808,12 +877,12 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
     accountHolderName: initialDetails?.bankDetails?.accountHolderName || '',
   });
   const [upiId, setUpiId] = useState(initialDetails?.upiId || '');
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState(reapplyData?.notes || '');
   const [saveDetails, setSaveDetails] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (savedPayoutDetails) {
+    if (!reapplyData && savedPayoutDetails) {
       if (savedPayoutDetails.payoutMethod) {
         setPayoutMethod(savedPayoutDetails.payoutMethod);
       }
@@ -829,7 +898,7 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
         setUpiId(savedPayoutDetails.upiId);
       }
     }
-  }, [savedPayoutDetails]);
+  }, [savedPayoutDetails, reapplyData]);
 
   const numAmount = Number(amount) || 0;
   const isAmountValid = numAmount >= minThreshold && numAmount <= availableBalance;
@@ -888,7 +957,8 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
         } catch (e) {}
       }
 
-      toast.success('Payout request submitted successfully!');
+      toast.success(reapplyData ? 'Payout reapplication submitted!' : 'Payout request submitted successfully!');
+      window.dispatchEvent(new Event('payouts-updated'));
       onSuccess();
     } catch (err) {
       console.error(err);
@@ -903,12 +973,18 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-200">
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-emerald-50 rounded-xl text-emerald-600">
-              <ArrowUpRight className="w-5 h-5" />
+            <div className={`p-2 rounded-xl ${reapplyData ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>
+              {reapplyData ? <RefreshCw className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Request Incentive Payout</h2>
-              <p className="text-xs text-gray-500">Withdraw your earned incentives directly to your account</p>
+              <h2 className="text-lg font-bold text-gray-900">
+                {reapplyData ? 'Reapply for Incentive Payout' : 'Request Incentive Payout'}
+              </h2>
+              <p className="text-xs text-gray-500">
+                {reapplyData
+                  ? 'Update your details to re-submit your payout request'
+                  : 'Withdraw your earned incentives directly to your account'}
+              </p>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">
@@ -917,6 +993,19 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          {/* Reapply Banner */}
+          {reapplyData && (
+            <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold block text-xs text-amber-900 mb-0.5">Reapplying for Payout</span>
+                <span className="text-amber-800 text-[11px] leading-relaxed block">
+                  Previous request for <strong>₹{reapplyData.amount?.toLocaleString('en-IN')}</strong> was rejected: <strong className="text-rose-700">{reapplyData.rejectionReason || 'No reason provided'}</strong>. Please review and update your payment details below before resubmitting.
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Balance info card */}
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex justify-between items-center text-xs">
             <div>
@@ -1131,7 +1220,7 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
               disabled={submitting || !isAmountValid}
               className="px-5 py-2 text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm disabled:opacity-50 cursor-pointer"
             >
-              {submitting ? 'Submitting...' : 'Submit Payout Request'}
+              {submitting ? 'Submitting...' : reapplyData ? 'Submit Reapplication' : 'Submit Payout Request'}
             </button>
           </div>
         </form>

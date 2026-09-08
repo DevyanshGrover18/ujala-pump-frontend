@@ -16,7 +16,7 @@ export default function Plumbers() {
 
   // States & districts for address drop-down
   const [states, setStates] = useState([]);
-  const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState([]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -73,12 +73,12 @@ export default function Plumbers() {
         const response = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/locations/districts/${stateVal}`
         );
-        setCities(response.data);
+        setDistricts(response.data);
       } catch (error) {
         console.error(`Error fetching districts for ${stateVal}:`, error);
       }
     } else {
-      setCities([]);
+      setDistricts([]);
     }
   };
 
@@ -98,7 +98,7 @@ export default function Plumbers() {
       password: '',
       status: 'Active',
     });
-    setCities([]);
+    setDistricts([]);
     setShowModal(true);
   };
 
@@ -122,14 +122,14 @@ export default function Plumbers() {
     if (plumber.state) {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/locations/cities/${plumber.state}`
+          `${import.meta.env.VITE_API_URL}/api/locations/districts/${plumber.state}`
         );
-        setCities(response.data);
+        setDistricts(response.data);
       } catch (error) {
-        console.error('Error loading cities:', error);
+        console.error('Error loading districts:', error);
       }
     } else {
-      setCities([]);
+      setDistricts([]);
     }
 
     setShowModal(true);
@@ -405,9 +405,9 @@ export default function Plumbers() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4d55f5] focus:border-transparent text-sm"
                   >
                     <option value="">Select District</option>
-                    {cities.map((ct) => (
-                      <option key={ct} value={ct}>
-                        {ct}
+                    {districts.map((dist) => (
+                      <option key={dist} value={dist}>
+                        {dist}
                       </option>
                     ))}
                   </select>

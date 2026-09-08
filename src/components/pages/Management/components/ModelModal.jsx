@@ -368,7 +368,7 @@ export default function ModelModal({
               </div>
               <div className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
                 <h3 className="text-sm font-semibold text-gray-800 mb-3 uppercase tracking-wide">
-                  Incentives &amp; Points
+                  Incentives
                 </h3>
                 <div className="space-y-4">
                   <div>
@@ -389,6 +389,7 @@ export default function ModelModal({
                       placeholder="e.g. 500"
                     />
                   </div>
+                  {/* Points system commented out
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-2">
                       Points (per unit sold)
@@ -407,6 +408,7 @@ export default function ModelModal({
                       placeholder="e.g. 10"
                     />
                   </div>
+                  */}
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-2">
                       Plumber Incentive (₹)

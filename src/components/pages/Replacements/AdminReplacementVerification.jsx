@@ -91,7 +91,7 @@ export default function AdminReplacementVerification() {
       const payload = {
         action: resolutionAction,
         adminRemarks,
-        newSerialNumber: resolutionAction === 'Approved' ? newSerialNumber.trim() : undefined,
+        newSerialNumber: resolutionAction === 'Approved' ? newSerialNumber.trim().toUpperCase() : undefined,
       };
 
       await axios.patch(
@@ -102,12 +102,14 @@ export default function AdminReplacementVerification() {
         }
       );
 
-      toast.success(`Request ${resolutionAction === 'Approved' ? 'Approved' : 'Rejected'} successfully`);
+      toast.success(
+        `Replacement request ${resolutionAction.toLowerCase()} successfully`
+      );
       closeResolutionModal();
       fetchRequests();
     } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.message || 'Resolution failed');
+      console.error('Error resolving replacement request:', err);
+      toast.error(err.response?.data?.message || 'Failed to resolve request');
     } finally {
       setResolving(false);
     }
@@ -175,7 +177,8 @@ export default function AdminReplacementVerification() {
               }
               const cleaned = String(scannedSerial)
                 .replace(/[\u0000-\u001F\u007F-\u009F\uFEFF]/g, '')
-                .trim();
+                .trim()
+                .toUpperCase();
               if (cleaned) {
                 setNewSerialNumber(cleaned);
                 stopScanning();

@@ -11,6 +11,7 @@ export default function AddMemberForm() {
     username: '',
     password: '',
   });
+  const [phoneError, setPhoneError] = useState('');
   const [accessControl, setAccessControl] = useState({
     management: { add: false, modify: false, delete: false, full: false },
     factories: { add: false, modify: false, delete: false, full: false },
@@ -26,6 +27,18 @@ export default function AddMemberForm() {
 
   const handleMemberDataChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'phone') {
+      const numericOnly = value.replace(/[^0-9]/g, '').slice(0, 10);
+      if (value !== numericOnly && value.length > 0) {
+        setPhoneError('Phone number must contain only numbers');
+      } else if (numericOnly.length > 0 && numericOnly.length < 10) {
+        setPhoneError('Phone number must be exactly 10 digits');
+      } else {
+        setPhoneError('');
+      }
+      setMemberData((prevData) => ({ ...prevData, phone: numericOnly }));
+      return;
+    }
     setMemberData((prevData) => ({ ...prevData, [name]: value }));
   };
 
@@ -73,6 +86,11 @@ export default function AddMemberForm() {
       toast.error('Please fill in all basic details.');
       return;
     }
+    if (!/^\d{10}$/.test(memberData.phone)) {
+      setPhoneError('Phone number must be exactly 10 digits');
+      toast.error('Phone number must be exactly 10 digits');
+      return;
+    }
     setActiveTab('privileges');
   };
 
@@ -93,6 +111,13 @@ export default function AddMemberForm() {
         return;
       }
 
+      if (!/^\d{10}$/.test(memberData.phone)) {
+        setPhoneError('Phone number must be exactly 10 digits');
+        toast.error('Phone number must be exactly 10 digits');
+        setActiveTab('basicDetails');
+        return;
+      }
+
       setIsLoading(true);
       await memberService.createMember({
         ...memberData,
@@ -105,6 +130,7 @@ export default function AddMemberForm() {
         username: '',
         password: '',
       });
+      setPhoneError('');
       setAccessControl({
         management: { add: false, modify: false, delete: false, full: false },
         factories: { add: false, modify: false, delete: false, full: false },
@@ -186,18 +212,26 @@ export default function AddMemberForm() {
               htmlFor="phone"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Phone
+              Phone *
             </label>
             <input
-              type="text"
+              type="tel"
               id="phone"
               name="phone"
+              maxLength={10}
               value={memberData.phone}
               onChange={handleMemberDataChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter phone number"
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                phoneError
+                  ? 'border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:ring-blue-500'
+              }`}
+              placeholder="Enter 10-digit phone number"
               required
             />
+            {phoneError && (
+              <p className="text-red-500 text-xs mt-1">{phoneError}</p>
+            )}
           </div>
           <div>
             <label

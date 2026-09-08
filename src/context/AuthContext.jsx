@@ -134,20 +134,34 @@ export const AuthProvider = ({ children }) => {
   }, [isAuthenticated, logout]);
 
   const _privs = user?.privileges || user?.accessControl || null;
+  const getSectionPerms = (section) => {
+    if (!_privs || !section) return null;
+    return (
+      _privs[section] ||
+      (section === 'subdealers'
+        ? _privs.subDealers
+        : section === 'subDealers'
+        ? _privs.subdealers
+        : null)
+    );
+  };
+
   const hasPrivilege = (section, privilege) => {
     if (!user || !_privs) return false;
-    // The _privs[section] might be undefined for newly added sections for existing users
-    if (!_privs[section]) {
+    const perms = getSectionPerms(section);
+    if (!perms) {
       return false;
     }
-    return _privs[section]?.[privilege] || _privs[section]?.full || false;
+    return perms?.[privilege] || perms?.full || false;
   };
 
   const hasAnyPrivilege = (section) => {
     if (!user || !_privs) return false;
-    const perms = _privs[section];
+    const perms = getSectionPerms(section);
     if (!perms) return false;
-    return Boolean(perms.full || perms.add || perms.modify || perms.delete);
+    return Boolean(
+      perms.full || perms.add || perms.modify || perms.delete
+    );
   };
 
   const hasFullManagementAccess = () => {

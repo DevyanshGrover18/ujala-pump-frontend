@@ -8,7 +8,7 @@ import { AuthContext } from '../../../context/AuthContext';
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
-  const { isAdmin, hasPrivilege } = useContext(AuthContext);
+  const { isAdmin, hasPrivilege, hasAnyPrivilege } = useContext(AuthContext);
 
   const [counts, setCounts] = useState({
     factories: 0,
@@ -39,13 +39,7 @@ export default function Dashboard() {
     const section = cardPathToSection[path];
     if (!section) return false; // If a card's path isn't mapped, hide it by default for non-admins
 
-    return (
-      hasPrivilege(section, 'full') ||
-      hasPrivilege(section, 'view') || // Assuming there might be a 'view' privilege
-      hasPrivilege(section, 'add') ||
-      hasPrivilege(section, 'modify') ||
-      hasPrivilege(section, 'delete')
-    );
+    return hasAnyPrivilege(section);
   };
 
   // 2. Refactor useEffect to fetch all data and handle loading state correctly
@@ -151,23 +145,14 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4 mt-4">
-        <div className="bg-white w-full rounded-xl p-5">
-          <h1 className="mb-5 font-bold text-lg">Order Items Status</h1>
-          <OrderItemsPieChart />
+      {canAccessCard('/orders') && (
+        <div className="flex flex-col lg:flex-row gap-4 mt-4">
+          <div className="bg-white w-full rounded-xl p-5">
+            <h1 className="mb-5 font-bold text-lg">Order Items Status</h1>
+            <OrderItemsPieChart />
+          </div>
         </div>
-        {/* <div className="bg-white lg:w-1/2 rounded-xl p-5">
-                <h1 className="mb-5 font-bold text-lg">Monthly Sales Overview</h1>
-                <SalesHistogram />
-            </div> */}
-      </div>
-
-      <div className="flex flex-col lg:flex-row gap-4 mt-4">
-        {/* <div className="bg-white w-full rounded-xl p-5">
-            <h1 className="mb-5 font-bold text-lg">Order Status Overview</h1>
-            <ProductGraph />
-        </div> */}
-      </div>
+      )}
     </div>
   );
 }

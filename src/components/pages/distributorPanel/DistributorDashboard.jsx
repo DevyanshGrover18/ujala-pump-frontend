@@ -91,7 +91,9 @@ export default function DistributorDashboard() {
       bg: '#10B981',
       path: '/distributor/wallet',
     });
-  } else if (walletInfo.eligibleForPoints && typeof walletInfo.points === 'number') {
+  }
+  /* Points system commented out
+  else if (walletInfo.eligibleForPoints && typeof walletInfo.points === 'number') {
     cardData.push({
       title: 'Wallet Points',
       count: `${walletInfo.points.toLocaleString('en-IN')} pts`,
@@ -100,6 +102,7 @@ export default function DistributorDashboard() {
       path: '/distributor/wallet',
     });
   }
+  */
 
   return (
     <div className="p-4">

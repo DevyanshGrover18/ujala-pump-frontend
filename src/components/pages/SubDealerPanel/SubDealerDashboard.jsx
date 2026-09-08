@@ -95,7 +95,9 @@ export default function SubDealerDashboard() {
       bg: '#FB923C',
       path: '/sub-dealer/wallet',
     });
-  } else if (walletInfo.eligibleForPoints && typeof walletInfo.points === 'number') {
+  }
+  /* Points system commented out
+  else if (walletInfo.eligibleForPoints && typeof walletInfo.points === 'number') {
     cardData.push({
       title: 'Wallet Points',
       count: `${walletInfo.points.toLocaleString('en-IN')} pts`,
@@ -104,6 +106,7 @@ export default function SubDealerDashboard() {
       path: '/sub-dealer/wallet',
     });
   }
+  */
 
   return (
     <div className="p-4">
