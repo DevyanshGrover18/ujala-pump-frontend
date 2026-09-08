@@ -172,7 +172,7 @@ export default function PlumberWallet() {
       bg: '#FB923C', // Orange
     },
     {
-      title: 'Verified Installations',
+      title: 'Paid Installations',
       count: counts.installationsApproved,
       subtitle: `Out of ${counts.installationsAll} total claims`,
       icon: <CheckCircle2 className="w-5 h-5" />,
@@ -342,7 +342,7 @@ export default function PlumberWallet() {
               },
               {
                 id: 'Approved',
-                label: 'Approved',
+                label: 'Paid',
                 count: activeTab === 'claims' ? counts.claimsApproved : counts.payoutsApproved,
               },
               {
@@ -451,7 +451,7 @@ export default function PlumberWallet() {
                           }`}
                         >
                           <StatusIcon className="w-3.5 h-3.5" />
-                          {claim.status === 'Approval Pending' ? 'Pending' : claim.status}
+                          {claim.status === 'Approval Pending' ? 'Pending' : claim.status === 'Approved' ? 'Paid' : claim.status}
                         </span>
                         {claim.status === 'Rejected' && claim.rejectionReason && (
                           <span className="text-[10px] text-rose-500 block mt-1 max-w-[150px] mx-auto truncate" title={claim.rejectionReason}>
@@ -551,7 +551,7 @@ export default function PlumberWallet() {
                           }`}
                         >
                           <StatusIcon className="w-3.5 h-3.5" />
-                          {payout.status}
+                          {payout.status === 'Approved' ? 'Paid' : payout.status}
                         </span>
                       </td>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useContext, useMemo, useRef } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../../../context/AuthContext';
 import {
@@ -22,7 +22,11 @@ import {
   ChevronDown,
   Trash2,
   RotateCcw,
+  UserCheck,
+  Calendar,
+  Box,
 } from 'lucide-react';
+import ModelWiseIncentivesView from './ModelWiseIncentivesView';
 
 
 const API = import.meta.env.VITE_API_URL;
@@ -329,7 +333,7 @@ function VerifyModal({ group, onClose, onAction }) {
               <span
                 className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[d.status] || ''}`}
               >
-                {d.status}
+                {d.status === 'Approved' ? 'Paid' : d.status}
               </span>
               {d.rejectionReason && (
                 <span className="text-red-600 text-xs">
@@ -388,7 +392,7 @@ function VerifyModal({ group, onClose, onAction }) {
               disabled={submitting}
               className="px-3 py-2 text-xs font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
             >
-              Approve
+              Approve & Pay
             </button>
           </div>
         </div>
@@ -410,6 +414,22 @@ function VerifyModal({ group, onClose, onAction }) {
   );
 }
 
+const getLast30DaysRange = () => {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(start.getDate() - 30);
+  const formatDate = (d) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  return {
+    startDate: formatDate(start),
+    endDate: formatDate(end),
+  };
+};
+
 const PER_PAGE = 15;
 
 export default function Incentives() {
@@ -427,13 +447,25 @@ export default function Incentives() {
   const [page, setPage] = useState(1);
   const [expanded, setExpanded] = useState({});
   const [selectedClaims, setSelectedClaims] = useState([]);
+  const [startDate, setStartDate] = useState(() => getLast30DaysRange().startDate);
+  const [endDate, setEndDate] = useState(() => getLast30DaysRange().endDate);
+  const [viewMode, setViewMode] = useState('claims'); // 'claims' | 'models'
+  const startDateRef = useRef(null);
+  const endDateRef = useRef(null);
+  const groupsRef = useRef(groups);
+  groupsRef.current = groups;
 
   const fetchClaims = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
+      const params = {};
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+
       const { data } = await axios.get(`${API}/api/incentives`, {
         headers: { Authorization: `Bearer ${token}` },
+        params,
       });
       setGroups(data || []);
       window.dispatchEvent(new Event('incentives-updated'));
@@ -442,7 +474,7 @@ export default function Incentives() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [startDate, endDate]);
 
 
   useEffect(() => {
@@ -468,6 +500,7 @@ export default function Incentives() {
         else if (roleFilter === 'Dealer') endpoint = `${API}/api/dealers`;
         else if (roleFilter === 'SubDealer') endpoint = `${API}/api/sub-dealers`;
         else if (roleFilter === 'Plumber') endpoint = `${API}/api/plumbers`;
+        else if (roleFilter === 'Accounts') endpoint = `${API}/api/accounts`;
 
         let fetchedList = [];
         if (endpoint) {
@@ -486,40 +519,75 @@ export default function Incentives() {
         }
 
         const combinedMap = new Map();
-        fetchedList.forEach((m) => {
-          const id = m._id ? String(m._id) : m.name;
-          const code =
-            m.distributorId || m.dealerId || m.subDealerId || m.plumberId || '';
-          combinedMap.set(id, {
-            _id: id,
-            name: m.name || m.contactPerson || 'Unnamed',
-            code,
+        if (roleFilter === 'Accounts') {
+          fetchedList.forEach((m) => {
+            const id = m._id ? String(m._id) : m.username;
+            combinedMap.set(id, {
+              _id: id,
+              name: m.name || m.username || 'Accounts Staff',
+              code: m.accountsId || '',
+              username: m.username,
+            });
           });
-        });
 
-        // Also merge any sellers found in the groups data
-        groups
-          .filter((g) => g.sellerType === roleFilter && g.sellerName)
-          .forEach((g) => {
-            const key = g.sellerId ? String(g.sellerId) : g.sellerName;
-            if (!combinedMap.has(key)) {
-              combinedMap.set(key, {
-                _id: key,
-                name: g.sellerName,
-                code: '',
-              });
+          // Also merge any processedBy found in groups
+          (groupsRef.current || []).forEach((g) => {
+            if (g.processedBy) {
+              const pb = g.processedBy;
+              const pbId = pb._id ? String(pb._id) : String(pb);
+              const pbName =
+                pb.accountsMember?.name ||
+                pb.name ||
+                pb.username ||
+                (pb.role === 'admin' ? 'Administrator' : 'Staff');
+              const pbCode =
+                pb.accountsMember?.accountsId || (pb.role === 'admin' ? 'Admin' : '');
+              if (!combinedMap.has(pbId)) {
+                combinedMap.set(pbId, {
+                  _id: pbId,
+                  name: pbName,
+                  code: pbCode,
+                  username: pb.username,
+                });
+              }
             }
           });
+        } else {
+          fetchedList.forEach((m) => {
+            const id = m._id ? String(m._id) : m.name;
+            const code =
+              m.distributorId || m.dealerId || m.subDealerId || m.plumberId || '';
+            combinedMap.set(id, {
+              _id: id,
+              name: m.name || m.contactPerson || 'Unnamed',
+              code,
+            });
+          });
+
+          // Also merge any sellers found in the groups data
+          (groupsRef.current || [])
+            .filter((g) => g.sellerType === roleFilter && g.sellerName)
+            .forEach((g) => {
+              const key = g.sellerId ? String(g.sellerId) : (g.seller ? String(g.seller) : g.sellerName);
+              if (!combinedMap.has(key)) {
+                combinedMap.set(key, {
+                  _id: key,
+                  name: g.sellerName,
+                  code: '',
+                });
+              }
+            });
+        }
 
         setMembersList(Array.from(combinedMap.values()));
       } catch (err) {
         console.error('Error fetching members for role:', err);
         const uniqueFromGroups = [];
         const seen = new Set();
-        groups
+        (groupsRef.current || [])
           .filter((g) => g.sellerType === roleFilter && g.sellerName)
           .forEach((g) => {
-            const key = g.sellerId ? String(g.sellerId) : g.sellerName;
+            const key = g.sellerId ? String(g.sellerId) : (g.seller ? String(g.seller) : g.sellerName);
             if (!seen.has(key)) {
               seen.add(key);
               uniqueFromGroups.push({
@@ -536,7 +604,7 @@ export default function Incentives() {
     };
 
     fetchMembersForRole();
-  }, [roleFilter, groups]);
+  }, [roleFilter]);
 
   const handleAction = async (claimId, action, rejectionReason) => {
     const token = localStorage.getItem('token');
@@ -615,15 +683,45 @@ export default function Incentives() {
             i.modelName?.toLowerCase().includes(search.toLowerCase())
         );
       const matchStatus = statusFilter === 'All' || g.status === statusFilter;
+
+      if (roleFilter === 'Accounts') {
+        if (!g.processedBy) return false;
+        if (memberFilter === 'All') return matchSearch && matchStatus;
+        const pb = g.processedBy;
+        const pbId = pb._id ? String(pb._id) : String(pb);
+        const pbAccId = pb.accountsMember?._id ? String(pb.accountsMember._id) : '';
+        const pbUsername = pb.username || '';
+        const pbName = pb.accountsMember?.name || pb.name || '';
+        const matchAccountsMember =
+          pbId === String(memberFilter) ||
+          pbAccId === String(memberFilter) ||
+          pbUsername === String(memberFilter) ||
+          pbName === String(memberFilter);
+        return matchSearch && matchStatus && matchAccountsMember;
+      }
+
       const matchRole = roleFilter === 'All' || g.sellerType === roleFilter;
       const matchMember =
         memberFilter === 'All' ||
         (g.sellerId && String(g.sellerId) === String(memberFilter)) ||
+        (g.seller && String(g.seller) === String(memberFilter)) ||
         g.sellerName === memberFilter;
+
+      // Date filtering
+      if (startDate) {
+        const itemDate = g.claimDate || (g.items && g.items[0] && (g.items[0].claimDate || g.items[0].createdAt)) || g.createdAt;
+        if (itemDate && new Date(itemDate) < new Date(startDate)) return false;
+      }
+      if (endDate) {
+        const itemDate = g.claimDate || (g.items && g.items[0] && (g.items[0].claimDate || g.items[0].createdAt)) || g.createdAt;
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        if (itemDate && new Date(itemDate) > end) return false;
+      }
 
       return matchSearch && matchStatus && matchRole && matchMember;
     });
-  }, [groups, search, statusFilter, roleFilter, memberFilter]);
+  }, [groups, search, statusFilter, roleFilter, memberFilter, startDate, endDate]);
 
   const totalPages = Math.ceil(filtered.length / PER_PAGE) || 1;
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -652,11 +750,43 @@ export default function Incentives() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Incentive Claims</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          Review and approve incentive claims from sellers and plumbers.
-        </p>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Incentive Claims</h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Review and approve incentive claims from sellers and plumbers.
+          </p>
+        </div>
+
+        {/* View Switcher (Only visible to Admin) */}
+        {user?.role === 'admin' && (
+          <div className="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200">
+            <button
+              type="button"
+              onClick={() => setViewMode('claims')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === 'claims'
+                  ? 'bg-white text-gray-900 shadow-xs'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              <Gift className="w-3.5 h-3.5" />
+              <span>Claims View</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('models')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === 'models'
+                  ? 'bg-white text-blue-600 shadow-xs'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              <Box className="w-3.5 h-3.5" />
+              <span>Model-Wise Incentives</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Stats */}
@@ -664,7 +794,7 @@ export default function Incentives() {
         {[
           { label: 'Total', value: stats.total, color: 'text-gray-900' },
           { label: 'Pending', value: stats.pending, color: 'text-yellow-600' },
-          { label: 'Approved', value: stats.approved, color: 'text-emerald-600' },
+          { label: 'Paid', value: stats.approved, color: 'text-emerald-600' },
           { label: 'Rejected', value: stats.rejected, color: 'text-rose-600' },
         ].map((s) => (
           <div
@@ -677,227 +807,308 @@ export default function Incentives() {
         ))}
       </div>
 
-      {/* Table card */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
-        <div className="flex items-center gap-3 p-4 border-b border-gray-100 flex-wrap">
-          {/* Search Box */}
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search seller, model, serial..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-                setSelectedClaims([]);
-              }}
-              className="w-full pl-9 pr-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
-            />
-          </div>
-
-          {/* 1. Select Role Filter */}
-          <select
-            value={roleFilter}
-            onChange={(e) => {
-              setRoleFilter(e.target.value);
-              setPage(1);
-              setSelectedClaims([]);
-            }}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-xs bg-white font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="All">All Roles</option>
-            <option value="Distributor">Distributor</option>
-            <option value="Dealer">Dealer</option>
-            <option value="SubDealer">Sub-Dealer</option>
-            <option value="Plumber">Plumber</option>
-          </select>
-
-          {/* 2. Select Member Filter (Dynamic based on Role) */}
-          <select
-            value={memberFilter}
-            onChange={(e) => {
-              setMemberFilter(e.target.value);
-              setPage(1);
-              setSelectedClaims([]);
-            }}
-            disabled={roleFilter === 'All'}
-            className={`px-3 py-2 border border-gray-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[170px] ${
-              roleFilter === 'All'
-                ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-gray-800 border-blue-200'
-            }`}
-          >
-            <option value="All">
-              {roleFilter === 'All'
-                ? 'All Members (Select Role)'
-                : loadingMembers
-                ? 'Loading Members...'
-                : `All ${roleFilter}s (${membersList.length})`}
-            </option>
-            {membersList.map((m) => (
-              <option key={m._id} value={m._id}>
-                {m.name} {m.code ? `(${m.code})` : ''}
-              </option>
-            ))}
-          </select>
-
-          {/* Status Tabs */}
-          <div className="flex gap-1 overflow-x-auto">
-            {[
-              'All',
-              'Approval Pending',
-              'Approved',
-              'Rejected',
-              'Incomplete',
-            ].map((s) => (
-              <button
-                key={s}
-                onClick={() => {
-                  setStatusFilter(s);
-                  setPage(1);
-                  setSelectedClaims([]);
-                }}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
-                  statusFilter === s
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {s === 'Approval Pending' ? 'Pending' : s}
-              </button>
-            ))}
-          </div>
-
-          {!isReadOnly && selectedClaims.length > 0 && (
-            <button
-              onClick={handleDeleteSelected}
-              className="flex items-center justify-center space-x-1.5 bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors text-xs font-semibold shadow-xs"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              <span>Delete ({selectedClaims.length})</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => {
-              fetchClaims();
-              setSelectedClaims([]);
-            }}
-            className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition"
-            title="Refresh Claims"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                {!isReadOnly && (
-                  <th className="px-5 py-3 text-left w-10">
-                    <input
-                      type="checkbox"
-                      onChange={handleSelectAll}
-                      checked={
-                        paginated.length > 0 &&
-                        selectedClaims.length === paginated.length
-                      }
-                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                    />
-                  </th>
+      {/* View Content */}
+      {user?.role === 'admin' && viewMode === 'models' ? (
+        <ModelWiseIncentivesView
+          groups={filtered}
+          loading={loading}
+          startDate={startDate}
+          endDate={endDate}
+        />
+      ) : (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
+          {/* Controls Toolbar */}
+          <div className="p-4 border-b border-gray-100 space-y-3">
+            {/* Row 1: Search Box + Status Tabs */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              {/* Search Box */}
+              <div className="relative flex-1 min-w-[220px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search seller, model, serial..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                    setSelectedClaims([]);
+                  }}
+                  className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white"
+                />
+                {search && (
+                  <button
+                    onClick={() => {
+                      setSearch('');
+                      setPage(1);
+                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
                 )}
+              </div>
+
+              {/* Status Tabs */}
+              <div className="flex gap-1 overflow-x-auto bg-gray-100 p-1 rounded-lg shrink-0 self-start sm:self-auto">
                 {[
-                  'Seller / Member',
-                  'Type',
-                  'Products',
-                  'Date',
-                  'Incentive',
-                  // 'Points',
-                  'Status',
-                  'Actions',
-                ].map((h) => (
-                  <th
-                    key={h}
-                    className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                  'All',
+                  'Approval Pending',
+                  'Approved',
+                  'Rejected',
+                  'Incomplete',
+                ].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => {
+                      setStatusFilter(s);
+                      setPage(1);
+                      setSelectedClaims([]);
+                    }}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                      statusFilter === s
+                        ? 'bg-white text-gray-900 shadow-xs font-semibold'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
                   >
-                    {h}
-                  </th>
+                    {s === 'Approved' ? 'Paid' : s === 'Approval Pending' ? 'Pending' : s}
+                  </button>
                 ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan={!isReadOnly ? 8 : 7}
-                    className="py-16 text-center text-sm text-gray-400"
+              </div>
+            </div>
+
+            {/* Row 2: Secondary Filters & Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-2.5 pt-0.5">
+              <div className="flex flex-wrap items-center gap-2.5">
+                {/* 1. Select Role Filter */}
+                <select
+                  value={roleFilter}
+                  onChange={(e) => {
+                    setRoleFilter(e.target.value);
+                    setPage(1);
+                    setSelectedClaims([]);
+                  }}
+                  className="px-3 py-2 border border-gray-200 rounded-lg text-xs bg-white font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                >
+                  <option value="All">All Roles</option>
+                  <option value="Distributor">Distributor</option>
+                  <option value="Dealer">Dealer</option>
+                  <option value="SubDealer">Sub-Dealer</option>
+                  <option value="Plumber">Plumber</option>
+                  {user?.role === 'admin' && (
+                    <option value="Accounts">Accounts (Approved By)</option>
+                  )}
+                </select>
+
+                {/* 2. Select Member Filter (Dynamic based on Role) */}
+                <select
+                  value={memberFilter}
+                  onChange={(e) => {
+                    setMemberFilter(e.target.value);
+                    setPage(1);
+                    setSelectedClaims([]);
+                  }}
+                  disabled={roleFilter === 'All'}
+                  className={`px-3 py-2 border rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[170px] ${
+                    roleFilter === 'All'
+                      ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-800 border-blue-200 cursor-pointer'
+                  }`}
+                >
+                  <option value="All">
+                    {roleFilter === 'All'
+                      ? 'All Members (Select Role)'
+                      : loadingMembers
+                        ? 'Loading Members...'
+                        : roleFilter === 'Accounts'
+                          ? `All Accounts Members (${membersList.length})`
+                          : `All ${roleFilter}s (${membersList.length})`}
+                  </option>
+                  {membersList.map((m) => (
+                    <option key={m._id} value={m._id}>
+                      {m.name} {m.code ? `(${m.code})` : ''}
+                    </option>
+                  ))}
+                </select>
+
+                {/* 3. Date Range Filter */}
+                <div className="flex items-center gap-1.5 bg-gray-50/90 border border-gray-200 rounded-lg px-3 py-1.5 text-xs">
+                  <Calendar className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                  <div
+                    className="flex items-center cursor-pointer"
+                    onClick={() => startDateRef.current?.showPicker?.()}
                   >
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <span>Loading incentive claims...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : paginated.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={!isReadOnly ? 8 : 7}
-                    className="py-16 text-center text-sm text-gray-400"
+                    <input
+                      ref={startDateRef}
+                      type="date"
+                      value={startDate}
+                      onClick={(e) => e.target.showPicker?.()}
+                      onChange={(e) => {
+                        setStartDate(e.target.value);
+                        setPage(1);
+                        setSelectedClaims([]);
+                      }}
+                      className="bg-transparent text-gray-700 text-xs font-medium focus:outline-none cursor-pointer w-[105px] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-0"
+                      title="Start Date"
+                    />
+                  </div>
+                  <span className="text-gray-400 font-semibold select-none px-0.5">to</span>
+                  <div
+                    className="flex items-center cursor-pointer"
+                    onClick={() => endDateRef.current?.showPicker?.()}
                   >
-                    No claims found matching current filters.
-                  </td>
+                    <input
+                      ref={endDateRef}
+                      type="date"
+                      value={endDate}
+                      onClick={(e) => e.target.showPicker?.()}
+                      onChange={(e) => {
+                        setEndDate(e.target.value);
+                        setPage(1);
+                        setSelectedClaims([]);
+                      }}
+                      className="bg-transparent text-gray-700 text-xs font-medium focus:outline-none cursor-pointer w-[105px] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-0"
+                      title="End Date"
+                    />
+                  </div>
+                  {(startDate || endDate) && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setStartDate('');
+                        setEndDate('');
+                        setPage(1);
+                        setSelectedClaims([]);
+                      }}
+                      className="p-0.5 hover:bg-gray-200 rounded-full text-gray-400 hover:text-gray-600 transition-colors ml-0.5 cursor-pointer"
+                      title="Clear Date Filter"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Bulk Delete */}
+              {!isReadOnly && selectedClaims.length > 0 && (
+                <button
+                  onClick={handleDeleteSelected}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete ({selectedClaims.length})</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-gray-50 border-b border-gray-100">
+                <tr>
+                  {!isReadOnly && (
+                    <th className="px-5 py-3 text-left w-10">
+                      <input
+                        type="checkbox"
+                        onChange={handleSelectAll}
+                        checked={
+                          paginated.length > 0 &&
+                          selectedClaims.length === paginated.length
+                        }
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      />
+                    </th>
+                  )}
+                  {[
+                    'Seller / Member',
+                    'Type',
+                    'Products',
+                    'Date',
+                    'Incentive',
+                    'Status',
+                    ...(user?.role === 'admin' ? ['Processed By'] : []),
+                    'Actions',
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
-              ) : (
-                paginated.map((g) => {
-                  const SIcon = STATUS_ICON[g.status] || Clock;
-                  const isExpanded = expanded[g.saleGroupId || g._id];
-                  return (
-                    <React.Fragment key={g._id}>
-                      <tr className="hover:bg-gray-50/60 transition-colors">
-                        {!isReadOnly && (
-                          <td className="px-5 py-3.5 whitespace-nowrap text-sm font-medium text-gray-900">
-                            <input
-                              type="checkbox"
-                              checked={selectedClaims.includes(g._id)}
-                              onChange={() => handleSelect(g._id)}
-                              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                            />
-                          </td>
-                        )}
-                        <td className="px-5 py-3.5 text-sm font-semibold text-gray-900">
-                          {g.sellerName}
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span className="px-2.5 py-0.5 text-xs rounded-md bg-gray-100 text-gray-700 border border-gray-200/80 font-medium">
-                            {g.sellerType}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 text-xs">
-                          {g.items?.length > 1 ? (
-                            <button
-                              onClick={() =>
-                                setExpanded((e) => ({
-                                  ...e,
-                                  [g.saleGroupId || g._id]: !isExpanded,
-                                }))
-                              }
-                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 hover:bg-gray-200/80 rounded-md text-gray-800 font-semibold transition-colors cursor-pointer"
-                            >
-                              <span>{g.items?.length} items</span>
-                              <ChevronDown
-                                className={`w-3.5 h-3.5 transition-transform text-gray-500 ${
-                                  isExpanded ? 'rotate-180' : ''
-                                }`}
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {loading ? (
+                  <tr>
+                    <td
+                      colSpan={!isReadOnly ? (user?.role === 'admin' ? 9 : 8) : (user?.role === 'admin' ? 8 : 7)}
+                      className="py-16 text-center text-sm text-gray-400"
+                    >
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                        <span>Loading incentive claims...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : paginated.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={!isReadOnly ? (user?.role === 'admin' ? 9 : 8) : (user?.role === 'admin' ? 8 : 7)}
+                      className="py-16 text-center text-sm text-gray-400"
+                    >
+                      No claims found matching current filters.
+                    </td>
+                  </tr>
+                ) : (
+                  paginated.map((g) => {
+                    const SIcon = STATUS_ICON[g.status] || Clock;
+                    const isExpanded = expanded[g.saleGroupId || g._id];
+                    return (
+                      <React.Fragment key={g._id}>
+                        <tr className="hover:bg-gray-50/60 transition-colors">
+                          {!isReadOnly && (
+                            <td className="px-5 py-3.5 whitespace-nowrap text-sm font-medium text-gray-900">
+                              <input
+                                type="checkbox"
+                                checked={selectedClaims.includes(g._id)}
+                                onChange={() => handleSelect(g._id)}
+                                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                               />
-                            </button>
-                          ) : (
-                            <span className="text-gray-600 font-mono">
-                              {g.items?.[0]?.serialNumber || '1 item'}
-                            </span>
+                            </td>
                           )}
-                        </td>
+                          <td className="px-5 py-3.5 text-sm font-semibold text-gray-900">
+                            {g.sellerName}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span className="px-2.5 py-0.5 text-xs rounded-md bg-gray-100 text-gray-700 border border-gray-200/80 font-medium">
+                              {g.sellerType}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5 text-xs">
+                            {g.items?.length > 1 ? (
+                              <button
+                                onClick={() =>
+                                  setExpanded((e) => ({
+                                    ...e,
+                                    [g.saleGroupId || g._id]: !isExpanded,
+                                  }))
+                                }
+                                className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 hover:bg-gray-200/80 rounded-md text-gray-800 font-semibold transition-colors cursor-pointer"
+                              >
+                                <span>{g.items?.length} items</span>
+                                <ChevronDown
+                                  className={`w-3.5 h-3.5 transition-transform text-gray-500 ${
+                                    isExpanded ? 'rotate-180' : ''
+                                  }`}
+                                />
+                              </button>
+                            ) : (
+                              <span className="text-gray-600 font-mono">
+                                {g.items?.[0]?.serialNumber || '1 item'}
+                              </span>
+                            )}
+                          </td>
                         <td className="px-5 py-3.5 text-xs text-gray-500">
                           {new Date(g.claimDate).toLocaleDateString('en-IN')}
                         </td>
@@ -915,7 +1126,7 @@ export default function Incentives() {
                               }`}
                             >
                               <SIcon className="w-3 h-3" />
-                              <span>{g.status === 'Approval Pending' ? 'Pending' : g.status}</span>
+                              <span>{g.status === 'Approval Pending' ? 'Pending' : g.status === 'Approved' ? 'Paid' : g.status}</span>
                             </span>
                             {g.reappliedAt && (
                               <span
@@ -928,6 +1139,38 @@ export default function Incentives() {
                             )}
                           </div>
                         </td>
+
+                        {/* Processed By (Admin Only) */}
+                        {user?.role === 'admin' && (
+                          <td className="px-5 py-3.5 whitespace-nowrap">
+                            {g.processedBy ? (
+                              <div className="flex flex-col text-xs">
+                                <span className="font-bold text-gray-800 flex items-center gap-1">
+                                  <UserCheck className="w-3.5 h-3.5 text-blue-600" />
+                                  {g.processedBy.accountsMember?.name ||
+                                    g.processedBy.name ||
+                                    g.processedBy.username ||
+                                    'Admin'}
+                                </span>
+                                <span className="text-[10px] text-gray-400 font-medium">
+                                  {g.processedBy.role === 'admin'
+                                    ? 'Administrator'
+                                    : g.processedBy.accountsMember?.accountsId
+                                    ? `Accounts (${g.processedBy.accountsMember.accountsId})`
+                                    : 'Accounts Team'}
+                                  {g.processedAt && (
+                                    <> &bull; {new Date(g.processedAt).toLocaleDateString('en-IN')}</>
+                                  )}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-400 font-medium italic">
+                                {g.status === 'Approval Pending' ? 'Pending Action' : '—'}
+                              </span>
+                            )}
+                          </td>
+                        )}
+
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-1.5">
                             <button
@@ -973,7 +1216,7 @@ export default function Incentives() {
                             {/* <td className="px-5 py-2 text-gray-700 font-medium font-mono">
                               {g.sellerType === 'Plumber' ? '—' : `${item.points} pts`}
                             </td> */}
-                            <td colSpan={2} />
+                            <td colSpan={user?.role === 'admin' ? 3 : 2} />
                           </tr>
                         ))}
 
@@ -1005,7 +1248,7 @@ export default function Incentives() {
                   {/* <td className="px-5 py-3 text-sm font-black text-purple-700 whitespace-nowrap">
                     {roleFilter === 'Plumber' ? '—' : `${totalPointsAmount.toLocaleString('en-IN')} pts`}
                   </td> */}
-                  <td colSpan={2} className="px-5 py-3"></td>
+                  <td colSpan={user?.role === 'admin' ? 3 : 2} className="px-5 py-3"></td>
                 </tr>
               </tfoot>
             )}
@@ -1099,6 +1342,7 @@ export default function Incentives() {
           </div>
         )}
       </div>
+      )}
 
       {selectedGroup && (
         <VerifyModal

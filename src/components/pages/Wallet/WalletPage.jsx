@@ -31,7 +31,6 @@ import {
   Send,
 } from 'lucide-react';
 
-
 const API = import.meta.env.VITE_API_URL;
 
 const STATUS_BADGE = {
@@ -82,8 +81,10 @@ export default function WalletPage() {
   const [showRequestPayoutModal, setShowRequestPayoutModal] = useState(false);
   const [reapplyPayoutData, setReapplyPayoutData] = useState(null);
   const [selectedPayoutDetail, setSelectedPayoutDetail] = useState(null);
-  const [showReapplyIncentiveModal, setShowReapplyIncentiveModal] = useState(false);
-  const [selectedIncentiveToReapply, setSelectedIncentiveToReapply] = useState(null);
+  const [showReapplyIncentiveModal, setShowReapplyIncentiveModal] =
+    useState(false);
+  const [selectedIncentiveToReapply, setSelectedIncentiveToReapply] =
+    useState(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -93,8 +94,12 @@ export default function WalletPage() {
 
       const [claimsRes, payoutsRes, thresholdsRes] = await Promise.all([
         axios.get(`${API}/api/incentives/my/claims`, { headers }),
-        axios.get(`${API}/api/payouts/my`, { headers }).catch(() => ({ data: { payouts: [] } })),
-        axios.get(`${API}/api/payouts/thresholds`, { headers }).catch(() => ({ data: null })),
+        axios
+          .get(`${API}/api/payouts/my`, { headers })
+          .catch(() => ({ data: { payouts: [] } })),
+        axios
+          .get(`${API}/api/payouts/thresholds`, { headers })
+          .catch(() => ({ data: null })),
       ]);
 
       setData(claimsRes.data);
@@ -104,7 +109,9 @@ export default function WalletPage() {
       setPayoutsHistory(fetchedPayouts);
 
       const savedDetails =
-        payoutsRes.data?.savedPayoutDetails || claimsRes.data?.savedPayoutDetails || null;
+        payoutsRes.data?.savedPayoutDetails ||
+        claimsRes.data?.savedPayoutDetails ||
+        null;
       if (savedDetails) {
         setSavedPayoutDetails(savedDetails);
       }
@@ -128,19 +135,24 @@ export default function WalletPage() {
 
   // Minimum threshold for current role
   let roleMinThreshold = 500;
-  if (data.sellerType === 'Distributor') roleMinThreshold = thresholds.distributorMinPayout;
-  else if (data.sellerType === 'Dealer') roleMinThreshold = thresholds.dealerMinPayout;
-  else if (data.sellerType === 'SubDealer') roleMinThreshold = thresholds.subDealerMinPayout;
+  if (data.sellerType === 'Distributor')
+    roleMinThreshold = thresholds.distributorMinPayout;
+  else if (data.sellerType === 'Dealer')
+    roleMinThreshold = thresholds.dealerMinPayout;
+  else if (data.sellerType === 'SubDealer')
+    roleMinThreshold = thresholds.subDealerMinPayout;
   else if (isPlumber) roleMinThreshold = thresholds.plumberMinPayout;
 
   const currentWalletBalance = Number(data.wallet?.incentive || 0);
 
   // Filter items
-  const activeItems = activeTab === 'claims' ? data.claims || [] : payoutsHistory || [];
+  const activeItems =
+    activeTab === 'claims' ? data.claims || [] : payoutsHistory || [];
   const filteredItems = activeItems.filter((item) => {
     if (statusFilter !== 'All') {
       if (activeTab === 'claims') {
-        const itemStatus = item.status === 'Approval Pending' ? 'Pending' : item.status;
+        const itemStatus =
+          item.status === 'Approval Pending' ? 'Pending' : item.status;
         if (itemStatus !== statusFilter) return false;
       } else {
         if (item.status !== statusFilter) return false;
@@ -149,32 +161,53 @@ export default function WalletPage() {
     if (search.trim()) {
       const term = search.toLowerCase();
       if (activeTab === 'claims') {
-        const serials = item.items?.map((i) => i.serialNumber).join(' ') || item.serialNumber || '';
+        const serials =
+          item.items?.map((i) => i.serialNumber).join(' ') ||
+          item.serialNumber ||
+          '';
         const model = item.modelName || item.model?.name || '';
-        return serials.toLowerCase().includes(term) || model.toLowerCase().includes(term);
+        return (
+          serials.toLowerCase().includes(term) ||
+          model.toLowerCase().includes(term)
+        );
       } else {
         const ref = item.referenceId || '';
         const upi = item.upiId || '';
         const acc = item.bankDetails?.accountNumber || '';
-        return ref.toLowerCase().includes(term) || upi.toLowerCase().includes(term) || acc.toLowerCase().includes(term);
+        return (
+          ref.toLowerCase().includes(term) ||
+          upi.toLowerCase().includes(term) ||
+          acc.toLowerCase().includes(term)
+        );
       }
     }
     return true;
   });
 
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / PER_PAGE));
-  const paginatedItems = filteredItems.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const paginatedItems = filteredItems.slice(
+    (page - 1) * PER_PAGE,
+    page * PER_PAGE
+  );
 
   // Status counts
   const counts = {
     claimsAll: data.claims?.length || 0,
-    claimsPending: data.claims?.filter((c) => c.status === 'Approval Pending' || c.status === 'Pending').length || 0,
-    claimsApproved: data.claims?.filter((c) => c.status === 'Approved').length || 0,
-    claimsRejected: data.claims?.filter((c) => c.status === 'Rejected').length || 0,
+    claimsPending:
+      data.claims?.filter(
+        (c) => c.status === 'Approval Pending' || c.status === 'Pending'
+      ).length || 0,
+    claimsApproved:
+      data.claims?.filter((c) => c.status === 'Approved').length || 0,
+    claimsRejected:
+      data.claims?.filter((c) => c.status === 'Rejected').length || 0,
     payoutsAll: payoutsHistory?.length || 0,
-    payoutsPending: payoutsHistory?.filter((p) => p.status === 'Pending').length || 0,
-    payoutsApproved: payoutsHistory?.filter((p) => p.status === 'Approved').length || 0,
-    payoutsRejected: payoutsHistory?.filter((p) => p.status === 'Rejected').length || 0,
+    payoutsPending:
+      payoutsHistory?.filter((p) => p.status === 'Pending').length || 0,
+    payoutsApproved:
+      payoutsHistory?.filter((p) => p.status === 'Approved').length || 0,
+    payoutsRejected:
+      payoutsHistory?.filter((p) => p.status === 'Rejected').length || 0,
   };
 
   const kpiCards = [];
@@ -184,7 +217,8 @@ export default function WalletPage() {
       title: 'Wallet Balance',
       count: `₹${currentWalletBalance.toLocaleString('en-IN')}`,
       subtitle:
-        typeof data.stats?.pendingIncentive === 'number' && data.stats.pendingIncentive > 0
+        typeof data.stats?.pendingIncentive === 'number' &&
+        data.stats.pendingIncentive > 0
           ? `+ ₹${data.stats.pendingIncentive.toLocaleString('en-IN')} pending approval`
           : 'Ready for withdrawal',
       icon: <IndianRupee className="w-5 h-5" />,
@@ -216,9 +250,9 @@ export default function WalletPage() {
   });
 
   kpiCards.push({
-    title: 'Approved Claims',
+    title: 'Paid Claims',
     count: counts.claimsApproved,
-    subtitle: 'Successfully verified',
+    subtitle: 'Successfully paid',
     icon: <CheckCircle2 className="w-5 h-5" />,
     bg: '#7C3AED', // Purple
   });
@@ -238,10 +272,10 @@ export default function WalletPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
             <Wallet className="w-7 h-7 text-[#7C3AED]" />
-            {data.sellerType ? `${data.sellerType} Wallet` : 'Seller Wallet'}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Track your earned incentives, claims history, and payout disbursements
+            Track your earned incentives, claims history, and payout
+            disbursements
           </p>
         </div>
 
@@ -272,7 +306,8 @@ export default function WalletPage() {
           <div className="text-sm">
             <p className="font-bold">Incentives Program Status</p>
             <p className="text-xs text-amber-700 mt-0.5">
-              Your account is currently not configured to receive cash incentives.
+              Your account is currently not configured to receive cash
+              incentives.
             </p>
           </div>
         </div>
@@ -377,22 +412,32 @@ export default function WalletPage() {
               {
                 id: 'All',
                 label: 'All',
-                count: activeTab === 'claims' ? counts.claimsAll : counts.payoutsAll,
+                count:
+                  activeTab === 'claims' ? counts.claimsAll : counts.payoutsAll,
               },
               {
                 id: activeTab === 'claims' ? 'Approval Pending' : 'Pending',
                 label: 'Pending',
-                count: activeTab === 'claims' ? counts.claimsPending : counts.payoutsPending,
+                count:
+                  activeTab === 'claims'
+                    ? counts.claimsPending
+                    : counts.payoutsPending,
               },
               {
                 id: 'Approved',
-                label: 'Approved',
-                count: activeTab === 'claims' ? counts.claimsApproved : counts.payoutsApproved,
+                label: 'Paid',
+                count:
+                  activeTab === 'claims'
+                    ? counts.claimsApproved
+                    : counts.payoutsApproved,
               },
               {
                 id: 'Rejected',
                 label: 'Rejected',
-                count: activeTab === 'claims' ? counts.claimsRejected : counts.payoutsRejected,
+                count:
+                  activeTab === 'claims'
+                    ? counts.claimsRejected
+                    : counts.payoutsRejected,
               },
             ].map((tab) => (
               <button
@@ -432,7 +477,9 @@ export default function WalletPage() {
           <div className="text-center py-16 px-4 text-gray-400">
             <Package className="w-12 h-12 mx-auto mb-3 opacity-20 text-purple-600" />
             <p className="text-sm font-bold text-gray-600">
-              {activeTab === 'claims' ? 'No claim records found' : 'No payout requests found'}
+              {activeTab === 'claims'
+                ? 'No claim records found'
+                : 'No payout requests found'}
             </p>
             <p className="text-xs text-gray-400 mt-1">
               {activeTab === 'claims'
@@ -448,8 +495,12 @@ export default function WalletPage() {
                 <tr className="border-b border-gray-100 bg-gray-50/50 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                   <th className="py-3.5 px-5">Date</th>
                   <th className="py-3.5 px-5">Product / Item</th>
-                  {showIncentive && <th className="py-3.5 px-5 text-right">Incentive</th>}
-                  {showPoints && <th className="py-3.5 px-5 text-right">Points</th>}
+                  {showIncentive && (
+                    <th className="py-3.5 px-5 text-right">Incentive</th>
+                  )}
+                  {showPoints && (
+                    <th className="py-3.5 px-5 text-right">Points</th>
+                  )}
                   <th className="py-3.5 px-5 text-center">Status</th>
                   <th className="py-3.5 px-5">Details</th>
                   <th className="py-3.5 px-5 text-center">Action</th>
@@ -469,11 +520,14 @@ export default function WalletPage() {
                         <td className="py-4 px-5 whitespace-nowrap">
                           <span className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
                             <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                            {new Date(claim.claimDate).toLocaleDateString('en-IN', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric',
-                            })}
+                            {new Date(claim.claimDate).toLocaleDateString(
+                              'en-IN',
+                              {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                              }
+                            )}
                           </span>
                         </td>
 
@@ -508,10 +562,15 @@ export default function WalletPage() {
                           ) : (
                             <div>
                               <span className="font-mono text-xs font-bold text-purple-700 block">
-                                {rep.serialNumber || claim.serialNumber || 'N/A'}
+                                {rep.serialNumber ||
+                                  claim.serialNumber ||
+                                  'N/A'}
                               </span>
                               <span className="text-xs text-gray-500 font-medium block mt-0.5">
-                                {rep.model?.name || rep.modelName || claim.modelName || 'Standard Product'}
+                                {rep.model?.name ||
+                                  rep.modelName ||
+                                  claim.modelName ||
+                                  'Standard Product'}
                               </span>
                             </div>
                           )}
@@ -536,26 +595,40 @@ export default function WalletPage() {
                         <td className="py-4 px-5 text-center whitespace-nowrap">
                           <span
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
-                              STATUS_BADGE[claim.status] || 'bg-gray-100 text-gray-600'
+                              STATUS_BADGE[claim.status] ||
+                              'bg-gray-100 text-gray-600'
                             }`}
                           >
                             <StatusIcon className="w-3.5 h-3.5" />
-                            {claim.status === 'Approval Pending' ? 'Pending' : claim.status}
+                            {claim.status === 'Approval Pending'
+                              ? 'Pending'
+                              : claim.status === 'Approved'
+                                ? 'Paid'
+                                : claim.status}
                           </span>
                         </td>
 
                         <td className="py-4 px-5 text-xs text-gray-500">
-                          {claim.status === 'Rejected' && claim.rejectionReason ? (
-                            <span className="text-rose-600 font-medium block max-w-xs truncate" title={claim.rejectionReason}>
+                          {claim.status === 'Rejected' &&
+                          claim.rejectionReason ? (
+                            <span
+                              className="text-rose-600 font-medium block max-w-xs truncate"
+                              title={claim.rejectionReason}
+                            >
                               Reason: {claim.rejectionReason}
                             </span>
                           ) : (
                             <span className="text-gray-400">
-                              {claim.saleGroupId ? 'Grouped Sale' : 'Direct Claim'}
+                              {claim.saleGroupId
+                                ? 'Grouped Sale'
+                                : 'Direct Claim'}
                             </span>
                           )}
                           {claim.reapplyNotes && (
-                            <span className="text-amber-700 text-[11px] block mt-0.5 truncate" title={claim.reapplyNotes}>
+                            <span
+                              className="text-amber-700 text-[11px] block mt-0.5 truncate"
+                              title={claim.reapplyNotes}
+                            >
                               Note: {claim.reapplyNotes}
                             </span>
                           )}
@@ -574,7 +647,8 @@ export default function WalletPage() {
                               <RotateCcw className="w-3 h-3" />
                               <span>Reapply</span>
                             </button>
-                          ) : claim.reappliedAt && claim.status === 'Approval Pending' ? (
+                          ) : claim.reappliedAt &&
+                            claim.status === 'Approval Pending' ? (
                             <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
                               Re-submitted
                             </span>
@@ -586,7 +660,10 @@ export default function WalletPage() {
 
                       {isExpanded &&
                         claim.items?.map((item, idx) => (
-                          <tr key={idx} className="bg-gray-50/50 text-xs text-gray-600">
+                          <tr
+                            key={idx}
+                            className="bg-gray-50/50 text-xs text-gray-600"
+                          >
                             <td className="py-2.5 px-5 pl-8 font-mono text-gray-400">
                               #{idx + 1}
                             </td>
@@ -640,15 +717,21 @@ export default function WalletPage() {
                   const StatusIcon = STATUS_ICON[payout.status] || Clock;
 
                   return (
-                    <tr key={payout._id} className="hover:bg-gray-50/60 transition-colors">
+                    <tr
+                      key={payout._id}
+                      className="hover:bg-gray-50/60 transition-colors"
+                    >
                       <td className="py-4 px-5 whitespace-nowrap">
                         <span className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
                           <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                          {new Date(payout.requestedAt).toLocaleDateString('en-IN', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
+                          {new Date(payout.requestedAt).toLocaleDateString(
+                            'en-IN',
+                            {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                            }
+                          )}
                         </span>
                       </td>
 
@@ -668,7 +751,8 @@ export default function WalletPage() {
                               {payout.bankDetails?.bankName || 'Bank Account'}
                             </span>
                             <span className="font-mono text-gray-400 text-[11px]">
-                              A/C: {payout.bankDetails?.accountNumber} &bull; IFSC: {payout.bankDetails?.ifscCode}
+                              A/C: {payout.bankDetails?.accountNumber} &bull;
+                              IFSC: {payout.bankDetails?.ifscCode}
                             </span>
                           </div>
                         )}
@@ -677,11 +761,14 @@ export default function WalletPage() {
                       <td className="py-4 px-5 text-center whitespace-nowrap">
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
-                            STATUS_BADGE[payout.status] || 'bg-gray-100 text-gray-600'
+                            STATUS_BADGE[payout.status] ||
+                            'bg-gray-100 text-gray-600'
                           }`}
                         >
                           <StatusIcon className="w-3.5 h-3.5" />
-                          {payout.status}
+                          {payout.status === 'Approved'
+                            ? 'Paid'
+                            : payout.status}
                         </span>
                       </td>
 
@@ -700,7 +787,10 @@ export default function WalletPage() {
                         )}
                         {payout.status === 'Rejected' && (
                           <div className="space-y-1.5">
-                            <span className="text-rose-600 font-medium block max-w-xs truncate" title={payout.rejectionReason}>
+                            <span
+                              className="text-rose-600 font-medium block max-w-xs truncate"
+                              title={payout.rejectionReason}
+                            >
                               Reason: {payout.rejectionReason || 'Rejected'}
                             </span>
                             <button
@@ -748,10 +838,19 @@ export default function WalletPage() {
         {totalPages > 1 && (
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 px-5 py-4 border-t border-gray-100 text-xs text-gray-500">
             <span>
-              Showing <span className="font-bold text-gray-700">{(page - 1) * PER_PAGE + 1}</span>–
+              Showing{' '}
+              <span className="font-bold text-gray-700">
+                {(page - 1) * PER_PAGE + 1}
+              </span>
+              –
               <span className="font-bold text-gray-700">
                 {Math.min(page * PER_PAGE, activeItems.length)}
-              </span> of <span className="font-bold text-gray-700">{activeItems.length}</span> items
+              </span>{' '}
+              of{' '}
+              <span className="font-bold text-gray-700">
+                {activeItems.length}
+              </span>{' '}
+              items
             </span>
             <div className="flex items-center gap-2">
               <button
@@ -807,16 +906,18 @@ export default function WalletPage() {
         />
       )}
 
-
       {/* Proof Image Viewer Modal */}
       {selectedPayoutDetail && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-gray-200">
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <div>
-                <h3 className="text-base font-bold text-gray-900">Payment Receipt Proof</h3>
+                <h3 className="text-base font-bold text-gray-900">
+                  Payment Receipt Proof
+                </h3>
                 <p className="text-xs text-gray-500">
-                  ₹{selectedPayoutDetail.amount?.toLocaleString('en-IN')} paid via {selectedPayoutDetail.paymentMethod}
+                  ₹{selectedPayoutDetail.amount?.toLocaleString('en-IN')} paid
+                  via {selectedPayoutDetail.paymentMethod}
                 </p>
               </div>
               <button
@@ -834,7 +935,10 @@ export default function WalletPage() {
               />
               {selectedPayoutDetail.referenceId && (
                 <div className="mt-3 text-xs text-gray-600 font-mono bg-gray-50 px-3 py-1.5 rounded-lg w-full text-center">
-                  Reference: <span className="font-bold text-gray-900">{selectedPayoutDetail.referenceId}</span>
+                  Reference:{' '}
+                  <span className="font-bold text-gray-900">
+                    {selectedPayoutDetail.referenceId}
+                  </span>
                 </div>
               )}
             </div>
@@ -848,7 +952,14 @@ export default function WalletPage() {
 // -------------------------------------------------------------
 // Request Payout Modal Component
 // -------------------------------------------------------------
-function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails, reapplyData, onClose, onSuccess }) {
+function RequestPayoutModal({
+  availableBalance,
+  minThreshold,
+  savedPayoutDetails,
+  reapplyData,
+  onClose,
+  onSuccess,
+}) {
   const getInitialDetails = () => {
     if (reapplyData) {
       return {
@@ -867,9 +978,15 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
 
   const initialDetails = getInitialDetails();
   const [amount, setAmount] = useState(
-    reapplyData?.amount ? String(reapplyData.amount) : availableBalance > 0 ? String(availableBalance) : ''
+    reapplyData?.amount
+      ? String(reapplyData.amount)
+      : availableBalance > 0
+        ? String(availableBalance)
+        : ''
   );
-  const [payoutMethod, setPayoutMethod] = useState(initialDetails?.payoutMethod || 'Bank'); // 'Bank' | 'UPI'
+  const [payoutMethod, setPayoutMethod] = useState(
+    initialDetails?.payoutMethod || 'Bank'
+  ); // 'Bank' | 'UPI'
   const [bankDetails, setBankDetails] = useState({
     accountNumber: initialDetails?.bankDetails?.accountNumber || '',
     ifscCode: initialDetails?.bankDetails?.ifscCode || '',
@@ -888,10 +1005,13 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
       }
       if (savedPayoutDetails.bankDetails) {
         setBankDetails((prev) => ({
-          accountNumber: savedPayoutDetails.bankDetails.accountNumber || prev.accountNumber,
+          accountNumber:
+            savedPayoutDetails.bankDetails.accountNumber || prev.accountNumber,
           ifscCode: savedPayoutDetails.bankDetails.ifscCode || prev.ifscCode,
           bankName: savedPayoutDetails.bankDetails.bankName || prev.bankName,
-          accountHolderName: savedPayoutDetails.bankDetails.accountHolderName || prev.accountHolderName,
+          accountHolderName:
+            savedPayoutDetails.bankDetails.accountHolderName ||
+            prev.accountHolderName,
         }));
       }
       if (savedPayoutDetails.upiId) {
@@ -901,17 +1021,22 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
   }, [savedPayoutDetails, reapplyData]);
 
   const numAmount = Number(amount) || 0;
-  const isAmountValid = numAmount >= minThreshold && numAmount <= availableBalance;
+  const isAmountValid =
+    numAmount >= minThreshold && numAmount <= availableBalance;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!isAmountValid) {
       if (numAmount < minThreshold) {
-        return toast.error(`Minimum withdrawal amount is ₹${minThreshold.toLocaleString('en-IN')}`);
+        return toast.error(
+          `Minimum withdrawal amount is ₹${minThreshold.toLocaleString('en-IN')}`
+        );
       }
       if (numAmount > availableBalance) {
-        return toast.error(`Amount exceeds available balance of ₹${availableBalance.toLocaleString('en-IN')}`);
+        return toast.error(
+          `Amount exceeds available balance of ₹${availableBalance.toLocaleString('en-IN')}`
+        );
       }
       return;
     }
@@ -921,7 +1046,11 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
     }
 
     if (payoutMethod === 'Bank') {
-      if (!bankDetails.accountNumber.trim() || !bankDetails.ifscCode.trim() || !bankDetails.accountHolderName.trim()) {
+      if (
+        !bankDetails.accountNumber.trim() ||
+        !bankDetails.ifscCode.trim() ||
+        !bankDetails.accountHolderName.trim()
+      ) {
         return toast.error('Please fill all required bank account fields');
       }
     }
@@ -957,12 +1086,18 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
         } catch (e) {}
       }
 
-      toast.success(reapplyData ? 'Payout reapplication submitted!' : 'Payout request submitted successfully!');
+      toast.success(
+        reapplyData
+          ? 'Payout reapplication submitted!'
+          : 'Payout request submitted successfully!'
+      );
       window.dispatchEvent(new Event('payouts-updated'));
       onSuccess();
     } catch (err) {
       console.error(err);
-      toast.error(err.response?.data?.message || 'Failed to submit payout request');
+      toast.error(
+        err.response?.data?.message || 'Failed to submit payout request'
+      );
     } finally {
       setSubmitting(false);
     }
@@ -973,12 +1108,20 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-200">
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
           <div className="flex items-center gap-2.5">
-            <div className={`p-2 rounded-xl ${reapplyData ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>
-              {reapplyData ? <RefreshCw className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
+            <div
+              className={`p-2 rounded-xl ${reapplyData ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}
+            >
+              {reapplyData ? (
+                <RefreshCw className="w-5 h-5" />
+              ) : (
+                <ArrowUpRight className="w-5 h-5" />
+              )}
             </div>
             <div>
               <h2 className="text-lg font-bold text-gray-900">
-                {reapplyData ? 'Reapply for Incentive Payout' : 'Request Incentive Payout'}
+                {reapplyData
+                  ? 'Reapply for Incentive Payout'
+                  : 'Request Incentive Payout'}
               </h2>
               <p className="text-xs text-gray-500">
                 {reapplyData
@@ -987,7 +1130,10 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">
+          <button
+            onClick={onClose}
+            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -998,9 +1144,20 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
             <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
               <div>
-                <span className="font-bold block text-xs text-amber-900 mb-0.5">Reapplying for Payout</span>
+                <span className="font-bold block text-xs text-amber-900 mb-0.5">
+                  Reapplying for Payout
+                </span>
                 <span className="text-amber-800 text-[11px] leading-relaxed block">
-                  Previous request for <strong>₹{reapplyData.amount?.toLocaleString('en-IN')}</strong> was rejected: <strong className="text-rose-700">{reapplyData.rejectionReason || 'No reason provided'}</strong>. Please review and update your payment details below before resubmitting.
+                  Previous request for{' '}
+                  <strong>
+                    ₹{reapplyData.amount?.toLocaleString('en-IN')}
+                  </strong>{' '}
+                  was rejected:{' '}
+                  <strong className="text-rose-700">
+                    {reapplyData.rejectionReason || 'No reason provided'}
+                  </strong>
+                  . Please review and update your payment details below before
+                  resubmitting.
                 </span>
               </div>
             </div>
@@ -1009,13 +1166,17 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
           {/* Balance info card */}
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex justify-between items-center text-xs">
             <div>
-              <span className="text-gray-400 block font-bold uppercase">Available Balance</span>
+              <span className="text-gray-400 block font-bold uppercase">
+                Available Balance
+              </span>
               <span className="text-lg font-black text-gray-900">
                 ₹{availableBalance.toLocaleString('en-IN')}
               </span>
             </div>
             <div className="text-right">
-              <span className="text-gray-400 block font-bold uppercase">Min Threshold</span>
+              <span className="text-gray-400 block font-bold uppercase">
+                Min Threshold
+              </span>
               <span className="font-bold text-purple-700">
                 ₹{minThreshold.toLocaleString('en-IN')}
               </span>
@@ -1119,7 +1280,10 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
                   placeholder="Full name as per bank passbook"
                   value={bankDetails.accountHolderName}
                   onChange={(e) =>
-                    setBankDetails({ ...bankDetails, accountHolderName: e.target.value })
+                    setBankDetails({
+                      ...bankDetails,
+                      accountHolderName: e.target.value,
+                    })
                   }
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-purple-500"
                 />
@@ -1136,7 +1300,10 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
                     placeholder="Bank A/C Number"
                     value={bankDetails.accountNumber}
                     onChange={(e) =>
-                      setBankDetails({ ...bankDetails, accountNumber: e.target.value })
+                      setBankDetails({
+                        ...bankDetails,
+                        accountNumber: e.target.value,
+                      })
                     }
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs font-mono bg-white focus:ring-2 focus:ring-purple-500"
                   />
@@ -1152,7 +1319,10 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
                     placeholder="e.g. SBIN0001234"
                     value={bankDetails.ifscCode}
                     onChange={(e) =>
-                      setBankDetails({ ...bankDetails, ifscCode: e.target.value.toUpperCase() })
+                      setBankDetails({
+                        ...bankDetails,
+                        ifscCode: e.target.value.toUpperCase(),
+                      })
                     }
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs font-mono uppercase bg-white focus:ring-2 focus:ring-purple-500"
                   />
@@ -1220,7 +1390,11 @@ function RequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails
               disabled={submitting || !isAmountValid}
               className="px-5 py-2 text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm disabled:opacity-50 cursor-pointer"
             >
-              {submitting ? 'Submitting...' : reapplyData ? 'Submit Reapplication' : 'Submit Payout Request'}
+              {submitting
+                ? 'Submitting...'
+                : reapplyData
+                  ? 'Submit Reapplication'
+                  : 'Submit Payout Request'}
             </button>
           </div>
         </form>
