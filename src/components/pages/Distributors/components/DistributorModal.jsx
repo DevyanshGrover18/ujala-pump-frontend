@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, User, CreditCard } from 'lucide-react';
+import AccountDetailsForm from '../../../common/AccountDetailsForm';
 
 const DistributorModal = ({
   isOpen,
@@ -16,6 +17,7 @@ const DistributorModal = ({
   onDistrictChange,
   onLocationChange,
 }) => {
+  const [activeTab, setActiveTab] = useState('basic'); // 'basic' | 'account'
   const [phoneError, setPhoneError] = useState('');
 
   const handlePhoneChange = (value) => {
@@ -50,8 +52,39 @@ const DistributorModal = ({
             <X className="h-6 w-6" />
           </button>
         </div>
+
+        {/* Tab Navigation */}
+        <div className="flex border-b border-gray-200 mb-5">
+          <button
+            type="button"
+            onClick={() => setActiveTab('basic')}
+            className={`pb-2.5 px-4 font-semibold text-sm transition-all border-b-2 flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'basic'
+                ? 'border-[#4d55f5] text-[#4d55f5]'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <User className="w-4 h-4" />
+            <span>Basic Details</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('account')}
+            className={`pb-2.5 px-4 font-semibold text-sm transition-all border-b-2 flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'account'
+                ? 'border-[#4d55f5] text-[#4d55f5]'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <CreditCard className="w-4 h-4" />
+            <span>Account / UPI Details</span>
+          </button>
+        </div>
+
         <form onSubmit={onSubmit}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {activeTab === 'basic' && (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Name *
@@ -379,12 +412,23 @@ const DistributorModal = ({
               */}
             </div>
           </div>
+          </>
+          )}
+
+          {activeTab === 'account' && (
+            <AccountDetailsForm
+              savedPayoutDetails={distributor.savedPayoutDetails}
+              onChange={(details) =>
+                onChange({ ...distributor, savedPayoutDetails: details })
+              }
+            />
+          )}
 
           <div className="mt-8">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full px-6 py-3 bg-[#8B8FFF] text-white rounded-xl hover:bg-[#7B7FFF] transition-colors font-medium flex items-center justify-center"
+              className="w-full px-6 py-3 bg-[#8B8FFF] text-white rounded-xl hover:bg-[#7B7FFF] transition-colors font-medium flex items-center justify-center cursor-pointer"
             >
               {isSubmitting ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>

@@ -63,8 +63,6 @@ export default function PlumberWallet() {
   const [statusFilter, setStatusFilter] = useState('All');
 
   // Modals
-  const [showRequestPayoutModal, setShowRequestPayoutModal] = useState(false);
-  const [reapplyPayoutData, setReapplyPayoutData] = useState(null);
   const [selectedPayoutDetail, setSelectedPayoutDetail] = useState(null);
   const [showReapplyIncentiveModal, setShowReapplyIncentiveModal] = useState(false);
   const [selectedIncentiveToReapply, setSelectedIncentiveToReapply] = useState(null);
@@ -199,19 +197,6 @@ export default function PlumberWallet() {
         </div>
 
         <div className="flex items-center gap-2">
-          {showIncentive && (
-            <button
-              onClick={() => {
-                setReapplyPayoutData(null);
-                setShowRequestPayoutModal(true);
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition-all text-sm"
-            >
-              <ArrowUpRight className="w-4 h-4" />
-              <span>Request Payout</span>
-            </button>
-          )}
-
           <button
             onClick={fetchData}
             disabled={loading}
@@ -342,7 +327,7 @@ export default function PlumberWallet() {
               },
               {
                 id: 'Approved',
-                label: 'Paid',
+                label: activeTab === 'claims' ? 'Approved' : 'Paid',
                 count: activeTab === 'claims' ? counts.claimsApproved : counts.payoutsApproved,
               },
               {
@@ -451,7 +436,7 @@ export default function PlumberWallet() {
                           }`}
                         >
                           <StatusIcon className="w-3.5 h-3.5" />
-                          {claim.status === 'Approval Pending' ? 'Pending' : claim.status === 'Approved' ? 'Paid' : claim.status}
+                          {claim.status === 'Approval Pending' ? 'Pending' : claim.status}
                         </span>
                         {claim.status === 'Rejected' && claim.rejectionReason && (
                           <span className="text-[10px] text-rose-500 block mt-1 max-w-[150px] mx-auto truncate" title={claim.rejectionReason}>
@@ -569,22 +554,9 @@ export default function PlumberWallet() {
                           </div>
                         )}
                         {payout.status === 'Rejected' && (
-                          <div className="space-y-1.5">
-                            <span className="text-rose-600 font-medium block max-w-xs truncate" title={payout.rejectionReason}>
-                              Reason: {payout.rejectionReason || 'Rejected'}
-                            </span>
-                            <button
-                              onClick={() => {
-                                setReapplyPayoutData(payout);
-                                setShowRequestPayoutModal(true);
-                              }}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold text-xs rounded-lg shadow-xs transition-all hover:scale-105"
-                              title="Reapply with corrected details"
-                            >
-                              <RefreshCw className="w-3 h-3" />
-                              <span>Reapply</span>
-                            </button>
-                          </div>
+                          <span className="text-rose-600 font-medium block max-w-xs truncate text-xs" title={payout.rejectionReason}>
+                            Reason: {payout.rejectionReason || 'Rejected'}
+                          </span>
                         )}
                         {payout.status === 'Pending' && (
                           <span className="text-amber-600 font-medium text-xs">
@@ -641,24 +613,6 @@ export default function PlumberWallet() {
         )}
       </div>
 
-      {/* Request Payout Modal */}
-      {showRequestPayoutModal && (
-        <PlumberRequestPayoutModal
-          availableBalance={currentWalletBalance}
-          minThreshold={minThreshold}
-          savedPayoutDetails={savedPayoutDetails}
-          reapplyData={reapplyPayoutData}
-          onClose={() => {
-            setShowRequestPayoutModal(false);
-            setReapplyPayoutData(null);
-          }}
-          onSuccess={() => {
-            setShowRequestPayoutModal(false);
-            setReapplyPayoutData(null);
-            fetchData();
-          }}
-        />
-      )}
 
       {/* Reapply Incentive Modal */}
       {showReapplyIncentiveModal && (
@@ -705,367 +659,6 @@ export default function PlumberWallet() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-// -------------------------------------------------------------
-// Plumber Request Payout Modal Component
-// -------------------------------------------------------------
-function PlumberRequestPayoutModal({ availableBalance, minThreshold, savedPayoutDetails, reapplyData, onClose, onSuccess }) {
-  const getInitialDetails = () => {
-    if (reapplyData) {
-      return {
-        payoutMethod: reapplyData.payoutMethod || 'Bank',
-        bankDetails: reapplyData.bankDetails || {},
-        upiId: reapplyData.upiId || '',
-      };
-    }
-    if (savedPayoutDetails) return savedPayoutDetails;
-    try {
-      const local = localStorage.getItem('saved_payout_details');
-      if (local) return JSON.parse(local);
-    } catch (e) {}
-    return null;
-  };
-
-  const initialDetails = getInitialDetails();
-  const [amount, setAmount] = useState(
-    reapplyData?.amount ? String(reapplyData.amount) : availableBalance > 0 ? String(availableBalance) : ''
-  );
-  const [payoutMethod, setPayoutMethod] = useState(initialDetails?.payoutMethod || 'Bank'); // 'Bank' | 'UPI'
-  const [bankDetails, setBankDetails] = useState({
-    accountNumber: initialDetails?.bankDetails?.accountNumber || '',
-    ifscCode: initialDetails?.bankDetails?.ifscCode || '',
-    bankName: initialDetails?.bankDetails?.bankName || '',
-    accountHolderName: initialDetails?.bankDetails?.accountHolderName || '',
-  });
-  const [upiId, setUpiId] = useState(initialDetails?.upiId || '');
-  const [notes, setNotes] = useState(reapplyData?.notes || '');
-  const [saveDetails, setSaveDetails] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (!reapplyData && savedPayoutDetails) {
-      if (savedPayoutDetails.payoutMethod) {
-        setPayoutMethod(savedPayoutDetails.payoutMethod);
-      }
-      if (savedPayoutDetails.bankDetails) {
-        setBankDetails((prev) => ({
-          accountNumber: savedPayoutDetails.bankDetails.accountNumber || prev.accountNumber,
-          ifscCode: savedPayoutDetails.bankDetails.ifscCode || prev.ifscCode,
-          bankName: savedPayoutDetails.bankDetails.bankName || prev.bankName,
-          accountHolderName: savedPayoutDetails.bankDetails.accountHolderName || prev.accountHolderName,
-        }));
-      }
-      if (savedPayoutDetails.upiId) {
-        setUpiId(savedPayoutDetails.upiId);
-      }
-    }
-  }, [savedPayoutDetails, reapplyData]);
-
-  const numAmount = Number(amount) || 0;
-  const isAmountValid = numAmount >= minThreshold && numAmount <= availableBalance;
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!isAmountValid) {
-      if (numAmount < minThreshold) {
-        return toast.error(`Minimum withdrawal amount is ₹${minThreshold.toLocaleString('en-IN')}`);
-      }
-      if (numAmount > availableBalance) {
-        return toast.error(`Amount exceeds available balance of ₹${availableBalance.toLocaleString('en-IN')}`);
-      }
-      return;
-    }
-
-    if (payoutMethod === 'UPI' && !upiId.trim()) {
-      return toast.error('Please enter your UPI ID');
-    }
-
-    if (payoutMethod === 'Bank') {
-      if (!bankDetails.accountNumber.trim() || !bankDetails.ifscCode.trim() || !bankDetails.accountHolderName.trim()) {
-        return toast.error('Please fill all required bank account fields');
-      }
-    }
-
-    setSubmitting(true);
-    try {
-      const token = localStorage.getItem('token');
-      await axios.post(
-        `${API}/api/payouts/request`,
-        {
-          amount: numAmount,
-          payoutMethod,
-          bankDetails: payoutMethod === 'Bank' ? bankDetails : undefined,
-          upiId: payoutMethod === 'UPI' ? upiId.trim() : undefined,
-          notes: notes.trim(),
-          saveDetails,
-          isReapplication: !!reapplyData,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (saveDetails) {
-        try {
-          localStorage.setItem(
-            'saved_payout_details',
-            JSON.stringify({
-              payoutMethod,
-              bankDetails: payoutMethod === 'Bank' ? bankDetails : undefined,
-              upiId: payoutMethod === 'UPI' ? upiId.trim() : undefined,
-            })
-          );
-        } catch (e) {}
-      }
-
-      toast.success(reapplyData ? 'Payout reapplication submitted!' : 'Payout request submitted successfully!');
-      window.dispatchEvent(new Event('payouts-updated'));
-      onSuccess();
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.message || 'Failed to submit payout request');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-200">
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <div className="flex items-center gap-2.5">
-            <div className={`p-2 rounded-xl ${reapplyData ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>
-              {reapplyData ? <RefreshCw className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">
-                {reapplyData ? 'Reapply for Incentive Payout' : 'Request Incentive Payout'}
-              </h2>
-              <p className="text-xs text-gray-500">
-                {reapplyData
-                  ? 'Update your details to re-submit your payout request'
-                  : 'Withdraw your earned incentives directly to your account'}
-              </p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {/* Reapply Banner */}
-          {reapplyData && (
-            <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold block text-xs text-amber-900 mb-0.5">Reapplying for Payout</span>
-                <span className="text-amber-800 text-[11px] leading-relaxed block">
-                  Previous request for <strong>₹{reapplyData.amount?.toLocaleString('en-IN')}</strong> was rejected: <strong className="text-rose-700">{reapplyData.rejectionReason || 'No reason provided'}</strong>. Please review and update your payment details below before resubmitting.
-                </span>
-              </div>
-            </div>
-          )}
-
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex justify-between items-center text-xs">
-            <div>
-              <span className="text-gray-400 block font-bold uppercase">Available Balance</span>
-              <span className="text-lg font-black text-gray-900">
-                ₹{availableBalance.toLocaleString('en-IN')}
-              </span>
-            </div>
-            <div className="text-right">
-              <span className="text-gray-400 block font-bold uppercase">Min Threshold</span>
-              <span className="font-bold text-purple-700">
-                ₹{minThreshold.toLocaleString('en-IN')}
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-                Payout Amount (₹) *
-              </label>
-              <button
-                type="button"
-                onClick={() => setAmount(String(availableBalance))}
-                className="text-xs font-bold text-purple-600 hover:text-purple-700"
-              >
-                Withdraw Max
-              </button>
-            </div>
-            <input
-              type="number"
-              min={minThreshold}
-              max={availableBalance}
-              required
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder={`Min. ₹${minThreshold}`}
-              className={`w-full px-3.5 py-2.5 border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 ${
-                amount && !isAmountValid
-                  ? 'border-rose-300 focus:ring-rose-500 bg-rose-50/30'
-                  : 'border-gray-200 focus:ring-purple-500'
-              }`}
-            />
-          </div>
-
-          {/* Payment Method Selector */}
-          <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-              Payout Method *
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setPayoutMethod('Bank')}
-                className={`flex items-center gap-2.5 p-3 rounded-xl border-2 font-bold text-xs transition-all ${
-                  payoutMethod === 'Bank'
-                    ? 'border-purple-600 bg-purple-50 text-purple-900'
-                    : 'border-gray-200 hover:border-gray-300 text-gray-600'
-                }`}
-              >
-                <Building2 className="w-4 h-4" />
-                <span>Bank Account</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPayoutMethod('UPI')}
-                className={`flex items-center gap-2.5 p-3 rounded-xl border-2 font-bold text-xs transition-all ${
-                  payoutMethod === 'UPI'
-                    ? 'border-purple-600 bg-purple-50 text-purple-900'
-                    : 'border-gray-200 hover:border-gray-300 text-gray-600'
-                }`}
-              >
-                <QrCode className="w-4 h-4" />
-                <span>UPI ID / VPA</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Dynamic Details Form */}
-          {payoutMethod === 'UPI' ? (
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                UPI ID (Virtual Payment Address) *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. yourname@okhdfcbank or 9876543210@paytm"
-                value={upiId}
-                onChange={(e) => setUpiId(e.target.value)}
-                className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-          ) : (
-            <div className="space-y-3 bg-gray-50/60 p-3.5 rounded-xl border border-gray-200">
-              <div>
-                <label className="block text-[11px] font-bold text-gray-600 uppercase mb-1">
-                  Account Holder Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Name as per bank passbook"
-                  value={bankDetails.accountHolderName}
-                  onChange={(e) =>
-                    setBankDetails({ ...bankDetails, accountHolderName: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-600 uppercase mb-1">
-                    Account Number *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Bank account number"
-                    value={bankDetails.accountNumber}
-                    onChange={(e) =>
-                      setBankDetails({ ...bankDetails, accountNumber: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs font-mono bg-white focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-600 uppercase mb-1">
-                    IFSC Code *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. SBIN0001234"
-                    value={bankDetails.ifscCode}
-                    onChange={(e) =>
-                      setBankDetails({ ...bankDetails, ifscCode: e.target.value.toUpperCase() })
-                    }
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs font-mono uppercase bg-white focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* User Notes */}
-          <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-              Note for Admin (Optional)
-            </label>
-            <input
-              type="text"
-              placeholder="Any additional instructions..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-purple-500"
-            />
-          </div>
-
-          {/* Save payment details checkbox */}
-          <div className="flex items-center gap-2.5 p-3 bg-purple-50/70 border border-purple-100 rounded-xl">
-            <input
-              type="checkbox"
-              id="plumberSaveDetails"
-              checked={saveDetails}
-              onChange={(e) => setSaveDetails(e.target.checked)}
-              className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
-            />
-            <label
-              htmlFor="plumberSaveDetails"
-              className="text-xs font-semibold text-gray-700 cursor-pointer select-none"
-            >
-              Save payment details for future payouts
-            </label>
-          </div>
-
-          <div className="flex justify-end gap-2.5 pt-3 border-t border-gray-100">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting || !isAmountValid}
-              className="px-5 py-2 text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm disabled:opacity-50 cursor-pointer"
-            >
-              {submitting ? 'Submitting...' : reapplyData ? 'Submit Reapplication' : 'Submit Payout Request'}
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
   );
 }

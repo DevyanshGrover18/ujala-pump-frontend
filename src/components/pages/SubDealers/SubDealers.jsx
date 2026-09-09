@@ -47,6 +47,16 @@ function SubDealers() {
     password: '',
     eligibleForIncentive: true,
     eligibleForPoints: true,
+    savedPayoutDetails: {
+      payoutMethod: 'Bank',
+      bankDetails: {
+        accountHolderName: '',
+        accountNumber: '',
+        ifscCode: '',
+        bankName: '',
+      },
+      upiId: '',
+    },
   });
 
   const [cities, setCities] = useState([]);
@@ -202,6 +212,16 @@ function SubDealers() {
       password: '',
       eligibleForIncentive: item.eligibleForIncentive !== false,
       eligibleForPoints: item.eligibleForPoints !== false,
+      savedPayoutDetails: item.savedPayoutDetails || {
+        payoutMethod: 'Bank',
+        bankDetails: {
+          accountHolderName: '',
+          accountNumber: '',
+          ifscCode: '',
+          bankName: '',
+        },
+        upiId: '',
+      },
     });
     setIsEditing(true);
     setShowModal(true);
@@ -229,6 +249,16 @@ function SubDealers() {
       password: '',
       eligibleForIncentive: true,
       eligibleForPoints: true,
+      savedPayoutDetails: {
+        payoutMethod: 'Bank',
+        bankDetails: {
+          accountHolderName: '',
+          accountNumber: '',
+          ifscCode: '',
+          bankName: '',
+        },
+        upiId: '',
+      },
     });
   };
 

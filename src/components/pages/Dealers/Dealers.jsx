@@ -96,6 +96,16 @@ function Dealers() {
     password: '',
     eligibleForIncentive: true,
     eligibleForPoints: true,
+    savedPayoutDetails: {
+      payoutMethod: 'Bank',
+      bankDetails: {
+        accountHolderName: '',
+        accountNumber: '',
+        ifscCode: '',
+        bankName: '',
+      },
+      upiId: '',
+    },
   });
 
   useEffect(() => {
@@ -198,6 +208,16 @@ function Dealers() {
       password: '',
       eligibleForIncentive: dealer.eligibleForIncentive !== false,
       eligibleForPoints: dealer.eligibleForPoints !== false,
+      savedPayoutDetails: dealer.savedPayoutDetails || {
+        payoutMethod: 'Bank',
+        bankDetails: {
+          accountHolderName: '',
+          accountNumber: '',
+          ifscCode: '',
+          bankName: '',
+        },
+        upiId: '',
+      },
     });
     setIsEditing(true);
     setShowDealerModal(true);
@@ -225,6 +245,16 @@ function Dealers() {
       password: '',
       eligibleForIncentive: true,
       eligibleForPoints: true,
+      savedPayoutDetails: {
+        payoutMethod: 'Bank',
+        bankDetails: {
+          accountHolderName: '',
+          accountNumber: '',
+          ifscCode: '',
+          bankName: '',
+        },
+        upiId: '',
+      },
     });
   };
 

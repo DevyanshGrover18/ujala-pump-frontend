@@ -213,9 +213,9 @@ export default function ModelWiseIncentivesView({
               'Model Name': mg.modelName,
               'Total Products Sold': mg.count,
               'Total Incentives (₹)': mg.totalIncentive,
-              'Paid Incentives (₹)': mg.approvedIncentive,
+              'Approved Incentives (₹)': mg.approvedIncentive,
               'Pending Incentives (₹)': mg.pendingIncentive,
-              'Paid Count': mg.approvedCount,
+              'Approved Count': mg.approvedCount,
               'Pending Count': mg.pendingCount,
               'Total Points': mg.totalPoints,
             }))}
@@ -304,7 +304,7 @@ export default function ModelWiseIncentivesView({
                       <div className="flex items-center gap-1.5 text-xs">
                         {group.approvedCount > 0 && (
                           <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/70 text-[11px] font-medium">
-                            {group.approvedCount} Paid (₹{group.approvedIncentive.toLocaleString('en-IN')})
+                            {group.approvedCount} Approved (₹{group.approvedIncentive.toLocaleString('en-IN')})
                           </span>
                         )}
                         {group.pendingCount > 0 && (
@@ -387,7 +387,7 @@ export default function ModelWiseIncentivesView({
                 </p>
               </div>
               <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
-                <p className="text-[11px] font-medium text-slate-500">Paid / Approved</p>
+                <p className="text-[11px] font-medium text-slate-500">Approved</p>
                 <p className="text-lg font-bold text-emerald-800 mt-0.5 font-mono">
                   ₹{selectedModel.approvedIncentive.toLocaleString('en-IN')}{' '}
                   <span className="text-xs font-normal text-slate-500">({selectedModel.approvedCount})</span>
@@ -433,7 +433,7 @@ export default function ModelWiseIncentivesView({
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    {st === 'Approved' ? 'Paid' : st === 'Approval Pending' ? 'Pending' : st}
+                    {st === 'Approval Pending' ? 'Pending' : st}
                   </button>
                 ))}
               </div>
@@ -448,7 +448,7 @@ export default function ModelWiseIncentivesView({
                   'Incentive (₹)': item.incentiveAmount || 0,
                   'Points': item.points || 0,
                   'Claim Date': item.claimDate ? new Date(item.claimDate).toLocaleDateString('en-IN') : 'N/A',
-                  'Status': item.status === 'Approved' ? 'Paid' : item.status,
+                  'Status': item.status === 'Approval Pending' ? 'Pending' : item.status,
                   'Approved By': item.groupProcessedBy?.accountsMember?.name || item.groupProcessedBy?.name || item.groupProcessedBy?.username || (item.groupProcessedBy?.role === 'admin' ? 'Admin' : 'N/A'),
                 }))}
               />
@@ -547,7 +547,7 @@ export default function ModelWiseIncentivesView({
                               }`}
                             >
                               <StatusIcon className="w-3 h-3" />
-                              {item.status === 'Approved' ? 'Paid' : item.status}
+                              {item.status === 'Approval Pending' ? 'Pending' : item.status}
                             </span>
                           </td>
                           <td className="px-4 py-2.5 whitespace-nowrap text-slate-600">

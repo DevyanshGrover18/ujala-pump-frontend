@@ -1,158 +1,123 @@
-import { useState, useEffect, useContext } from 'react';
-import { Building, ShoppingCart, Package, Users, Truck } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import OrderItemsPieChart from './OrderItemsPieChart';
-import SalesHistogram from './SalesHistogram';
 import { AuthContext } from '../../../context/AuthContext';
+import ProgressOverviewCards from './components/ProgressOverviewCards';
+import BusinessKPICards from './components/BusinessKPICards';
+import SalesTrendChart from './components/SalesTrendChart';
+import OrderItemsPieChart from './OrderItemsPieChart';
+import TopSellingModels from './components/TopSellingModels';
+import RecentOrdersTable from './components/RecentOrdersTable';
+import LowStockAlertCard from './components/LowStockAlertCard';
+import RecentActivityTimeline from './components/RecentActivityTimeline';
+import PartnerSummaryCard from './components/PartnerSummaryCard';
+import PendingActionsCard from './components/PendingActionsCard';
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
-  const { isAdmin, hasPrivilege, hasAnyPrivilege } = useContext(AuthContext);
+  const { user, isAdmin, hasAnyPrivilege } = useContext(AuthContext);
 
-  const [counts, setCounts] = useState({
-    factories: 0,
-    orders: 0,
-    products: 0,
-    dealers: 0,
-    distributors: 0,
-  });
-  const [orderStats, setOrderStats] = useState({
-    total: 0,
-    pending: 0,
-    completed: 0,
-    dispatched: 0,
-  });
+  const [overviewData, setOverviewData] = useState(null);
 
   const cardPathToSection = {
     '/factory-management': 'factories',
-    '/management': 'management', // Assuming Models fall under 'management'
+    '/management': 'management',
     '/distributors': 'distributors',
     '/dealers': 'dealers',
     '/orders': 'orders',
-    // Add other mappings as needed for any future cards
+    '/inventory': 'products',
   };
 
   const canAccessCard = (path) => {
-    if (isAdmin) return true; // Superadmin can see everything
-
+    if (isAdmin) return true;
     const section = cardPathToSection[path];
-    if (!section) return false; // If a card's path isn't mapped, hide it by default for non-admins
-
+    if (!section) return false;
     return hasAnyPrivilege(section);
   };
 
-  // 2. Refactor useEffect to fetch all data and handle loading state correctly
   useEffect(() => {
-    const fetchAllData = async () => {
+    const fetchOverview = async () => {
       try {
-        // Use Promise.all to fetch from both endpoints concurrently
-        const [countsResponse, statsResponse] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_API_URL}/api/dashboard/counts`),
-          axios.get(`${import.meta.env.VITE_API_URL}/api/dashboard/stats`),
-        ]);
-
-        // Set state with the data from both responses
-        setCounts(countsResponse.data);
-        setOrderStats(statsResponse.data);
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/dashboard/overview`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setOverviewData(res.data);
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error('Error fetching dashboard overview:', error);
       } finally {
-        // This ensures loading is set to false even if an error occurs
         setLoading(false);
       }
     };
 
-    fetchAllData();
+    fetchOverview();
   }, []);
 
-  const cardData = [
-    {
-      title: 'Total Factories',
-      count: counts.factories,
-      icon: <Building className="w-5 h-5" />,
-      bg: '#7C3AED',
-      path: '/factory-management',
-    },
-    {
-      title: 'Total Models',
-      count: counts.models,
-      icon: <Package className="w-5 h-5" />,
-      bg: '#EF4444',
-      path: '/management',
-    },
-    {
-      title: 'Total Distributors',
-      count: counts.distributors,
-      icon: <Truck className="w-5 h-5" />,
-      bg: '#F59E0B',
-      path: '/distributors',
-    },
-    {
-      title: 'Total Dealers',
-      count: counts.dealers,
-      icon: <Users className="w-5 h-5" />,
-      bg: '#FB923C',
-      path: '/dealers',
-    },
-    {
-      title: 'Total Orders',
-      count: counts.orders,
-      icon: <ShoppingCart className="w-5 h-5" />,
-      bg: '#0EA5E9',
-      path: '/orders',
-    },
-    // { title: 'Pending Orders', count: orderStats.pending, icon: <ShoppingCart className="w-5 h-5" />, bg: '#F59E0B', path: '/orders' },
-    // { title: 'Completed Orders', count: orderStats.completed, icon: <ShoppingCart className="w-5 h-5" />, bg: '#10B981', path: '/orders' },
-    // { title: 'Dispatched Orders', count: orderStats.dispatched, icon: <Truck className="w-5 h-5" />, bg: '#7C3AED', path: '/orders' },
-  ];
-
   return (
-    <div className="p-4">
-      <div className="p-1 bg-white min-h-50 mt-3 rounded-xl">
-        <div className="p-3 sm:p-6">
-          <h1 className="mb-5 font-bold text-lg">Progress Overview</h1>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-1">
-            {cardData
-              .filter((card) => canAccessCard(card.path)) // Filter cards based on permissions
-              .map((card, index) => (
-                <Link to={card.path} key={index}>
-                  <div
-                    className="rounded-xl shadow-card p-4 sm:p-6 text-white transition-transform hover:scale-102"
-                    style={{ background: card.bg }}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="bg-white p-2 rounded-md inline-flex items-center justify-center mb-3 shadow-sm">
-                          <span style={{ color: card.bg }}>{card.icon}</span>
-                        </div>
-                        <h3 className="text-sm font-semibold mb-1 text-white/90">
-                          {card.title}
-                        </h3>
-                        {loading ? (
-                          <div className="animate-pulse bg-white/20 h-8 w-16 rounded-md"></div>
-                        ) : (
-                          <p className="text-2xl sm:text-2xl font-bold">
-                            {card.count}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-          </div>
+    <div className="p-4 sm:p-6 space-y-6 max-w-400 mx-auto">
+      {/* 1. Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Welcome back, {user?.name || user?.username || 'Admin'}! Here's what's happening with your business today.
+          </p>
         </div>
       </div>
 
-      {canAccessCard('/orders') && (
-        <div className="flex flex-col lg:flex-row gap-4 mt-4">
-          <div className="bg-white w-full rounded-xl p-5">
-            <h1 className="mb-5 font-bold text-lg">Order Items Status</h1>
-            <OrderItemsPieChart />
-          </div>
+      {/* 2. Progress Overview (6 Cards) */}
+      <section>
+        <ProgressOverviewCards
+          data={overviewData?.progressOverview}
+          loading={loading}
+          canAccessCard={canAccessCard}
+        />
+      </section>
+
+      {/* 3. Business KPI Overview (4 Cards) */}
+      <section>
+        <BusinessKPICards
+          kpiData={overviewData?.businessKPIs}
+          loading={loading}
+        />
+      </section>
+
+      {/* 4. Analytics & Performance Row (Order Status, Sales Trend, Top Selling Models) */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-1">
+          <OrderItemsPieChart />
         </div>
-      )}
+        <div className="lg:col-span-1">
+          <SalesTrendChart />
+        </div>
+        <div className="lg:col-span-1">
+          <TopSellingModels />
+        </div>
+      </section>
+
+      {/* 5. Operations Row (Recent Orders, Low Stock Alerts, Recent Activity) */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-1">
+          <RecentOrdersTable />
+        </div>
+        <div className="lg:col-span-1">
+          <LowStockAlertCard />
+        </div>
+        <div className="lg:col-span-1">
+          <RecentActivityTimeline />
+        </div>
+      </section>
+
+      {/* 6. Partner Summary */}
+      <section>
+        <PartnerSummaryCard />
+      </section>
+
+      {/* 7. Pending Actions Action Center */}
+      <section>
+        <PendingActionsCard />
+      </section>
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Plus, X, FilePenLine, Trash2, ShieldAlert } from 'lucide-react';
+import { Search, Plus, X, FilePenLine, Trash2, ShieldAlert, User, CreditCard } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import AccountDetailsForm from '../../common/AccountDetailsForm';
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api/plumbers`;
 
@@ -13,6 +14,7 @@ export default function Plumbers() {
   const [selectedPlumber, setSelectedPlumber] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState('basic'); // 'basic' | 'account'
 
   // States & districts for address drop-down
   const [states, setStates] = useState([]);
@@ -31,6 +33,16 @@ export default function Plumbers() {
     username: '',
     password: '',
     status: 'Active',
+    savedPayoutDetails: {
+      payoutMethod: 'Bank',
+      bankDetails: {
+        accountHolderName: '',
+        accountNumber: '',
+        ifscCode: '',
+        bankName: '',
+      },
+      upiId: '',
+    },
   });
 
   const fetchPlumbers = async () => {
@@ -85,6 +97,7 @@ export default function Plumbers() {
   const handleOpenAdd = () => {
     setSelectedPlumber(null);
     setIsEditing(false);
+    setActiveTab('basic');
     setFormData({
       name: '',
       phone: '',
@@ -97,6 +110,16 @@ export default function Plumbers() {
       username: '',
       password: '',
       status: 'Active',
+      savedPayoutDetails: {
+        payoutMethod: 'Bank',
+        bankDetails: {
+          accountHolderName: '',
+          accountNumber: '',
+          ifscCode: '',
+          bankName: '',
+        },
+        upiId: '',
+      },
     });
     setDistricts([]);
     setShowModal(true);
@@ -105,6 +128,7 @@ export default function Plumbers() {
   const handleOpenEdit = async (plumber) => {
     setSelectedPlumber(plumber);
     setIsEditing(true);
+    setActiveTab('basic');
     setFormData({
       name: plumber.name || '',
       phone: plumber.phone || '',
@@ -117,6 +141,16 @@ export default function Plumbers() {
       username: plumber.username || '',
       password: '',
       status: plumber.status || 'Active',
+      savedPayoutDetails: plumber.savedPayoutDetails || {
+        payoutMethod: 'Bank',
+        bankDetails: {
+          accountHolderName: '',
+          accountNumber: '',
+          ifscCode: '',
+          bankName: '',
+        },
+        upiId: '',
+      },
     });
 
     if (plumber.state) {
@@ -338,9 +372,38 @@ export default function Plumbers() {
               </button>
             </div>
 
+            {/* Tab Navigation */}
+            <div className="flex border-b border-gray-200 mb-5">
+              <button
+                type="button"
+                onClick={() => setActiveTab('basic')}
+                className={`pb-2.5 px-4 font-semibold text-sm transition-all border-b-2 flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'basic'
+                    ? 'border-[#4d55f5] text-[#4d55f5]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <User className="w-4 h-4" />
+                <span>Basic Details</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('account')}
+                className={`pb-2.5 px-4 font-semibold text-sm transition-all border-b-2 flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'account'
+                    ? 'border-[#4d55f5] text-[#4d55f5]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>Account / UPI Details</span>
+              </button>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+              {activeTab === 'basic' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
                   <label className="block text-gray-700 text-sm font-medium mb-1" htmlFor="name">
                     Full Name *
                   </label>
@@ -522,19 +585,31 @@ export default function Plumbers() {
                   </div>
                 )}
               </div>
+              )}
+
+              {activeTab === 'account' && (
+                <div className="py-2">
+                  <AccountDetailsForm
+                    savedPayoutDetails={formData.savedPayoutDetails}
+                    onChange={(details) =>
+                      setFormData((prev) => ({ ...prev, savedPayoutDetails: details }))
+                    }
+                  />
+                </div>
+              )}
 
               <div className="flex gap-3 pt-4 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-grow px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 text-sm font-semibold transition-colors text-center"
+                  className="flex-grow px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 text-sm font-semibold transition-colors text-center cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-grow bg-[#4d55f5] hover:bg-[#3d45e5] text-white py-2.5 px-4 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+                  className="flex-grow bg-[#4d55f5] hover:bg-[#3d45e5] text-white py-2.5 px-4 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? 'Saving...' : 'Save Plumber'}
                 </button>

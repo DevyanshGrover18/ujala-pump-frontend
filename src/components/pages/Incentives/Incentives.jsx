@@ -333,7 +333,7 @@ function VerifyModal({ group, onClose, onAction }) {
               <span
                 className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[d.status] || ''}`}
               >
-                {d.status === 'Approved' ? 'Paid' : d.status}
+                {d.status === 'Approval Pending' ? 'Pending' : d.status}
               </span>
               {d.rejectionReason && (
                 <span className="text-red-600 text-xs">
@@ -794,7 +794,7 @@ export default function Incentives() {
         {[
           { label: 'Total', value: stats.total, color: 'text-gray-900' },
           { label: 'Pending', value: stats.pending, color: 'text-yellow-600' },
-          { label: 'Paid', value: stats.approved, color: 'text-emerald-600' },
+          { label: 'Approved', value: stats.approved, color: 'text-emerald-600' },
           { label: 'Rejected', value: stats.rejected, color: 'text-rose-600' },
         ].map((s) => (
           <div
@@ -870,7 +870,7 @@ export default function Incentives() {
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    {s === 'Approved' ? 'Paid' : s === 'Approval Pending' ? 'Pending' : s}
+                    {s === 'Approval Pending' ? 'Pending' : s}
                   </button>
                 ))}
               </div>
@@ -1126,7 +1126,7 @@ export default function Incentives() {
                               }`}
                             >
                               <SIcon className="w-3 h-3" />
-                              <span>{g.status === 'Approval Pending' ? 'Pending' : g.status === 'Approved' ? 'Paid' : g.status}</span>
+                              <span>{g.status === 'Approval Pending' ? 'Pending' : g.status}</span>
                             </span>
                             {g.reappliedAt && (
                               <span
