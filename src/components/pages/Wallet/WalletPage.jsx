@@ -270,6 +270,7 @@ export default function WalletPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
             <Wallet className="w-7 h-7 text-[#7C3AED]" />
+            <span>My Wallet</span>
           </h1>
           <p className="text-sm text-gray-500 mt-1">
             Track your earned incentives, claims history, and payout

@@ -18,12 +18,12 @@ import {
   ArrowUpRight,
   Building2,
   QrCode,
+  CreditCard,
   X,
   FileCheck,
   RotateCcw,
 } from 'lucide-react';
 import ReapplyIncentiveModal from '../Wallet/components/ReapplyIncentiveModal';
-
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -79,7 +79,7 @@ export default function PlumberWallet() {
         axios.get(`${API}/api/payouts/thresholds`, { headers }).catch(() => ({ data: null })),
       ]);
 
-      setData(claimsRes.data);
+      setData(claimsRes.data || { claims: [], wallet: { incentive: 0, points: 0 } });
       const fetchedPayouts = Array.isArray(payoutsRes.data)
         ? payoutsRes.data
         : payoutsRes.data?.payouts || [];
@@ -108,28 +108,38 @@ export default function PlumberWallet() {
   const currentWalletBalance = data.wallet?.incentive ?? 0;
 
   // Filter items
-  const activeItems = activeTab === 'installations' ? data.claims : payoutsHistory;
+  const activeItems = activeTab === 'claims' ? (data.claims || []) : (payoutsHistory || []);
   const filteredItems = activeItems.filter((item) => {
-    const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
-    const term = search.toLowerCase().trim();
-    if (!term) return matchesStatus;
+    const matchesStatus =
+      statusFilter === 'All'
+        ? true
+        : activeTab === 'claims'
+        ? (item.status === 'Approval Pending' ? 'Pending' : item.status) === statusFilter
+        : item.status === statusFilter;
 
-    if (activeTab === 'installations') {
+    if (!matchesStatus) return false;
+
+    const term = search.toLowerCase().trim();
+    if (!term) return true;
+
+    if (activeTab === 'claims') {
+      const representativeItem = item.items?.[0] || {};
       return (
-        matchesStatus &&
-        (item.serialNumber?.toLowerCase().includes(term) ||
-          item.modelName?.toLowerCase().includes(term) ||
-          item.customerName?.toLowerCase().includes(term) ||
-          item.customerPhone?.toLowerCase().includes(term) ||
-          item.rejectionReason?.toLowerCase().includes(term))
+        item.serialNumber?.toLowerCase().includes(term) ||
+        representativeItem.serialNumber?.toLowerCase().includes(term) ||
+        item.modelName?.toLowerCase().includes(term) ||
+        representativeItem.model?.name?.toLowerCase().includes(term) ||
+        representativeItem.model?.code?.toLowerCase().includes(term) ||
+        item.customerName?.toLowerCase().includes(term) ||
+        item.customerPhone?.toLowerCase().includes(term) ||
+        item.rejectionReason?.toLowerCase().includes(term)
       );
     } else {
       return (
-        matchesStatus &&
-        (item.referenceId?.toLowerCase().includes(term) ||
-          item.upiId?.toLowerCase().includes(term) ||
-          item.bankDetails?.accountNumber?.toLowerCase().includes(term) ||
-          item.rejectionReason?.toLowerCase().includes(term))
+        item.referenceId?.toLowerCase().includes(term) ||
+        item.upiId?.toLowerCase().includes(term) ||
+        item.bankDetails?.accountNumber?.toLowerCase().includes(term) ||
+        item.rejectionReason?.toLowerCase().includes(term)
       );
     }
   });
@@ -139,15 +149,21 @@ export default function PlumberWallet() {
 
   // Status counts
   const counts = {
-    installationsAll: data.claims.length,
-    installationsPending: data.claims.filter((c) => c.status === 'Approval Pending').length,
-    installationsApproved: data.claims.filter((c) => c.status === 'Approved').length,
-    installationsRejected: data.claims.filter((c) => c.status === 'Rejected').length,
+    claimsAll: data.claims?.length || 0,
+    claimsPending:
+      data.claims?.filter((c) => c.status === 'Approval Pending' || c.status === 'Pending').length || 0,
+    claimsApproved:
+      data.claims?.filter((c) => c.status === 'Approved').length || 0,
+    claimsRejected:
+      data.claims?.filter((c) => c.status === 'Rejected').length || 0,
 
-    payoutsAll: payoutsHistory.length,
-    payoutsPending: payoutsHistory.filter((p) => p.status === 'Pending').length,
-    payoutsApproved: payoutsHistory.filter((p) => p.status === 'Approved').length,
-    payoutsRejected: payoutsHistory.filter((p) => p.status === 'Rejected').length,
+    payoutsAll: payoutsHistory?.length || 0,
+    payoutsPending:
+      payoutsHistory?.filter((p) => p.status === 'Pending').length || 0,
+    payoutsApproved:
+      payoutsHistory?.filter((p) => p.status === 'Approved').length || 0,
+    payoutsRejected:
+      payoutsHistory?.filter((p) => p.status === 'Rejected').length || 0,
   };
 
   // KPI cards
@@ -164,15 +180,15 @@ export default function PlumberWallet() {
     },
     {
       title: 'Pending Verifications',
-      count: counts.installationsPending,
+      count: counts.claimsPending,
       subtitle: 'Awaiting admin approval',
       icon: <Clock className="w-5 h-5" />,
       bg: '#FB923C', // Orange
     },
     {
       title: 'Paid Installations',
-      count: counts.installationsApproved,
-      subtitle: `Out of ${counts.installationsAll} total claims`,
+      count: counts.claimsApproved,
+      subtitle: `Out of ${counts.claimsAll} total claims`,
       icon: <CheckCircle2 className="w-5 h-5" />,
       bg: '#7C3AED', // Purple
     },
@@ -192,7 +208,7 @@ export default function PlumberWallet() {
             </span>
           </div>
           <p className="text-sm text-gray-500 mt-1">
-            Track your installation incentive earnings and request payouts.
+            Track your installation incentive earnings and payout disbursements.
           </p>
         </div>
 
@@ -300,7 +316,7 @@ export default function PlumberWallet() {
               type="text"
               placeholder={
                 activeTab === 'claims'
-                  ? 'Search serial number, model...'
+                  ? 'Search serial number, model, customer...'
                   : 'Search reference ID, UPI, A/C...'
               }
               value={search}
@@ -321,7 +337,7 @@ export default function PlumberWallet() {
                 count: activeTab === 'claims' ? counts.claimsAll : counts.payoutsAll,
               },
               {
-                id: activeTab === 'claims' ? 'Approval Pending' : 'Pending',
+                id: activeTab === 'claims' ? 'Pending' : 'Pending',
                 label: 'Pending',
                 count: activeTab === 'claims' ? counts.claimsPending : counts.payoutsPending,
               },
@@ -368,7 +384,7 @@ export default function PlumberWallet() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5b189b]"></div>
             <p className="text-xs text-gray-400 mt-2 font-medium">Loading...</p>
           </div>
-        ) : paginated.length === 0 ? (
+        ) : paginatedItems.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <Package className="w-12 h-12 mx-auto mb-3 opacity-20 text-[#5b189b]" />
             <p className="text-sm font-bold text-gray-600">
@@ -377,7 +393,7 @@ export default function PlumberWallet() {
             <p className="text-xs text-gray-400 mt-1">
               {activeTab === 'claims'
                 ? 'Claims appear here after you register motor installations.'
-                : 'Submit a payout request to withdraw your incentives.'}
+                : 'Payout requests are automatically processed by accounts.'}
             </p>
           </div>
         ) : activeTab === 'claims' ? (
@@ -395,7 +411,7 @@ export default function PlumberWallet() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 text-sm text-gray-700">
-                {paginated.map((claim) => {
+                {paginatedItems.map((claim) => {
                   const representativeItem = claim.items?.[0] || {};
                   const StatusIcon = STATUS_ICON[claim.status] || Clock;
 
@@ -491,7 +507,7 @@ export default function PlumberWallet() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 text-sm text-gray-700">
-                {paginated.map((payout) => {
+                {paginatedItems.map((payout) => {
                   const StatusIcon = STATUS_ICON[payout.status] || Clock;
 
                   return (
@@ -612,7 +628,6 @@ export default function PlumberWallet() {
           </div>
         )}
       </div>
-
 
       {/* Reapply Incentive Modal */}
       {showReapplyIncentiveModal && (
