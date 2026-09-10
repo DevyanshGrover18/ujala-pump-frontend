@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { AuthContext } from '../../../../context/AuthContext';
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -12,6 +13,7 @@ export default function ComplaintModal({
   motorDetails,
   onComplaintRegistered,
 }) {
+  const { user } = useContext(AuthContext);
   const [additionalDetails, setAdditionalDetails] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -28,6 +30,7 @@ export default function ComplaintModal({
           serialNumber: String(serialNumber || '').trim().toUpperCase(),
           motorDetails,
           additionalDetails,
+          plumberId: user?.plumber?.plumberId || user?.plumber?._id,
         },
         {
           headers: { Authorization: `Bearer ${token}` },

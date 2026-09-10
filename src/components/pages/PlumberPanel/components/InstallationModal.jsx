@@ -80,6 +80,7 @@ export default function InstallationModal({
           latitude: locationCoords.latitude,
           longitude: locationCoords.longitude,
           image: capturedImage, // Base64 image upload
+          plumberId: user?.plumber?.plumberId || user?.plumber?._id,
         },
         {
           headers: { Authorization: `Bearer ${token}` },

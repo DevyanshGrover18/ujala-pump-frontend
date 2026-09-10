@@ -1022,7 +1022,8 @@ export default function Incentives() {
                   {[
                     'Seller / Member',
                     'Type',
-                    'Products',
+                    'Serial Number',
+                    'Model',
                     'Date',
                     'Incentive',
                     'Status',
@@ -1042,7 +1043,7 @@ export default function Incentives() {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan={!isReadOnly ? (user?.role === 'admin' ? 9 : 8) : (user?.role === 'admin' ? 8 : 7)}
+                      colSpan={!isReadOnly ? (user?.role === 'admin' ? 10 : 9) : (user?.role === 'admin' ? 9 : 8)}
                       className="py-16 text-center text-sm text-gray-400"
                     >
                       <div className="flex flex-col items-center justify-center gap-2">
@@ -1054,7 +1055,7 @@ export default function Incentives() {
                 ) : paginated.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={!isReadOnly ? (user?.role === 'admin' ? 9 : 8) : (user?.role === 'admin' ? 8 : 7)}
+                      colSpan={!isReadOnly ? (user?.role === 'admin' ? 10 : 9) : (user?.role === 'admin' ? 9 : 8)}
                       className="py-16 text-center text-sm text-gray-400"
                     >
                       No claims found matching current filters.
@@ -1096,7 +1097,7 @@ export default function Incentives() {
                                 }
                                 className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 hover:bg-gray-200/80 rounded-md text-gray-800 font-semibold transition-colors cursor-pointer"
                               >
-                                <span>{g.items?.length} items</span>
+                                <span className="font-mono">{g.items?.length} Serials</span>
                                 <ChevronDown
                                   className={`w-3.5 h-3.5 transition-transform text-gray-500 ${
                                     isExpanded ? 'rotate-180' : ''
@@ -1104,154 +1105,187 @@ export default function Incentives() {
                                 />
                               </button>
                             ) : (
-                              <span className="text-gray-600 font-mono">
-                                {g.items?.[0]?.serialNumber || '1 item'}
+                              <span className="text-gray-700 font-mono font-medium">
+                                {g.items?.[0]?.serialNumber || g.serialNumber || '—'}
                               </span>
                             )}
                           </td>
-                        <td className="px-5 py-3.5 text-xs text-gray-500">
-                          {new Date(g.claimDate).toLocaleDateString('en-IN')}
-                        </td>
-                        <td className="px-5 py-3.5 text-sm font-bold text-gray-900 font-mono">
-                          ₹{(g.totalIncentive || 0).toLocaleString('en-IN')}
-                        </td>
-                        {/* <td className="px-5 py-3.5 text-xs font-semibold text-gray-700 font-mono">
-                          {g.sellerType === 'Plumber' ? '—' : `${g.totalPoints || 0} pts`}
-                        </td> */}
-                        <td className="px-5 py-3.5 whitespace-nowrap">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span
-                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                                STATUS_BADGE[g.status] || 'bg-gray-100 text-gray-700'
-                              }`}
-                            >
-                              <SIcon className="w-3 h-3" />
-                              <span>{g.status === 'Approval Pending' ? 'Pending' : g.status}</span>
-                            </span>
-                            {g.reappliedAt && (
-                              <span
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200"
-                                title={g.reapplyNotes ? `Note: ${g.reapplyNotes}` : 'Claim has been re-submitted'}
-                              >
-                                <RotateCcw className="w-2.5 h-2.5 text-blue-600" />
-                                <span>Reapplied</span>
-                              </span>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* Processed By (Admin Only) */}
-                        {user?.role === 'admin' && (
-                          <td className="px-5 py-3.5 whitespace-nowrap">
-                            {g.processedBy ? (
-                              <div className="flex flex-col text-xs">
-                                <span className="font-bold text-gray-800 flex items-center gap-1">
-                                  <UserCheck className="w-3.5 h-3.5 text-blue-600" />
-                                  {g.processedBy.accountsMember?.name ||
-                                    g.processedBy.name ||
-                                    g.processedBy.username ||
-                                    'Admin'}
-                                </span>
-                                <span className="text-[10px] text-gray-400 font-medium">
-                                  {g.processedBy.role === 'admin'
-                                    ? 'Administrator'
-                                    : g.processedBy.accountsMember?.accountsId
-                                    ? `Accounts (${g.processedBy.accountsMember.accountsId})`
-                                    : 'Accounts Team'}
-                                  {g.processedAt && (
-                                    <> &bull; {new Date(g.processedAt).toLocaleDateString('en-IN')}</>
-                                  )}
-                                </span>
-                              </div>
+                          <td className="px-5 py-3.5 text-xs text-gray-700 font-medium">
+                            {g.items?.length > 1 ? (
+                              (() => {
+                                const models = [
+                                  ...new Set(
+                                    g.items
+                                      .map((i) => i.modelName || i.model?.name)
+                                      .filter(Boolean)
+                                  ),
+                                ];
+                                return models.length > 0 ? (
+                                  <span title={models.join(', ')}>
+                                    {models.length === 1
+                                      ? models[0]
+                                      : `${models[0]} +${models.length - 1} more`}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400">—</span>
+                                );
+                              })()
                             ) : (
-                              <span className="text-xs text-gray-400 font-medium italic">
-                                {g.status === 'Approval Pending' ? 'Pending Action' : '—'}
+                              <span>
+                                {g.items?.[0]?.modelName ||
+                                  g.items?.[0]?.model?.name ||
+                                  g.modelName ||
+                                  g.model?.name ||
+                                  '—'}
                               </span>
                             )}
                           </td>
-                        )}
-
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => setSelectedGroup(g)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-700 bg-white shadow-2xs transition-all active:scale-95 cursor-pointer"
-                            >
-                              <Eye className="w-3.5 h-3.5 text-gray-400" />
-                              <span>Verify</span>
-                            </button>
-                            {!isReadOnly && (
-                              <button
-                                onClick={() => handleDelete(g._id)}
-                                className="p-1 rounded-lg border border-red-200 bg-red-50/50 hover:bg-red-100/70 text-red-600 transition-colors cursor-pointer"
-                                title="Delete Claim"
+                          <td className="px-5 py-3.5 text-xs text-gray-500 whitespace-nowrap">
+                            {new Date(g.claimDate).toLocaleDateString('en-IN')}
+                          </td>
+                          <td className="px-5 py-3.5 text-sm font-bold text-gray-900 font-mono whitespace-nowrap">
+                            ₹{(g.totalIncentive || 0).toLocaleString('en-IN')}
+                          </td>
+                          {/* <td className="px-5 py-3.5 text-xs font-semibold text-gray-700 font-mono">
+                            {g.sellerType === 'Plumber' ? '—' : `${g.totalPoints || 0} pts`}
+                          </td> */}
+                          <td className="px-5 py-3.5 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span
+                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                                  STATUS_BADGE[g.status] || 'bg-gray-100 text-gray-700'
+                                }`}
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                      {isExpanded &&
-                        g.items?.map((item, idx) => (
-                          <tr key={idx} className="bg-gray-50/60 text-xs">
-                            {!isReadOnly && <td className="px-5 py-2" />}
-                            <td className="pl-8 pr-5 py-2 text-gray-600 font-mono font-medium">
-                              #{idx + 1} &bull; {item.serialNumber}
-                            </td>
-                            <td
-                              colSpan={2}
-                              className="px-5 py-2 text-gray-700 font-medium"
-                            >
-                              {item.modelName}
-                            </td>
-                            <td className="px-5 py-2 text-gray-500">
-                              {new Date(item.claimDate).toLocaleDateString(
-                                'en-IN'
+                                <SIcon className="w-3 h-3" />
+                                <span>{g.status === 'Approval Pending' ? 'Pending' : g.status}</span>
+                              </span>
+                              {g.reappliedAt && (
+                                <span
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200"
+                                  title={g.reapplyNotes ? `Note: ${g.reapplyNotes}` : 'Claim has been re-submitted'}
+                                >
+                                  <RotateCcw className="w-2.5 h-2.5 text-blue-600" />
+                                  <span>Reapplied</span>
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Processed By (Admin Only) */}
+                          {user?.role === 'admin' && (
+                            <td className="px-5 py-3.5 whitespace-nowrap">
+                              {g.processedBy ? (
+                                <div className="flex flex-col text-xs">
+                                  <span className="font-bold text-gray-800 flex items-center gap-1">
+                                    <UserCheck className="w-3.5 h-3.5 text-blue-600" />
+                                    {g.processedBy.accountsMember?.name ||
+                                      g.processedBy.name ||
+                                      g.processedBy.username ||
+                                      'Admin'}
+                                  </span>
+                                  <span className="text-[10px] text-gray-400 font-medium">
+                                    {g.processedBy.role === 'admin'
+                                      ? 'Administrator'
+                                      : g.processedBy.accountsMember?.accountsId
+                                      ? `Accounts (${g.processedBy.accountsMember.accountsId})`
+                                      : 'Accounts Team'}
+                                    {g.processedAt && (
+                                      <> &bull; {new Date(g.processedAt).toLocaleDateString('en-IN')}</>
+                                    )}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-gray-400 font-medium italic">
+                                  {g.status === 'Approval Pending' ? 'Pending Action' : '—'}
+                                </span>
                               )}
                             </td>
-                            <td className="px-5 py-2 text-gray-900 font-bold font-mono">
-                              ₹{item.incentiveAmount}
-                            </td>
-                            {/* <td className="px-5 py-2 text-gray-700 font-medium font-mono">
-                              {g.sellerType === 'Plumber' ? '—' : `${item.points} pts`}
-                            </td> */}
-                            <td colSpan={user?.role === 'admin' ? 3 : 2} />
-                          </tr>
-                        ))}
+                          )}
 
-                    </React.Fragment>
-                  );
-                })
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => setSelectedGroup(g)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-700 bg-white shadow-2xs transition-all active:scale-95 cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5 text-gray-400" />
+                                <span>Verify</span>
+                              </button>
+                              {!isReadOnly && (
+                                <button
+                                  onClick={() => handleDelete(g._id)}
+                                  className="p-1 rounded-lg border border-red-200 bg-red-50/50 hover:bg-red-100/70 text-red-600 transition-colors cursor-pointer"
+                                  title="Delete Claim"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                        {isExpanded &&
+                          g.items?.map((item, idx) => (
+                            <tr key={idx} className="bg-gray-50/60 text-xs">
+                              {!isReadOnly && <td className="px-5 py-2" />}
+                              <td className="pl-8 pr-5 py-2 text-gray-400 font-medium">
+                                #{idx + 1}
+                              </td>
+                              <td className="px-5 py-2 text-gray-400">
+                                {item.sellerType || g.sellerType}
+                              </td>
+                              <td className="px-5 py-2 text-gray-700 font-mono font-medium">
+                                {item.serialNumber || '—'}
+                              </td>
+                              <td className="px-5 py-2 text-gray-700 font-medium">
+                                {item.modelName || item.model?.name || '—'}
+                              </td>
+                              <td className="px-5 py-2 text-gray-500 whitespace-nowrap">
+                                {new Date(item.claimDate || g.claimDate).toLocaleDateString(
+                                  'en-IN'
+                                )}
+                              </td>
+                              <td className="px-5 py-2 text-gray-900 font-bold font-mono whitespace-nowrap">
+                                ₹{item.incentiveAmount}
+                              </td>
+                              {/* <td className="px-5 py-2 text-gray-700 font-medium font-mono">
+                                {g.sellerType === 'Plumber' ? '—' : `${item.points} pts`}
+                              </td> */}
+                              <td colSpan={user?.role === 'admin' ? 3 : 2} />
+                            </tr>
+                          ))}
+
+                      </React.Fragment>
+                    );
+                  })
+                )}
+              </tbody>
+
+              {/* Table Footer Totals */}
+              {!loading && filtered.length > 0 && (
+                <tfoot className="bg-gray-50 border-t-2 border-gray-200 text-xs font-bold text-gray-900">
+                  <tr>
+                    {!isReadOnly && <td className="px-5 py-3"></td>}
+                    <td className="px-5 py-3 uppercase tracking-wider text-gray-500">
+                      Total
+                    </td>
+                    <td className="px-5 py-3">
+                      <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px]">
+                        {filtered.length} claim(s)
+                      </span>
+                    </td>
+                    <td colSpan={3} className="px-5 py-3 text-gray-500 font-normal">
+                      {selectedMemberName ? `For ${selectedMemberName}` : roleFilter !== 'All' ? `For all ${roleFilter}s` : 'Across all claims'}
+                    </td>
+                    <td className="px-5 py-3 text-sm font-black text-gray-950 whitespace-nowrap">
+                      ₹{totalIncentiveAmount.toLocaleString('en-IN')}
+                    </td>
+                    {/* <td className="px-5 py-3 text-sm font-black text-purple-700 whitespace-nowrap">
+                      {roleFilter === 'Plumber' ? '—' : `${totalPointsAmount.toLocaleString('en-IN')} pts`}
+                    </td> */}
+                    <td colSpan={user?.role === 'admin' ? 3 : 2} className="px-5 py-3"></td>
+                  </tr>
+                </tfoot>
               )}
-            </tbody>
-
-            {/* Table Footer Totals */}
-            {!loading && filtered.length > 0 && (
-              <tfoot className="bg-gray-50 border-t-2 border-gray-200 text-xs font-bold text-gray-900">
-                <tr>
-                  {!isReadOnly && <td className="px-5 py-3"></td>}
-                  <td className="px-5 py-3 uppercase tracking-wider text-gray-500">
-                    Total
-                  </td>
-                  <td className="px-5 py-3">
-                    <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px]">
-                      {filtered.length} claim(s)
-                    </span>
-                  </td>
-                  <td colSpan={2} className="px-5 py-3 text-gray-500 font-normal">
-                    {selectedMemberName ? `For ${selectedMemberName}` : roleFilter !== 'All' ? `For all ${roleFilter}s` : 'Across all claims'}
-                  </td>
-                  <td className="px-5 py-3 text-sm font-black text-gray-950 whitespace-nowrap">
-                    ₹{totalIncentiveAmount.toLocaleString('en-IN')}
-                  </td>
-                  {/* <td className="px-5 py-3 text-sm font-black text-purple-700 whitespace-nowrap">
-                    {roleFilter === 'Plumber' ? '—' : `${totalPointsAmount.toLocaleString('en-IN')} pts`}
-                  </td> */}
-                  <td colSpan={user?.role === 'admin' ? 3 : 2} className="px-5 py-3"></td>
-                </tr>
-              </tfoot>
-            )}
           </table>
         </div>
 
