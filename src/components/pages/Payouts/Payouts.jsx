@@ -15,7 +15,6 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
-  Settings,
   RefreshCw,
   Search,
   Calendar,
@@ -89,12 +88,6 @@ export default function Payouts() {
     approvedAmount: 0,
     rejectedCount: 0,
   });
-  const [thresholds, setThresholds] = useState({
-    distributorMinPayout: 500,
-    dealerMinPayout: 500,
-    subDealerMinPayout: 500,
-    plumberMinPayout: 200,
-  });
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('All');
@@ -142,7 +135,6 @@ export default function Payouts() {
   }, [viewMode, fetchIncentivesForModels]);
 
   // Modals state
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [selectedPayout, setSelectedPayout] = useState(null);
   const [showProcessModal, setShowProcessModal] = useState(false);
 
@@ -165,7 +157,6 @@ export default function Payouts() {
 
       setPayouts(data.payouts || []);
       if (data.stats) setStats(data.stats);
-      if (data.thresholds) setThresholds(data.thresholds);
       window.dispatchEvent(new Event('payouts-updated'));
     } catch (err) {
       console.error('Error fetching payouts:', err);
@@ -438,8 +429,8 @@ export default function Payouts() {
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       {/* Top Header */}
-      <div className="flex w-full flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="w-full">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
               Payout Requests
@@ -451,7 +442,7 @@ export default function Payouts() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 self-end sm:self-auto flex-wrap">
+        <div className="flex items-center gap-2.5 self-end sm:self-auto shrink-0">
           {/* View Switcher (Only visible to Admin) */}
           {user?.role === 'admin' && (
             <div className="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200">
@@ -482,15 +473,6 @@ export default function Payouts() {
             </div>
           )}
 
-          {!isReadOnly && (
-            <button
-              onClick={() => setShowSettingsModal(true)}
-              className="flex items-center gap-2 px-3.5 py-2 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold rounded-xl border border-gray-200 shadow-xs transition-all active:scale-95 cursor-pointer"
-            >
-              <Settings className="w-4 h-4 text-gray-500" />
-              <span>Threshold Limits</span>
-            </button>
-          )}
 
           <button
             onClick={() => {
@@ -1143,17 +1125,6 @@ export default function Payouts() {
         </div>
       )}
 
-      {/* Threshold Rules Modal */}
-      {showSettingsModal && (
-        <ThresholdSettingsModal
-          currentThresholds={thresholds}
-          onClose={() => setShowSettingsModal(false)}
-          onSuccess={() => {
-            setShowSettingsModal(false);
-            fetchPayouts();
-          }}
-        />
-      )}
 
       {/* Process / Details Modal */}
       {showProcessModal && selectedPayout && (
@@ -1170,150 +1141,6 @@ export default function Payouts() {
           }}
         />
       )}
-    </div>
-  );
-}
-
-// -------------------------------------------------------------
-// Threshold Settings Modal Component
-// -------------------------------------------------------------
-function ThresholdSettingsModal({ currentThresholds, onClose, onSuccess }) {
-  const [form, setForm] = useState({
-    distributorMinPayout: currentThresholds?.distributorMinPayout ?? 500,
-    dealerMinPayout: currentThresholds?.dealerMinPayout ?? 500,
-    subDealerMinPayout: currentThresholds?.subDealerMinPayout ?? 500,
-    plumberMinPayout: currentThresholds?.plumberMinPayout ?? 200,
-  });
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      const token = localStorage.getItem('token');
-      await axios.put(`${API}/api/payouts/thresholds`, form, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      toast.success('Payout minimum thresholds updated successfully');
-      onSuccess();
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.message || 'Failed to update thresholds');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-gray-200">
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-purple-50 rounded-xl text-purple-600">
-              <Settings className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">
-                Minimum Payout Thresholds
-              </h2>
-              <p className="text-xs text-gray-500">
-                Set the minimum amount required to raise a withdrawal
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                Distributor Min (₹)
-              </label>
-              <input
-                type="number"
-                min="0"
-                required
-                value={form.distributorMinPayout}
-                onChange={(e) =>
-                  setForm({ ...form, distributorMinPayout: e.target.value })
-                }
-                className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                Dealer Min (₹)
-              </label>
-              <input
-                type="number"
-                min="0"
-                required
-                value={form.dealerMinPayout}
-                onChange={(e) =>
-                  setForm({ ...form, dealerMinPayout: e.target.value })
-                }
-                className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                Sub-Dealer Min (₹)
-              </label>
-              <input
-                type="number"
-                min="0"
-                required
-                value={form.subDealerMinPayout}
-                onChange={(e) =>
-                  setForm({ ...form, subDealerMinPayout: e.target.value })
-                }
-                className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                Plumber Min (₹)
-              </label>
-              <input
-                type="number"
-                min="0"
-                required
-                value={form.plumberMinPayout}
-                onChange={(e) =>
-                  setForm({ ...form, plumberMinPayout: e.target.value })
-                }
-                className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2.5 pt-4 border-t border-gray-100">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-5 py-2 text-sm font-bold bg-purple-600 hover:bg-purple-700 text-white rounded-xl shadow-sm disabled:opacity-50"
-            >
-              {submitting ? 'Saving...' : 'Save Thresholds'}
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
   );
 }
